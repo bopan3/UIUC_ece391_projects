@@ -30,7 +30,7 @@ void i8259_init(void) {
 /* Enable (unmask) the specified IRQ */
 void enable_irq(uint32_t irq_num) {
     unsigned int mask;
-    mask = ~(1 << irq);
+    mask = ~(1 << irq_num);
     master_mask &= mask;
     slave_mask &= (mask >> 8);
 
@@ -46,7 +46,7 @@ void enable_irq(uint32_t irq_num) {
 /* Disable (mask) the specified IRQ */
 void disable_irq(uint32_t irq_num) {
     unsigned int mask;
-    mask = 1 << irq;
+    mask = 1 << irq_num;
     master_mask |= mask;
     slave_mask |= (mask >> 8);
 

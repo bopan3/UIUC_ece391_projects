@@ -1,4 +1,5 @@
 #include "tests.h"
+#include "i8259.h"
 #include "x86_desc.h"
 #include "lib.h"
 
@@ -47,6 +48,48 @@ int idt_test(){
 
 // add more tests here
 
+/* PIC Test - Example
+ *
+ * Test whether the PIC enable / disable the interrupt mask as expected
+ * Inputs: None
+ * Outputs: PASS/FAIL
+ * Side Effects: None
+ * Coverage: i8259_init()
+ * Files: i8259.h/S
+ */
+int pic_test(){
+    TEST_HEADER;
+
+    int result = PASS;
+
+    printf("\n The Master Mask values are %x \n", inb(MASTER_8259_DATA));
+    printf("The Slave Mask values are %x \n", inb(SLAVE_8259_DATA));
+
+    disable_irq(0);
+    disable_irq(2);
+    disable_irq(4);
+
+    disable_irq(9);
+    disable_irq(11);
+    disable_irq(12);
+
+    printf("\n The Master Mask values are %x", inb(MASTER_8259_DATA));
+    printf("The Slave Mask values are %x \n", inb(SLAVE_8259_DATA));
+
+    enable_irq(0);
+    enable_irq(2);
+    enable_irq(4);
+
+    enable_irq(9);
+    enable_irq(11);
+    enable_irq(12);
+
+    printf("\n The Master Mask values are %x \n", inb(MASTER_8259_DATA));
+    printf("The Slave Mask values are %x \n", inb(SLAVE_8259_DATA));
+
+    return result;
+}
+
 /* Checkpoint 2 tests */
 /* Checkpoint 3 tests */
 /* Checkpoint 4 tests */
@@ -57,4 +100,5 @@ int idt_test(){
 void launch_tests(){
 	TEST_OUTPUT("idt_test", idt_test());
 	// launch your tests here
+    TEST_OUTPUT("pic_test", pic_test());
 }
