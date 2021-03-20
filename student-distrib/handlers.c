@@ -4,6 +4,7 @@
  */
 
 #include "handlers.h"
+#include "lib.h"
 
 /* 
  * exp_handler
@@ -14,6 +15,7 @@
  *   SIDE EFFECTS: excute exception handler
  */
 void exp_handler(int exp_num) {
+    while(1){}
     return;
 }
 
@@ -26,5 +28,6 @@ void exp_handler(int exp_num) {
  *   SIDE EFFECTS: excute interrupt handler
  */
 void irq_handler(int irq_num) {
+    while(1){}
     return;
 }

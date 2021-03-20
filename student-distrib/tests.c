@@ -1,6 +1,7 @@
 #include "tests.h"
 #include "x86_desc.h"
 #include "lib.h"
+#include "idt_jump.h"
 
 #define PASS 1
 #define FAIL 0
@@ -18,18 +19,15 @@ static inline void assertion_failure(){
 }
 
 
-/* Checkpoint 1 tests */
+/*-------------------- Checkpoint 1 tests --------------------*/
 
-/* IDT Test - Example
- * 
- * Asserts that first 10 IDT entries are not NULL
- * Inputs: None
- * Outputs: PASS/FAIL
- * Side Effects: None
- * Coverage: Load IDT, IDT definition
+/* 
+ * Check point 1.1 (Initialize the IDT, Test 1) 
+ * Coverage: Asserts that first 10 IDT entries are not NULL
  * Files: x86_desc.h/S
+ * Edited by WNC
  */
-int idt_test(){
+int CP1_idt_test_1(){
 	TEST_HEADER;
 
 	int i;
@@ -41,20 +39,69 @@ int idt_test(){
 			result = FAIL;
 		}
 	}
-
+	
 	return result;
 }
 
-// add more tests here
+/* 
+ * Check point 1.1 (Initialize the IDT, Test 2) 
+ * Coverage: Raise exception/interrupt, print a prompt and freezing the screen; 
+ * 			 multiple exceptions(?)
+ * Files: idt.c
+ * Edited by WNC
+ */
+int CP1_idt_test_2(){
+	TEST_HEADER;
 
-/* Checkpoint 2 tests */
-/* Checkpoint 3 tests */
-/* Checkpoint 4 tests */
-/* Checkpoint 5 tests */
+	/* Pleas unmark one to demo, see idt.c for specific names of them */
+	/* Exceptions */
+	// asm volatile("int $0");
+	// asm volatile("int $1");
+	// asm volatile("int $6");
+	// asm volatile("int $14");
+	// asm volatile("int $17");
+	// asm volatile("int $19");
+	/* Interrupt */
+	// asm volatile("int $2");
+	// asm volatile("int $33");
+	// asm volatile("int $43");
+	// asm volatile("int $46");
+	/* System call */
+	asm volatile("int $128");
+
+	return PASS;
+}
+
+/* 
+ * Check point 1.1 (Initialize the IDT, Test 3) 
+ * Coverage: 0x14-0x1F of IDT is empty
+ * Files: idt.c
+ * Edited by WNC
+ */
+int CP1_idt_test_3(){
+	/* T.B.D. */
+}
+
+/* 
+ * Check point 1.1 (Initialize the IDT, Test 4) 
+ * Coverage: interrupts are masked during the excution of an exception
+ * Files: idt.c
+ * Edited by WNC
+ */
+int CP1_idt_test_4(){
+	/* T.B.D. */
+}
+
+
+/*-------------------- Checkpoint 2 tests --------------------*/
+/*-------------------- Checkpoint 3 tests --------------------*/
+/*-------------------- Checkpoint 4 tests --------------------*/
+/*-------------------- Checkpoint 5 tests --------------------*/
 
 
 /* Test suite entry point */
 void launch_tests(){
-	TEST_OUTPUT("idt_test", idt_test());
-	// launch your tests here
+	/* Check point 1 */
+	TEST_OUTPUT("CP1_idt_test_1", CP1_idt_test_1());
+	TEST_OUTPUT("CP1_idt_test_2", CP1_idt_test_2());
 }

@@ -41,6 +41,8 @@ continue:
     popl    %ecx
     popl    %edx
     popl    %eax
+
+    lidt idt_desc_ptr   # Load the IDT
     
     # Load CS with the new descriptor value
     ljmp    $KERNEL_CS, $keep_going

@@ -2,151 +2,73 @@
  * Initialization of IDT
  */
 
+#include "lib.h"
+
 #include "idt.h"
 #include "x86_desc.h"
-#include "handlers.h"
 
 /* 
- * jump tables for eahc exception/interrupt
+ * Jump frunction for each exception/interrupt/system call
  *   DESCRIPTION: pass number of exception/interrupt jump to the handler funtion
  *   INPUTS: none
  *   OUTPUTS: none
  *   RETURN VALUE: none
  *   SIDE EFFECTS: jump to the handler
  */
-/* Exception jump functions, note that number 0-19 are exceptions' index in IDT */
-static void excp_Divide_Error() {
-    printf("Fault (#0): Divide Error\n");
-    exp_handler(0);
-    return;
-}
-static void excp_RESERVED() {
-    printf("Fault (#1): RESERVED\n");
-    exp_handler(1);
-    return;
-}
-static void excp_NMI_Interrupt() {
-    printf("Interrupt (#2): NMI Interrupt\n");
-    irq_handler(2);
-    return;
-}
-static void excp_Breakpoint() {
-    printf("Trap (#3): Breakpoint\n");
-    exp_handler(3);
-    return;
-}
-static void excp_Overflow() {
-    printf("Trap (#4): Overflow\n");
-    exp_handler(4);
-    return;
-}
-static void excp_BOUND_Range_Exceeded() {
-    printf("Fault (#5): BOUND Range Exceeded\n");
-    exp_handler(5);
-    return;
-}
-static void excp_Invalid_Opcode() {
-    printf("Fault (#6): Invalid Opcode\n");
-    exp_handler(6);
-    return;
-}
-static void excp_Device_Not_Available() {
-    printf("Fault (#7): Device Not Available\n");
-    exp_handler(7);
-    return;
-}
-static void excp_Double_Fault() {
-    printf("Abort (#8): Double Fault\n");
-    exp_handler(8);
-    return;
-}
-static void excp_Coprocessor_Segment_Overrun() {
-    printf("Fault (#9): Coprocessor Segment Overrun\n");
-    exp_handler(9);
-    return;
-}
-static void excp_Invalid_TSS() {
-    printf("Fault (#10): Invalid TSS\n");
-    exp_handler(10);
-    return;
-}
-static void excp_Segment_Not_Present() {
-    printf("Fault (#11): Segment Not Present\n");
-    exp_handler(11);
-    return;
-}
-static void excp_Stack_Segment_Fault() {
-    printf("Fault (#12): Stack-Segment Fault\n");
-    exp_handler(12);
-    return;
-}
-static void excp_General_Protection() {
-    printf("Fault (#13): General Protection\n");
-    exp_handler(13);
-    return;
-}
-static void excp_Page_Fault() {
-    printf("Fault (#14): Page Fault\n");
-    exp_handler(14);
-    return;
-}
-static void excp_FPU_Floating_Point() {
-    printf("Fault (#16): x87 FPU Floating-Point Error\n");
-    exp_handler(16);
-    return;
-}
-static void excp_Alignment_Check() {
-    printf("Fault (#17): Alignment Check\n");
-    exp_handler(17);
-    return;
-}
-static void excp_Machine_Check() {
-    printf("Abort (#18): Machine Check\n");
-    exp_handler(18);
-    return;
-}
-static void excp_SIMD_Floating_Point() {
-    printf("Fault (#19): SIMD Floating-Point Exception\n");
-    exp_handler(19);
-    return;
-}
 
-/* Interrupt jump functions, note that hex/decimal numbers are interrupts' index in IDT */
-static void irq_Timer_Chip() {
-    printf("Interrupt (#32): Timer Chip\n");
-    irq_handler(0x20);
-    return;
-}
-static void irq_Keyboard() {
-    printf("Interrupt (#33): Keyboard\n");
-    irq_handler(0x21);
-    return;
-}
-static void irq_Serial_Port() {
-    printf("Interrupt (#36): Serial Port\n");
-    irq_handler(0x24);
-    return;
-}
-static void irq_Real_Time_Clock() {
-    printf("Interrupt (#40): Real Time Clock\n");
-    irq_handler(0x28);
-    return;
-}
-static void irq_Eth0() {
-    printf("Interrupt (#43): Eth0\n");
-    irq_handler(0x2B);
-    return;
-}
-static void irq_PS2_Mouse() {
-    printf("Interrupt (#44): PS/2 Mouse\n");
-    irq_handler(0x2C);
-    return;
-}
-static void irq_Ide0() {
-    printf("Interrupt (#46): Ide0\n");
-    irq_handler(0x2E);
-    return;
-}
+#define IDT_exp_entry(f_name, vect, str)      \
+void f_name() {                               \
+    /* Suppress all interrupts */             \
+    asm volatile("cli");                      \
+    printf("EXCEPTION #0x%x: %s\n", vect, str); \
+    while(1){}                                \
+    asm volatile("sti");                      \
+}                                             \
+
+#define IDT_irq_entry(f_name, vect, str)      \
+void f_name() {                               \
+    printf("INTERRUPT #0x%x: %s\n", vect, str); \
+    while(1){}                                \
+}                                             \
+
+#define IDT_sys_entry(f_name, vect, str)      \
+void f_name() {                               \
+    printf("SYSTEM CALL #0x%x: %s\n", vect, str);\
+    while(1){}                                \
+}                                             \
+
+/* Exceptions */
+IDT_exp_entry(excp_Divide_Error, 0, "Divide Error");
+IDT_exp_entry(excp_RESERVED, 1, "RESERVED");
+IDT_exp_entry(excp_Breakpoint, 3, "Breakpoint");
+IDT_exp_entry(excp_Overflow, 4, "Overflow");
+IDT_exp_entry(excp_BOUND_Range_Exceeded, 5, "BOUND Range Exceeded");
+IDT_exp_entry(excp_Invalid_Opcode, 6, "Invalid Opcode");
+IDT_exp_entry(excp_Device_Not_Available, 7, "Device Not Available");
+IDT_exp_entry(excp_Double_Fault, 8, "Double Fault");
+IDT_exp_entry(excp_Coprocessor_Segment_Overrun, 9, "Coprocessor Segment Overrun");
+IDT_exp_entry(excp_Invalid_TSS, 10, "Invalid TSS");
+IDT_exp_entry(excp_Segment_Not_Present, 11, "Segment Not Present");
+IDT_exp_entry(excp_Stack_Segment_Fault, 12, "Stack-Segment Fault");
+IDT_exp_entry(excp_General_Protection, 13, "General Protection");
+IDT_exp_entry(excp_Page_Fault, 14, "Page Fault");
+IDT_exp_entry(excp_FPU_Floating_Point, 16, "x87 FPU Floating-Point Error");
+IDT_exp_entry(excp_Alignment_Check, 17, "Alignment Check");
+IDT_exp_entry(excp_Machine_Check, 18, "Machine Check");
+IDT_exp_entry(excp_SIMD_Floating_Point, 19, "SIMD Floating-Point Exception");
+
+/* Interrupts */
+IDT_irq_entry(excp_NMI_Interrupt, 2, "NMI Interrupt");
+IDT_irq_entry(irq_Timer_Chip, 32, "Timer Chip");
+IDT_irq_entry(irq_Keyboard, 33, "Keyboard");
+IDT_irq_entry(irq_Serial_Port, 36, "Serial Port");
+IDT_irq_entry(irq_Real_Time_Clock, 40, "Real Time Clock");
+IDT_irq_entry(irq_Eth0, 43, "Eth0");
+IDT_irq_entry(irq_PS2_Mouse, 44, "PS/2 Mouse");
+IDT_irq_entry(irq_Ide0, 46, "Ide0");
+
+/* System call */
+IDT_sys_entry(System_Call, 128, "System call");
 
 
 /* 
@@ -182,7 +104,7 @@ void idt_init() {
 
     /* Set exception handlers manually (from IDT 0x00 to 0x0F) */
     SET_IDT_ENTRY(idt[0], excp_Divide_Error);
-    SET_IDT_ENTRY(idt[1],excp_RESERVED );
+    SET_IDT_ENTRY(idt[1],excp_RESERVED);
     SET_IDT_ENTRY(idt[2], excp_NMI_Interrupt);
     SET_IDT_ENTRY(idt[3], excp_Breakpoint);
     SET_IDT_ENTRY(idt[4], excp_Overflow);
@@ -202,7 +124,7 @@ void idt_init() {
     SET_IDT_ENTRY(idt[18], excp_Machine_Check);
     SET_IDT_ENTRY(idt[19], excp_SIMD_Floating_Point);
 
-    /* Set interrupt handlers manually */
+    /* Set interrupt handlers manually (from 0x20 to 0x2F or 32 to 47) */
     SET_IDT_ENTRY(idt[32], irq_Timer_Chip);
     SET_IDT_ENTRY(idt[33], irq_Keyboard);
     SET_IDT_ENTRY(idt[36], irq_Serial_Port);
@@ -210,6 +132,9 @@ void idt_init() {
     SET_IDT_ENTRY(idt[43], irq_Eth0);
     SET_IDT_ENTRY(idt[44], irq_PS2_Mouse);
     SET_IDT_ENTRY(idt[46], irq_Ide0);
+
+    /* Set system call vector (0x80) */
+    SET_IDT_ENTRY(idt[0x80], System_Call);
 }
 
 

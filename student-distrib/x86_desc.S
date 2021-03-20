@@ -83,13 +83,14 @@ ldt_desc_ptr:
     .quad 0
 
 gdt_bottom:
-
+    .align 16
 
 gdt_desc:                       # for GDTR
     .word gdt_bottom - gdt - 1  # 16 bit size
     .long gdt                   # 32 bit addr
 
     .align 16
+
 ldt:
     .rept 4
     .quad 0
