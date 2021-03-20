@@ -84,6 +84,11 @@ ldt_desc_ptr:
 
 gdt_bottom:
 
+
+gdt_desc:                       # for GDTR
+    .word gdt_bottom - gdt - 1  # 16 bit size
+    .long gdt                   # 32 bit addr
+
     .align 16
 ldt:
     .rept 4
