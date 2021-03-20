@@ -2,7 +2,6 @@
 #include "i8259.h"
 #include "x86_desc.h"
 #include "lib.h"
-#include "idt_jump.h"
 
 #define PASS 1
 #define FAIL 0
@@ -146,5 +145,5 @@ void launch_tests(){
 	/* Check point 1 */
 	TEST_OUTPUT("CP1_idt_test_1", CP1_idt_test_1());
 	TEST_OUTPUT("CP1_idt_test_2", CP1_idt_test_2());
-	TEST_OUTPUT("pic_test", pic_test());
+	// TEST_OUTPUT("pic_test", pic_test());
 }
