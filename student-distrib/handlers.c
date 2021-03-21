@@ -5,6 +5,7 @@
 #include "handlers.h"
 #include "lib.h"
 #include "x86_desc.h"
+#include "keyboard.h"
 
 /* 
  * irq_handler
@@ -27,7 +28,8 @@ void irq_handler(int irq_vect) {
             printf("INTERRUPT #0x%x: Timer Chip\n", irq_vect);
             break;
         case IRQ_Keyboard:
-            printf("INTERRUPT #0x%x: Keyboard\n", irq_vect);
+            // printf("INTERRUPT #0x%x: Keyboard\n", irq_vect);
+            keyboard_handler();
             break;
         case IRQ_Serial_Port :
             printf("INTERRUPT #0x%x: Serial Port\n", irq_vect);
@@ -48,7 +50,7 @@ void irq_handler(int irq_vect) {
             printf("INTERRUPT #0x%x: not defined\n", irq_vect);
             break;
     }
-    while(1){}
+    // while(1){}
     return;
 }
 
