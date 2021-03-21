@@ -9,11 +9,15 @@
 uint8_t master_mask; /* IRQs 0-7  */
 uint8_t slave_mask;  /* IRQs 8-15 */
 
-/* Initialize the 8259 PIC */
+/*
+ *   i8259_init
+ *   DESCRIPTION: Initialize the 8259 PIC
+ *   INPUTS: none
+ *   OUTPUTS: none
+ *   RETURN VALUE: none
+ *   SIDE EFFECTS: Initialize master and slave PICs
+ */
 void i8259_init(void) {
-    outb(MASK_ALL, MASTER_8259_DATA);
-    outb(MASK_ALL, SLAVE_8259_DATA);
-
     outb(ICW1, MASTER_8259_PORT);	// ICW1: select 8259A-1 init
 	outb(ICW1, SLAVE_8259_PORT);
 
@@ -25,41 +29,65 @@ void i8259_init(void) {
 
     outb(ICW4, MASTER_8259_DATA);
     outb(ICW4, SLAVE_8259_DATA);
+
+    outb(MASK_ALL, MASTER_8259_DATA);
+    outb(MASK_ALL, SLAVE_8259_DATA);
 }
 
-/* Enable (unmask) the specified IRQ */
+/*
+ *   enable_irq
+ *   DESCRIPTION: Enable (unmask) the specified IRQ
+ *   INPUTS: irq_num -- the bit number of interruption
+ *   OUTPUTS: none
+ *   RETURN VALUE: none
+ *   SIDE EFFECTS: switch the given bit of IRQ to 0
+ */
 void enable_irq(uint32_t irq_num) {
     unsigned int mask;
-    mask = ~(1 << irq_num);
+    mask = ~(1 << irq_num);         // Here 1 is just a positive bit
     master_mask &= mask;
-    slave_mask &= (mask >> 8);
+    slave_mask &= (mask >> MAS_SLA_DIV);
 
     // If IRQ is larger or equal to 8, slave
-    if (irq_num >= MAS_SLA_DIV) {
+    if (irq_num >= MAS_SLA_DIV)
         outb(slave_mask, SLAVE_8259_DATA);
-    } else {
+    else {
         // Else, master
         outb(master_mask, MASTER_8259_DATA);
     }
 }
 
-/* Disable (mask) the specified IRQ */
+/*
+ *   disable_irq
+ *   DESCRIPTION: Disable (mask) the specified IRQ
+ *   INPUTS: irq_num -- the bit number of interruption
+ *   OUTPUTS: none
+ *   RETURN VALUE: none
+ *   SIDE EFFECTS: switch the given bit of IRQ to 1
+ */
 void disable_irq(uint32_t irq_num) {
     unsigned int mask;
-    mask = 1 << irq_num;
+    mask = 1 << irq_num;            // Here 1 is just a positive bit
     master_mask |= mask;
-    slave_mask |= (mask >> 8);
+    slave_mask |= (mask >> MAS_SLA_DIV);
 
     // If IRQ is larger or equal to 8, slave
-    if (irq_num >= MAS_SLA_DIV) {
+    if (irq_num >= MAS_SLA_DIV)
         outb(slave_mask, SLAVE_8259_DATA);
-    } else {
+    else {
         // Else, master
         outb(master_mask, MASTER_8259_DATA);
     }
 }
 
-/* Send end-of-interrupt signal for the specified IRQ */
+/*
+ *   send_eoi
+ *   DESCRIPTION: Send end-of-interrupt signal for the specified IRQ
+ *   INPUTS: irq_num -- the bit number of interruption
+ *   OUTPUTS: none
+ *   RETURN VALUE: none
+ *   SIDE EFFECTS: Send end-of-interrupt signal for the specified IRQ
+ */
 void send_eoi(uint32_t irq_num) {
     // If IRQ is larger or equal to 8, slave
     if (irq_num >= MAS_SLA_DIV) {
