@@ -56,9 +56,9 @@ int CP1_idt_test_2(){
 
 	/* Pleas unmark one to demo, see idt.c for specific names of them */
 	/* Exceptions */
-	// asm volatile("int $0");		// EXCP_Divide_Error
+	asm volatile("int $0");		// EXCP_Divide_Error
 	// asm volatile("int $1");		// EXCP_RESERVED
-	asm volatile("int $6");		// EXCP_Invalid_Opcode
+	// asm volatile("int $6");		// EXCP_Invalid_Opcode
 	// asm volatile("int $14");		// EXCP_Page_Fault
 	// asm volatile("int $17");		// EXCP_Alignment_Check 
 	// asm volatile("int $19");		// EXCP_SIMD_Floating_Point
