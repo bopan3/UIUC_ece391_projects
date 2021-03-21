@@ -6,6 +6,7 @@
 
 #include "idt.h"
 #include "x86_desc.h"
+#include "asm_linkage.h"
 
 /* 
  * Jump frunction for each exception/interrupt/system call
@@ -16,59 +17,43 @@
  *   SIDE EFFECTS: jump to the handler
  */
 
-#define IDT_exp_entry(f_name, vect, str)      \
+#define IDT_exp_entry(f_name, vect, msg)      \
 void f_name() {                               \
     /* Suppress all interrupts */             \
     asm volatile("cli");                      \
-    printf("EXCEPTION #0x%x: %s\n", vect, str); \
+    printf("EXCEPTION #0x%x: %s\n", vect, msg); \
     while(1){}                                \
     asm volatile("sti");                      \
 }                                             \
 
-#define IDT_irq_entry(f_name, vect, str)      \
+#define IDT_sys_entry(f_name, vect, msg)      \
 void f_name() {                               \
-    printf("INTERRUPT #0x%x: %s\n", vect, str); \
-    while(1){}                                \
-}                                             \
-
-#define IDT_sys_entry(f_name, vect, str)      \
-void f_name() {                               \
-    printf("SYSTEM CALL #0x%x: %s\n", vect, str);\
+    printf("SYSTEM CALL #0x%x: %s\n", vect, msg);\
     while(1){}                                \
 }                                             \
 
 /* Exceptions */
-IDT_exp_entry(excp_Divide_Error, 0, "Divide Error");
-IDT_exp_entry(excp_RESERVED, 1, "RESERVED");
-IDT_exp_entry(excp_Breakpoint, 3, "Breakpoint");
-IDT_exp_entry(excp_Overflow, 4, "Overflow");
-IDT_exp_entry(excp_BOUND_Range_Exceeded, 5, "BOUND Range Exceeded");
-IDT_exp_entry(excp_Invalid_Opcode, 6, "Invalid Opcode");
-IDT_exp_entry(excp_Device_Not_Available, 7, "Device Not Available");
-IDT_exp_entry(excp_Double_Fault, 8, "Double Fault");
-IDT_exp_entry(excp_Coprocessor_Segment_Overrun, 9, "Coprocessor Segment Overrun");
-IDT_exp_entry(excp_Invalid_TSS, 10, "Invalid TSS");
-IDT_exp_entry(excp_Segment_Not_Present, 11, "Segment Not Present");
-IDT_exp_entry(excp_Stack_Segment_Fault, 12, "Stack-Segment Fault");
-IDT_exp_entry(excp_General_Protection, 13, "General Protection");
-IDT_exp_entry(excp_Page_Fault, 14, "Page Fault");
-IDT_exp_entry(excp_FPU_Floating_Point, 16, "x87 FPU Floating-Point Error");
-IDT_exp_entry(excp_Alignment_Check, 17, "Alignment Check");
-IDT_exp_entry(excp_Machine_Check, 18, "Machine Check");
-IDT_exp_entry(excp_SIMD_Floating_Point, 19, "SIMD Floating-Point Exception");
-
-/* Interrupts */
-IDT_irq_entry(excp_NMI_Interrupt, 2, "NMI Interrupt");
-IDT_irq_entry(irq_Timer_Chip, 32, "Timer Chip");
-IDT_irq_entry(irq_Keyboard, 33, "Keyboard");
-IDT_irq_entry(irq_Serial_Port, 36, "Serial Port");
-IDT_irq_entry(irq_Real_Time_Clock, 40, "Real Time Clock");
-IDT_irq_entry(irq_Eth0, 43, "Eth0");
-IDT_irq_entry(irq_PS2_Mouse, 44, "PS/2 Mouse");
-IDT_irq_entry(irq_Ide0, 46, "Ide0");
+IDT_exp_entry(excp_Divide_Error, EXCP_Divide_Error, "Divide Error");
+IDT_exp_entry(excp_RESERVED, EXCP_RESERVED, "RESERVED");
+IDT_exp_entry(excp_Breakpoint, EXCP_Breakpoint, "Breakpoint");
+IDT_exp_entry(excp_Overflow, EXCP_Overflow, "Overflow");
+IDT_exp_entry(excp_BOUND_Range_Exceeded, EXCP_BOUND_Range_Exceeded, "BOUND Range Exceeded");
+IDT_exp_entry(excp_Invalid_Opcode, EXCP_Invalid_Opcode, "Invalid Opcode");
+IDT_exp_entry(excp_Device_Not_Available, EXCP_Device_Not_Available, "Device Not Available");
+IDT_exp_entry(excp_Double_Fault, EXCP_Double_Fault, "Double Fault");
+IDT_exp_entry(excp_Coprocessor_Segment_Overrun, EXCP_Coprocessor_Segment_Overrun, "Coprocessor Segment Overrun");
+IDT_exp_entry(excp_Invalid_TSS, EXCP_Invalid_TSS, "Invalid TSS");
+IDT_exp_entry(excp_Segment_Not_Present, EXCP_Segment_Not_Present, "Segment Not Present");
+IDT_exp_entry(excp_Stack_Segment_Fault, EXCP_Stack_Segment_Fault, "Stack-Segment Fault");
+IDT_exp_entry(excp_General_Protection, EXCP_General_Protection, "General Protection");
+IDT_exp_entry(excp_Page_Fault, EXCP_Page_Fault, "Page Fault");
+IDT_exp_entry(excp_FPU_Floating_Point, EXCP_FPU_Floating_Point, "x87 FPU Floating-Point Error");
+IDT_exp_entry(excp_Alignment_Check, EXCP_Alignment_Check, "Alignment Check");
+IDT_exp_entry(excp_Machine_Check, EXCP_Machine_Check, "Machine Check");
+IDT_exp_entry(excp_SIMD_Floating_Point, EXCP_SIMD_Floating_Point, "SIMD Floating-Point Exception");
 
 /* System call */
-IDT_sys_entry(System_Call, 128, "System call");
+IDT_sys_entry(System_Call, SYS_System_Call, "System call");
 
 
 /* 
@@ -91,7 +76,8 @@ void idt_init() {
         /* for 32-bit gates */
         /* INT Gate is 0xE = 1110 */
         /* Excp Gate is 0xF = 1111 */
-        idt[i].reserved3 = (i < EXCP_NUM)? 1:0; 
+        // idt[i].reserved3 = (i < EXCP_NUM)? 1:0; 
+        idt[i].reserved3 = 0;
         idt[i].reserved2 = 1;               
         idt[i].reserved1 = 1;
         idt[i].size = 1;                        
@@ -104,8 +90,8 @@ void idt_init() {
 
     /* Set exception handlers manually (from IDT 0x00 to 0x0F) */
     SET_IDT_ENTRY(idt[0], excp_Divide_Error);
-    SET_IDT_ENTRY(idt[1],excp_RESERVED);
-    SET_IDT_ENTRY(idt[2], excp_NMI_Interrupt);
+    SET_IDT_ENTRY(idt[1], excp_RESERVED);
+    SET_IDT_ENTRY(idt[2], irq_NMI_Interrupt);
     SET_IDT_ENTRY(idt[3], excp_Breakpoint);
     SET_IDT_ENTRY(idt[4], excp_Overflow);
     SET_IDT_ENTRY(idt[5], excp_BOUND_Range_Exceeded);
@@ -124,7 +110,7 @@ void idt_init() {
     SET_IDT_ENTRY(idt[18], excp_Machine_Check);
     SET_IDT_ENTRY(idt[19], excp_SIMD_Floating_Point);
 
-    /* Set interrupt handlers manually (from 0x20 to 0x2F or 32 to 47) */
+    /* Set interrupt handlers manually (from 0x20 to 0x2F or 32 to 47 decimal) */
     SET_IDT_ENTRY(idt[32], irq_Timer_Chip);
     SET_IDT_ENTRY(idt[33], irq_Keyboard);
     SET_IDT_ENTRY(idt[36], irq_Serial_Port);
