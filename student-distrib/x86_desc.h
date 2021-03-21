@@ -8,6 +8,41 @@
 
 #include "types.h"
 
+/*-------------------- Add --------------------*/
+/* Vector numbers of exception/interrupt/system call */
+#define EXCP_Divide_Error                   0
+#define EXCP_RESERVED                       1
+#define EXCP_Breakpoint                     3
+#define EXCP_Overflow                       4
+#define EXCP_BOUND_Range_Exceeded           5
+#define EXCP_Invalid_Opcode                 6
+#define EXCP_Device_Not_Available           7
+#define EXCP_Double_Fault                   8
+#define EXCP_Coprocessor_Segment_Overrun    9
+#define EXCP_Invalid_TSS                    10
+#define EXCP_Segment_Not_Present            11
+#define EXCP_Stack_Segment_Fault            12
+#define EXCP_General_Protection             13
+#define EXCP_Page_Fault                     14
+#define EXCP_FPU_Floating_Point             16
+#define EXCP_Alignment_Check                17
+#define EXCP_Machine_Check                  18
+#define EXCP_SIMD_Floating_Point            19
+
+#define IRQ_NMI_Interrupt       2
+#define IRQ_Timer_Chip          32
+#define IRQ_Keyboard            33
+#define IRQ_Serial_Port         36
+#define IRQ_Real_Time_Clock     40
+#define IRQ_Eth0                43
+#define IRQ_PS2_Mouse           44
+#define IRQ_Ide0                46
+
+#define SYS_System_Call         128
+
+
+/*---------------------------------------------*/
+
 /* Segment selector values */
 #define KERNEL_CS   0x0010
 #define KERNEL_DS   0x0018
