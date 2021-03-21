@@ -56,7 +56,7 @@ int CP1_idt_test_2(){
 
 	/* Pleas unmark one to demo, see idt.c for specific names of them */
 	/* Exceptions */
-	// asm volatile("int $0");		// EXCP_Divide_Error
+	asm volatile("int $0");		// EXCP_Divide_Error
 	// asm volatile("int $1");		// EXCP_RESERVED
 	// asm volatile("int $6");		// EXCP_Invalid_Opcode
 	// asm volatile("int $14");		// EXCP_Page_Fault
@@ -70,7 +70,7 @@ int CP1_idt_test_2(){
 	// asm volatile("int $47");		// Not defined
 	// asm volatile("int $30");		// Not defined
 	/* System call */
-	asm volatile("int $128");		// SYS_System_Call
+	// asm volatile("int $128");		// SYS_System_Call
 
 	return PASS;
 }
@@ -83,7 +83,7 @@ int CP1_idt_test_2(){
  */
 int CP1_idt_test_3(){
 	/* T.B.D. */
-	return PASS; 
+	return 0;
 }
 
 /* PIC Test - Example
@@ -136,13 +136,13 @@ int paging_test(){
 	int result = PASS;
 	char base;
 	char* ptr = 0x400000;
-	*ptr =(char) 1; 
+	*ptr =(char) 1;
 	printf("===== Part 1: Paging Settings Validation ======\n");
 
 	base = (char) 0;
-	ptr = &base; 
+	ptr = &base;
 
-	
+
 
 	printf("=== Part 2: Dereference Functionality Validation ===\n");
 	printf("===      1.1: Paging Dict[0] Region, 0-4 MB		 ===\n");
@@ -159,7 +159,7 @@ int paging_test(){
 
 
 	/* Part 1: test the  */
-	return result; 
+	return result;
 }
 
 
