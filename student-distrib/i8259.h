@@ -12,6 +12,17 @@
 #define MASTER_8259_PORT    0x20
 #define SLAVE_8259_PORT     0xA0
 
+#define MASTER_8259_DATA    0x21
+#define SLAVE_8259_DATA     0xA1
+
+/* i8259 related Constants */
+#define MAXNUM_IRQS         15
+#define MAS_SLA_DIV         8
+#define SLAVE_IRQ           2
+
+/* Mask Initial Value*/
+#define MASK_ALL            0xFF
+
 /* Initialization control words to init each PIC.
  * See the Intel manuals for details on the meaning
  * of each word */
