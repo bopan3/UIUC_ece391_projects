@@ -99,18 +99,7 @@ int pic_test(){
 
     int result = PASS;
 
-    printf("\n The Master Mask values are %x \n", inb(MASTER_8259_DATA));
-    printf("The Slave Mask values are %x \n", inb(SLAVE_8259_DATA));
-
-    disable_irq(0);
-    disable_irq(2);
-    disable_irq(4);
-
-    disable_irq(9);
-    disable_irq(11);
-    disable_irq(12);
-
-    printf("\n The Master Mask values are %x", inb(MASTER_8259_DATA));
+    printf("\nThe Master Mask values are %x \n", inb(MASTER_8259_DATA));
     printf("The Slave Mask values are %x \n", inb(SLAVE_8259_DATA));
 
     enable_irq(0);
@@ -121,7 +110,21 @@ int pic_test(){
     enable_irq(11);
     enable_irq(12);
 
-    printf("\n The Master Mask values are %x \n", inb(MASTER_8259_DATA));
+    printf("\nThe Master Mask values are %x \n", inb(MASTER_8259_DATA));    // 1110 1010
+    printf("The Slave Mask values are %x \n", inb(SLAVE_8259_DATA));        // 1110 0101
+
+    if ((0xEA != inb(MASTER_8259_DATA)) | (0xE5 != inb(SLAVE_8259_DATA)))
+        result = FAIL;
+
+    disable_irq(0);
+    disable_irq(2);
+    disable_irq(4);
+
+    disable_irq(9);
+    disable_irq(11);
+    disable_irq(12);
+
+    printf("\nThe Master Mask values are %x \n", inb(MASTER_8259_DATA));
     printf("The Slave Mask values are %x \n", inb(SLAVE_8259_DATA));
 
     return result;
@@ -137,6 +140,6 @@ int pic_test(){
 void launch_tests(){
 	/* Check point 1 */
 	TEST_OUTPUT("CP1_idt_test_1", CP1_idt_test_1());
-	TEST_OUTPUT("CP1_idt_test_2", CP1_idt_test_2());
-	// TEST_OUTPUT("pic_test", pic_test());
+//	TEST_OUTPUT("CP1_idt_test_2", CP1_idt_test_2());
+    TEST_OUTPUT("pic_test", pic_test());
 }

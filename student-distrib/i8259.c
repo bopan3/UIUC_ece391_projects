@@ -6,8 +6,13 @@
 #include "lib.h"
 
 /* Interrupt masks to determine which interrupts are enabled and disabled */
-uint8_t master_mask; /* IRQs 0-7  */
-uint8_t slave_mask;  /* IRQs 8-15 */
+//uint8_t master_mask; /* IRQs 0-7  */
+//uint8_t slave_mask;  /* IRQs 8-15 */
+
+static uint16_t mask_buf = 0xffff;   /* Store the mask value, initial 0xffff */
+
+#define master_mask_buf	(mask_buf)
+#define slave_mask_buf	(mask_buf >> 8)
 
 /*
  *   i8259_init
@@ -30,8 +35,8 @@ void i8259_init(void) {
     outb(ICW4, MASTER_8259_DATA);
     outb(ICW4, SLAVE_8259_DATA);
 
-    outb(MASK_ALL, MASTER_8259_DATA);
-    outb(MASK_ALL, SLAVE_8259_DATA);
+    outb(master_mask_buf, MASTER_8259_DATA);
+    outb(slave_mask_buf, SLAVE_8259_DATA);
 }
 
 /*
@@ -45,15 +50,14 @@ void i8259_init(void) {
 void enable_irq(uint32_t irq_num) {
     unsigned int mask;
     mask = ~(1 << irq_num);         // Here 1 is just a positive bit
-    master_mask &= mask;
-    slave_mask &= (mask >> MAS_SLA_DIV);
+    mask_buf &= mask;
 
     // If IRQ is larger or equal to 8, slave
     if (irq_num >= MAS_SLA_DIV)
-        outb(slave_mask, SLAVE_8259_DATA);
+        outb(slave_mask_buf, SLAVE_8259_DATA);
     else {
         // Else, master
-        outb(master_mask, MASTER_8259_DATA);
+        outb(master_mask_buf, MASTER_8259_DATA);
     }
 }
 
@@ -68,15 +72,14 @@ void enable_irq(uint32_t irq_num) {
 void disable_irq(uint32_t irq_num) {
     unsigned int mask;
     mask = 1 << irq_num;            // Here 1 is just a positive bit
-    master_mask |= mask;
-    slave_mask |= (mask >> MAS_SLA_DIV);
+    mask_buf |= mask;
 
     // If IRQ is larger or equal to 8, slave
     if (irq_num >= MAS_SLA_DIV)
-        outb(slave_mask, SLAVE_8259_DATA);
+        outb(slave_mask_buf, SLAVE_8259_DATA);
     else {
         // Else, master
-        outb(master_mask, MASTER_8259_DATA);
+        outb(master_mask_buf, MASTER_8259_DATA);
     }
 }
 
