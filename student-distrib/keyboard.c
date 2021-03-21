@@ -51,7 +51,7 @@ uint8_t scancode_to_ascii[SCANCODE_SET_SIZE][2] = {
  *   SIDE EFFECTS:  initialize the keyboard
  */
 void keyboard_init(){
-    enable_irq(IRQ_NUM_KEYBOARD+1);
+    enable_irq(IRQ_NUM_KEYBOARD);
 }
 
 /* 
