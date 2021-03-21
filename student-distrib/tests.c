@@ -47,7 +47,7 @@ int CP1_idt_test_1(){
 /* 
  * Check point 1.1 (Initialize the IDT, Test 2) 
  * Coverage: Raise exception/interrupt, print a prompt and freezing the screen; 
- * 			 multiple exceptions(?)
+ * 			 multiple exceptions
  * Files: idt.c
  * Edited by WNC
  */
@@ -55,8 +55,10 @@ int CP1_idt_test_2(){
 	TEST_HEADER;
 
 	/* Pleas unmark one to demo, see idt.c for specific names of them */
+	/* To test freezing, unmask two exceptions and only the first one should cause a prompt */
+
 	/* Exceptions */
-	asm volatile("int $0");		// EXCP_Divide_Error
+	// asm volatile("int $0");		// EXCP_Divide_Error
 	// asm volatile("int $1");		// EXCP_RESERVED
 	// asm volatile("int $6");		// EXCP_Invalid_Opcode
 	// asm volatile("int $14");		// EXCP_Page_Fault
@@ -67,7 +69,7 @@ int CP1_idt_test_2(){
 	// asm volatile("int $32");		// IRQ_Timer_Chip
 	// asm volatile("int $40");		// IRQ_Real_Time_Clock
 	// asm volatile("int $46");		// IRQ_Ide0
-	// asm volatile("int $47");		// Not defined
+	asm volatile("int $33");		// IRQ_Keyboard
 	// asm volatile("int $30");		// Not defined
 	/* System call */
 	// asm volatile("int $128");		// SYS_System_Call
@@ -77,13 +79,18 @@ int CP1_idt_test_2(){
 
 /* 
  * Check point 1.1 (Initialize the IDT, Test 3) 
- * Coverage: interrupts are masked during the excution of an exception
+ * Coverage: Dereference a NULL pointer to issue exception
  * Files: idt.c
  * Edited by WNC
  */
 int CP1_idt_test_3(){
-	/* T.B.D. */
-	return 0;
+	TEST_HEADER;
+
+	int* a = NULL;
+	int b = 1;
+	b = b + *a;
+
+	return PASS;
 }
 
 /* PIC Test - Example
@@ -141,6 +148,7 @@ int pic_test(){
 void launch_tests(){
 	/* Check point 1 */
 	TEST_OUTPUT("CP1_idt_test_1", CP1_idt_test_1());
-//	TEST_OUTPUT("CP1_idt_test_2", CP1_idt_test_2());
-    TEST_OUTPUT("pic_test", pic_test());
+	TEST_OUTPUT("CP1_idt_test_2", CP1_idt_test_2());
+	// TEST_OUTPUT("CP1_idt_test_3", CP1_idt_test_3());
+    // TEST_OUTPUT("pic_test", pic_test());
 }
