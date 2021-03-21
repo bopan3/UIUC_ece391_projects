@@ -8,8 +8,12 @@
 #define NUM_ROWS    25
 #define ATTRIB      0x7
 
+#define BLUESCREEN      0x10    // color combination for blue screen
+#define NORMALSCREEN    0x7     // color combination for normal screen
+
 static int screen_x;
 static int screen_y;
+static int screen_color = NORMALSCREEN;     // Color combination of word and background
 static char* video_mem = (char *)VIDEO;
 
 /* void clear(void);
@@ -20,7 +24,7 @@ void clear(void) {
     int32_t i;
     for (i = 0; i < NUM_ROWS * NUM_COLS; i++) {
         *(uint8_t *)(video_mem + (i << 1)) = ' ';
-        *(uint8_t *)(video_mem + (i << 1) + 1) = ATTRIB;
+        *(uint8_t *)(video_mem + (i << 1) + 1) = screen_color;
     }
 }
 
@@ -177,11 +181,11 @@ void putc(uint8_t c) {
                     if (i == (NUM_ROWS - 1)) {
                         // If it is the last line, empty it
                         *(uint8_t *) (video_mem + ((NUM_COLS * i + j) << 1)) = ' ';
-                        *(uint8_t *) (video_mem + ((NUM_COLS * i + j) << 1) + 1) = ATTRIB;
+                        *(uint8_t *) (video_mem + ((NUM_COLS * i + j) << 1) + 1) = screen_color;
                     } else {
                         // Else, copy the next line to current line
                         *(uint8_t *)(video_mem + ((NUM_COLS * i + j) << 1)) = *(uint8_t *)(video_mem + ((NUM_COLS * (i+1) + j) << 1));
-                        *(uint8_t *)(video_mem + ((NUM_COLS * i + j) << 1) + 1) = ATTRIB;
+                        *(uint8_t *)(video_mem + ((NUM_COLS * i + j) << 1) + 1) = screen_color;
                     }
                 }
             }
@@ -191,7 +195,7 @@ void putc(uint8_t c) {
     } else {
         // Following is the part that does the actual displaying
         *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1)) = c;
-        *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1) + 1) = ATTRIB;
+        *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1) + 1) = screen_color;
         screen_x++;
         screen_x %= NUM_COLS;
         screen_y = (screen_y + (screen_x / NUM_COLS)) % NUM_ROWS;
@@ -492,3 +496,16 @@ void test_interrupts(void) {
         video_mem[i << 1]++;
     }
 }
+
+/* void blue_screen(void)
+ * Inputs: void
+ * Return Value: void
+ * Function: set the whole screen to blue */
+void blue_screen(void) {
+    int32_t i;
+    screen_color = BLUESCREEN;
+    for (i = 0; i < NUM_ROWS * NUM_COLS; i++) {
+        *(uint8_t *)(video_mem + (i << 1) + 1) = screen_color;
+    }
+}
+

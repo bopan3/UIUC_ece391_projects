@@ -21,6 +21,7 @@
 void f_name() {                               \
     /* Suppress all interrupts */             \
     asm volatile("cli");                      \
+    blue_screen();                            \
     printf("EXCEPTION #0x%x: %s\n", vect, msg); \
     while(1){}                                \
     asm volatile("sti");                      \

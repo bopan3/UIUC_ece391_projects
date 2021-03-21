@@ -58,7 +58,7 @@ int CP1_idt_test_2(){
 	/* Exceptions */
 	// asm volatile("int $0");		// EXCP_Divide_Error
 	// asm volatile("int $1");		// EXCP_RESERVED
-	// asm volatile("int $6");		// EXCP_Invalid_Opcode
+	asm volatile("int $6");		// EXCP_Invalid_Opcode
 	// asm volatile("int $14");		// EXCP_Page_Fault
 	// asm volatile("int $17");		// EXCP_Alignment_Check 
 	// asm volatile("int $19");		// EXCP_SIMD_Floating_Point
@@ -70,7 +70,7 @@ int CP1_idt_test_2(){
 	// asm volatile("int $47");		// Not defined
 	// asm volatile("int $30");		// Not defined
 	/* System call */
-	asm volatile("int $128");		// SYS_System_Call
+	// asm volatile("int $128");		// SYS_System_Call
 
 	return PASS;
 }
@@ -83,6 +83,7 @@ int CP1_idt_test_2(){
  */
 int CP1_idt_test_3(){
 	/* T.B.D. */
+	return 0;
 }
 
 /* PIC Test - Example

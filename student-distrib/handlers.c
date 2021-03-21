@@ -15,6 +15,9 @@
  *   SIDE EFFECTS: excute interrupt handler
  */
 void irq_handler(int irq_vect) {
+    /* Enable interrupt */
+    // asm volatile("sti");
+
     /* For CP1, just print the message */
     switch (irq_vect) {
         case IRQ_NMI_Interrupt:
