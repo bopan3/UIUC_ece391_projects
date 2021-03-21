@@ -77,21 +77,11 @@ int CP1_idt_test_2(){
 
 /* 
  * Check point 1.1 (Initialize the IDT, Test 3) 
- * Coverage: 0x14-0x1F of IDT is empty
- * Files: idt.c
- * Edited by WNC
- */
-int CP1_idt_test_3(){
-	/* T.B.D. */
-}
-
-/* 
- * Check point 1.1 (Initialize the IDT, Test 4) 
  * Coverage: interrupts are masked during the excution of an exception
  * Files: idt.c
  * Edited by WNC
  */
-int CP1_idt_test_4(){
+int CP1_idt_test_3(){
 	/* T.B.D. */
 }
 
