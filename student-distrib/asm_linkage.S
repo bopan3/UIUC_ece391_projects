@@ -34,10 +34,9 @@ f_name:                                     ;\
 /* Call the handler and store registers */
 common_irq:
     /* Call the hander */
-    popl    %eax
-    pushl   %eax
     call    irq_handler
     /* Restore all register */
+    popl    %eax
     popfl
     popl    %ebx
     popl    %ecx

@@ -48,7 +48,6 @@ void irq_handler(int irq_vect) {
             printf("INTERRUPT #0x%x: not defined\n", irq_vect);
             break;
     }
-    while(1){}
     return;
 }
 
