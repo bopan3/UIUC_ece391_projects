@@ -47,6 +47,37 @@ int idt_test(){
 
 // add more tests here
 
+int paging_test(){
+	TEST_HEADER;
+	int result = PASS;
+	char base;
+	char* ptr; 
+	printf("===== Part 1: Paging Settings Validation ======\n");
+
+
+
+
+
+	printf("=== Part 2: Dereference Functionality Validation ===\n");
+	printf("===      1.1: Paging Dict[0] Region, 0-4 MB		 ===\n");
+	printf("===      test 1: Non-Video Mem 		     		 ===\n");
+	printf("======== 1.1: 4-8MB page for kernel ================\n");
+
+
+	printf("======== 1.2: 0-4MB pageVideo Memory Region ==================\n");
+
+
+	
+
+
+
+
+	/* Part 1: test the  */
+
+}
+
+
+
 /* Checkpoint 2 tests */
 /* Checkpoint 3 tests */
 /* Checkpoint 4 tests */
