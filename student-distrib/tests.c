@@ -83,6 +83,7 @@ int CP1_idt_test_2(){
  */
 int CP1_idt_test_3(){
 	/* T.B.D. */
+	return PASS; 
 }
 
 /* PIC Test - Example
@@ -134,16 +135,18 @@ int paging_test(){
 	TEST_HEADER;
 	int result = PASS;
 	char base;
-	char* ptr;
+	char* ptr = 0x400000;
+	*ptr =(char) 1; 
 	printf("===== Part 1: Paging Settings Validation ======\n");
 
+	base = (char) 0;
+	ptr = &base; 
 
-
-
+	
 
 	printf("=== Part 2: Dereference Functionality Validation ===\n");
 	printf("===      1.1: Paging Dict[0] Region, 0-4 MB		 ===\n");
-	printf("===      test 1: Non-Video Mem 		     		 ===\n");
+	printf("===      test 1: Non-Video Mem 	        		 ===\n");
 	printf("======== 1.1: 4-8MB page for kernel ================\n");
 
 
@@ -156,7 +159,7 @@ int paging_test(){
 
 
 	/* Part 1: test the  */
-
+	return result; 
 }
 
 
@@ -173,4 +176,6 @@ void launch_tests(){
 	TEST_OUTPUT("CP1_idt_test_1", CP1_idt_test_1());
 //	TEST_OUTPUT("CP1_idt_test_2", CP1_idt_test_2());
     TEST_OUTPUT("pic_test", pic_test());
+
+	TEST_OUTPUT("Paging Test", paging_test());
 }

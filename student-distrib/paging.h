@@ -39,8 +39,8 @@ do {                                        \
         : /* no outputs */                                          \
         : "r"((page_dict))                                          \
         : "edx", "memory"                                           \
-    ); 
-} while (0)
+    );                                                              \
+} while (0);
 
 
 
@@ -92,3 +92,5 @@ typedef struct __attribute__((packed)) PDE_desc {
 
 PDE page_dict[PD_SIZE] __attribute__((aligned (_4KB_))); 
 PTE page_table[PT_SIZE] __attribute__((aligned (_4KB_)));
+
+void paging_init(void);
