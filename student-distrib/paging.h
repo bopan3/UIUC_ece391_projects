@@ -2,7 +2,7 @@
 #include "x86_desc.h"
 #include "lib.h"
 
-#define PD_SIZE         1024            // 
+#define PD_SIZE         1024            // 2^10 = 1024
 #define PT_SIZE         1024            // page table size, 4KB / 4B = 1024
 #define _4KB_           4096            // 4K Bytes to aline to   
 #define VIDEO           0xB8000         // from lib.c, addr of video memory
@@ -18,6 +18,7 @@
  * Input: a 32-bit address which points to the page_dict
  * Output: None
  * Return: None
+ * Reference: IA32 Manual chap 3.
  */
 #define enable_paging_hw(page_dict)         \
 do {                                        \
@@ -26,19 +27,19 @@ do {                                        \
         movl    %0, %%eax                                         \n\
         movl    %%eax, %%cr3                                      \n\
                                                                   \n\
-        /* Enable PG flag, cr0 bit31 */                           \n\
-        movl    %%cr0, %%eax                                      \n\
-        orl     $0x80000000, %%eax                                \n\
-        movl    %%eax, %%cr0                                      \n\
-                                                                  \n\
         /* Set PSE flag, cr4 bit4 to support mixed size*/         \n\
         movl    %%cr4, %%eax                                      \n\
         orl     $0x00000010, %%eax                                \n\
         movl    %%eax, %%cr4                                      \n\
+                                                                  \n\
+        /* Enable PG flag, cr0 bit31 */                           \n\
+        movl    %%cr0, %%eax                                      \n\
+        orl     $0x80000000, %%eax                                \n\
+        movl    %%eax, %%cr0                                      \n\
         "                                                           \
         : /* no outputs */                                          \
         : "r"((page_dict))                                          \
-        : "edx", "memory"                                           \
+        : "eax"                                                     \
     );                                                              \
 } while (0);
 
@@ -90,7 +91,7 @@ typedef struct __attribute__((packed)) PDE_desc {
 } PDE;
 
 
-PDE page_dict[PD_SIZE] __attribute__((aligned (_4KB_))); 
-PTE page_table[PT_SIZE] __attribute__((aligned (_4KB_)));
+PDE page_dict[PD_SIZE] __attribute__((aligned (_4KB_)));    /* Page Dict */
+PTE page_table[PT_SIZE] __attribute__((aligned (_4KB_)));   /* Page Table for first chunk */
 
 void paging_init(void);
