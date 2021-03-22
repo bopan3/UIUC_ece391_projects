@@ -9,6 +9,7 @@
 
 /*-------------------- Add --------------------*/
 void blue_screen(void);
+void test_interrupts(void);
 /*---------------------------------------------*/
 
 int32_t printf(int8_t *format, ...);

@@ -112,7 +112,6 @@ int pic_test(){
     printf("The Slave Mask values are %x \n", inb(SLAVE_8259_DATA));
 
     enable_irq(0);
-    enable_irq(2);
     enable_irq(4);
 
     enable_irq(9);
@@ -122,11 +121,10 @@ int pic_test(){
     printf("\nThe Master Mask values are %x \n", inb(MASTER_8259_DATA));    // 1110 1010
     printf("The Slave Mask values are %x \n", inb(SLAVE_8259_DATA));        // 1110 0101
 
-    if ((0xEA != inb(MASTER_8259_DATA)) | (0xE5 != inb(SLAVE_8259_DATA)))
+    if ((0xE8 != inb(MASTER_8259_DATA)) | (0xE4 != inb(SLAVE_8259_DATA)))
         result = FAIL;
 
     disable_irq(0);
-    disable_irq(2);
     disable_irq(4);
 
     disable_irq(9);
