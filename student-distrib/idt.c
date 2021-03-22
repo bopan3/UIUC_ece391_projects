@@ -25,12 +25,14 @@ void f_name() {                               \
     printf("EXCEPTION #0x%x: %s\n", vect, msg); \
     while(1){}                                \
     asm volatile("sti");                      \
+    return;                                   \
 }                                             \
 
 #define IDT_sys_entry(f_name, vect, msg)      \
 void f_name() {                               \
     printf("SYSTEM CALL #0x%x: %s\n", vect, msg);\
-    while(1){}                                \
+    asm volatile("sti");                      \
+    return;                                   \
 }                                             \
 
 /* Exceptions */

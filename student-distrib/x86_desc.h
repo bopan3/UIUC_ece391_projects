@@ -39,8 +39,6 @@
 #define IRQ_Ide0                46
 
 #define SYS_System_Call         128
-
-
 /*---------------------------------------------*/
 
 /* Segment selector values */

@@ -10,6 +10,9 @@
 /* Define a micro that generate jump linkage for different interrupt */
 /*
  * INPUT: vect - index in IDT
+ * OUTPUT: none
+ * RETURN: none
+ * EFFECT: excute the interruption
  */
 #define asm_irq_linkage(f_name, vect)        \
 .globl f_name                               ;\
@@ -34,10 +37,9 @@ f_name:                                     ;\
 /* Call the handler and store registers */
 common_irq:
     /* Call the hander */
-    popl    %eax
-    pushl   %eax
     call    irq_handler
     /* Restore all register */
+    popl    %eax
     popfl
     popl    %ebx
     popl    %ecx
@@ -54,14 +56,14 @@ common_irq:
 
 
 /* Define linkage for each interrupt */
-asm_irq_linkage(irq_NMI_Interrupt, 2);
-asm_irq_linkage(irq_Timer_Chip, 32);
-asm_irq_linkage(irq_Keyboard, 33);
-asm_irq_linkage(irq_Serial_Port, 36);
-asm_irq_linkage(irq_Real_Time_Clock, 40);
-asm_irq_linkage(irq_Eth0, 43);
-asm_irq_linkage(irq_PS2_Mouse, 44);
-asm_irq_linkage(irq_Ide0, 46);
+asm_irq_linkage(irq_NMI_Interrupt, IRQ_NMI_Interrupt);
+asm_irq_linkage(irq_Timer_Chip, IRQ_Timer_Chip);
+asm_irq_linkage(irq_Keyboard, IRQ_Keyboard);
+asm_irq_linkage(irq_Serial_Port, IRQ_Serial_Port);
+asm_irq_linkage(irq_Real_Time_Clock, IRQ_Real_Time_Clock);
+asm_irq_linkage(irq_Eth0, IRQ_Eth0);
+asm_irq_linkage(irq_PS2_Mouse, IRQ_PS2_Mouse);
+asm_irq_linkage(irq_Ide0, IRQ_Ide0);
 
 /*------------------- System call -------------------*/
 
