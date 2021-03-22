@@ -47,7 +47,7 @@ int CP1_idt_test_1(){
 /* 
  * Check point 1.1 (Initialize the IDT, Test 2) 
  * Coverage: Raise exception/interrupt, print a prompt and freezing the screen; 
- * 			 multiple exceptions
+ * 			 multiple exceptions; suppress interrupt when exception is excuting
  * Files: idt.c
  * Edited by WNC
  */
@@ -56,21 +56,22 @@ int CP1_idt_test_2(){
 
 	/* Pleas unmark one to demo, see idt.c for specific names of them */
 	/* To test freezing, unmask two exceptions and only the first one should cause a prompt */
+	/* To test interrupt suppression, issue an exception and try to press the key, only exception prompt will appear */
 
 	/* Exceptions */
-	// asm volatile("int $0");		// EXCP_Divide_Error
-	// asm volatile("int $1");		// EXCP_RESERVED
+	asm volatile("int $0");		// EXCP_Divide_Error
 	// asm volatile("int $6");		// EXCP_Invalid_Opcode
-	// asm volatile("int $14");		// EXCP_Page_Fault
+	asm volatile("int $14");		// EXCP_Page_Fault
 	// asm volatile("int $17");		// EXCP_Alignment_Check 
 	// asm volatile("int $19");		// EXCP_SIMD_Floating_Point
+
 	/* Interrupt */
 	// asm volatile("int $2");		// IRQ_NMI_Interrupt
 	// asm volatile("int $32");		// IRQ_Timer_Chip
 	// asm volatile("int $40");		// IRQ_Real_Time_Clock
 	// asm volatile("int $46");		// IRQ_Ide0
-	asm volatile("int $33");		// IRQ_Keyboard
-	// asm volatile("int $30");		// Not defined
+	// asm volatile("int $33");		// IRQ_Keyboard
+
 	/* System call */
 	// asm volatile("int $128");		// SYS_System_Call
 
