@@ -1,0 +1,44 @@
+Checkpoint 1:
+
+Contributer: Xiong Neng
+Date: Mar 20th 2021
+Files: test.c
+Bug: Instead of displaying the correct mask values, the test function pic_test prints straight 0s from MASTER_8259_PORT and SLAVE_8259_PORT.
+Solution: Instead of using inb() to output values from PORT, we should output MASTER/SLAVE_8259_DATA which contain the mask values.
+
+Contributer: Xiong Neng
+Date: Mar 20th 2021
+Files: lib.c
+Bug: While using printf() in test.c to output test result or desired variables, some times, the printed staff appears on top of the screen rather than the buttom. Also, the first character of the printed string is replaced by some other random characters.
+Cause: putc() use screen_y to store the y postion of the character to be displayed on the console. screen_y increment when meets '\n' or '\r'. Then if it is already the bottom, screen_y just exceed the screen and the character appears on the top.
+Solution: Added support for line feed in putc.
+
+Contributer: Wang Nachuan
+Date: Mar 20th 2021
+Files: idt.c
+Bug: After issusing an exception in test file, the system immediately crash and hence reboot repeatedly.
+Solution: The "present" field of each component in IDT is set to 0, as a result, processor did not jump to the desired position after reaching this line, causing the system to crash. The bug is solved by setting "present" field of each meaningful entry to 1.
+
+Contributer: Jiang Fengqing
+Date: Mar 21th 2021
+Files: paging.h
+Bug: When the system boot and before it run the test, it will stuck and then kill itself, gdb would say as watchdog expired.
+Solution: via breakpoint setting, the stuff happend at the code envoke the inline assembly hardware setting. Checking it, we realize that the inilization order may matter, before everything settled, it should not start page mode, or modify something after it set.
+
+Contributer: Xiong Neng
+Date: Mar 21th 2021
+Files: i8259.c
+Bug: After enabling PIC #8, rtc test_interrupts does not work, but if all PICs #0-15 are enabled, the test works as expected.
+Solution: While initializing i8259 PIC, also enable #2 which enables the slave PIC.
+
+Contributer: Bo Pan
+Date: Mar 21th 2021
+Files: keyboard.c
+Bug: After press the keyboard, a empty space will follow the letter we just typed. 
+Solution: Add a range check before we swich the scancode to asccii code to make sure those invalid scancode will not be interpreted as a empty space.
+
+Contributer: Bo Pan
+Date: Mar 21th 2021
+Files: rtc.c
+Bug: The rtc interrupt only happen once. 
+Solution: set the register c for rtc in the end of each rtc interupt to make sure the interupt can happen next time.
