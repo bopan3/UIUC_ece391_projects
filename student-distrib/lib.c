@@ -173,7 +173,7 @@ int32_t puts(int8_t* s) {
  *  Function: Output a character to the console */
 void putc(uint8_t c) {
     if(c == '\n' || c == '\r') {                // Check if meets line increment
-        if (screen_y == (NUM_ROWS - 1)) {       // Check if it reaches bottom of the screen
+        if ((NUM_ROWS - 1) == screen_y) {       // Check if it reaches bottom of the screen
             // go through every line in the console
             int i,j;                            // loop index
             for (i = 0; i < NUM_ROWS; ++i) {
@@ -192,6 +192,28 @@ void putc(uint8_t c) {
         } else
             screen_y++;                         // Bottom not reached, just increment y
         screen_x = 0;
+    } else if ((NUM_COLS - 1) == screen_x) {    // Reach end of the a line, new line
+        if ((NUM_ROWS - 1) == screen_y) {       // Check if it reaches bottom of the screen
+            // go through every line in the console
+            int i,j;                            // loop index
+            for (i = 0; i < NUM_ROWS; ++i) {
+                for (j = 0; j < NUM_COLS; ++j) {
+                    if (i == (NUM_ROWS - 1)) {
+                        // If it is the last line, empty it
+                        *(uint8_t *) (video_mem + ((NUM_COLS * i + j) << 1)) = ' ';
+                        *(uint8_t *) (video_mem + ((NUM_COLS * i + j) << 1) + 1) = screen_color;
+                    } else {
+                        // Else, copy the next line to current line
+                        *(uint8_t *)(video_mem + ((NUM_COLS * i + j) << 1)) = *(uint8_t *)(video_mem + ((NUM_COLS * (i+1) + j) << 1));
+                        *(uint8_t *)(video_mem + ((NUM_COLS * i + j) << 1) + 1) = screen_color;
+                    }
+                }
+            }
+            screen_x = 0;                       // Set x back to beginning of a line
+        } else {                                // Bottom not reached, just increment y and reset x
+            screen_y++;
+            screen_x = 0;
+        }
     } else {
         // Following is the part that does the actual displaying
         *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1)) = c;
