@@ -17,6 +17,4 @@ int32_t write(int32_t fd, const void* buf, int32_t nbytes);
 
 void line_buf_in(char curr);
 
-int line_input(char* buf);
-
 #endif //MP3_TERMINAL_H

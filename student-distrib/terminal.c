@@ -34,6 +34,23 @@ void line_buf_in(char curr) {
     }
 }
 
-int line_input(char* buf) {
+/*
+ *   read -- system call
+ *   DESCRIPTION: Read data from keyboard, a file, a device (RTC) or directory
+ *   INPUTS: irq_num -- the bit number of interruption
+ *   OUTPUTS: none
+ *   RETURN VALUE:  -- number of bytes read normally
+ *                  -- 0 if the initial file position is at or beyond the end
+ *                  of file (for normal files and the directory)
+ *                  -- data from one line that has been terminated by pressing
+ *                  Enter, or as much as fits in the buffer from one such line
+ *                  include the line feed character (for keyboards)
+ *                  -- repeatedly return 0 until subsequent reads from successive
+ *                  directories reach the last (for directory)
+ *                  -- Only return 0 when a interrupt occurs (for RTC)
+ *   SIDE EFFECTS: Send end-of-interrupt signal for the specified IRQ
+ */
+int32_t read(int32_t fd, void* buf, int32_t nbytes) {
+
     return 0;
 }

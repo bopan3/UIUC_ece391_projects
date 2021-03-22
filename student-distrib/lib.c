@@ -11,6 +11,8 @@
 #define BLUESCREEN      0x10    // color combination for blue screen
 #define NORMALSCREEN    0x7     // color combination for normal screen
 
+#define BCKSPACE        0x08    // keycode for backspace
+
 static int screen_x;
 static int screen_y;
 static int screen_color = NORMALSCREEN;     // Color combination of word and background
@@ -211,7 +213,17 @@ void putc(uint8_t c) {
         } else
             screen_y++;                         // Bottom not reached, just increment y
         screen_x = 0;
-
+        update_cursor();
+    } else if (BCKSPACE == c) {                 // Handle backspace
+        if ((0 == screen_x) & (0 == screen_y))
+            return;
+        screen_x--;
+        if (-1 == screen_x) {
+            screen_x = NUM_COLS - 1;
+            screen_y--;
+        }
+        *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1)) = ' ';
+        *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1) + 1) = screen_color;
         update_cursor();
     } else if ((NUM_COLS - 1) == screen_x) {    // Reach end of the a line, new line
         if ((NUM_ROWS - 1) == screen_y) {       // Check if it reaches bottom of the screen
@@ -235,7 +247,6 @@ void putc(uint8_t c) {
             screen_y++;
             screen_x = 0;
         }
-
         update_cursor();
     } else {
         // Following is the part that does the actual displaying
@@ -244,7 +255,6 @@ void putc(uint8_t c) {
         screen_x++;
         screen_x %= NUM_COLS;
         screen_y = (screen_y + (screen_x / NUM_COLS)) % NUM_ROWS;
-
         update_cursor();
     }
 }
