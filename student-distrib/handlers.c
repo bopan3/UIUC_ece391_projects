@@ -1,7 +1,7 @@
 /*
  * Two handler functinos for exceptions and interrupt
  */
-
+#include "tests.h"
 #include "handlers.h"
 #include "lib.h"
 #include "x86_desc.h"
@@ -36,7 +36,9 @@ void irq_handler(int irq_vect) {
             break;
         case IRQ_Real_Time_Clock:
             //printf("INTERRUPT #0x%x: Real Time Clock\n", irq_vect);
-            //rtc_handler();
+            #if TEST_RTC==1
+            rtc_handler();
+            #endif 
             break;
         case IRQ_Eth0:
             printf("INTERRUPT #0x%x: Eth0\n", irq_vect);
