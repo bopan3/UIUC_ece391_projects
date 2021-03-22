@@ -79,21 +79,7 @@ int CP1_idt_test_2(){
 	return PASS;
 }
 
-/*
- * Check point 1.1 (Initialize the IDT, Test 3)
- * Coverage: Dereference a NULL pointer to issue exception
- * Files: idt.c
- * Edited by WNC
- */
-int CP1_idt_test_3(){
-	TEST_HEADER;
 
-	int* a = NULL;
-	int b = 1;
-	b = b + *a;
-
-	return PASS;
-}
 
 /* PIC Test - Example
  *
@@ -337,7 +323,6 @@ void launch_tests(){
 	/* Check point 1 */
 	TEST_OUTPUT("CP1_idt_test_1", CP1_idt_test_1());
 	// TEST_OUTPUT("CP1_idt_test_2", CP1_idt_test_2());
-	// TEST_OUTPUT("CP1_idt_test_3", CP1_idt_test_3());
   // TEST_OUTPUT("pic_test", pic_test());
 	TEST_OUTPUT("Paging Test", paging_test());
 	TEST_OUTPUT("Paging Test: Page Fault", paging_test_pf());
