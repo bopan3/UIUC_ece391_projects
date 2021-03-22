@@ -67,7 +67,10 @@ void keyboard_handler(){
     uint8_t scan_code = inb(KEYBOARD_DATA_PORT);
     uint8_t ascii_code;
     ascii_code = scancode_to_ascii[scan_code][0];
-    putc(ascii_code);
+    if (scan_code < SCANCODE_SET_SIZE && scan_code >= 0x02){
+        putc(ascii_code);
+    }
     send_eoi(IRQ_NUM_KEYBOARD);
     sti();
 }
+
