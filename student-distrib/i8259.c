@@ -22,23 +22,24 @@ static uint16_t mask_buf = 0xffff;   /* Store the mask value, initial 0xffff */
  *   RETURN VALUE: none
  *   SIDE EFFECTS: Initialize master and slave PICs
  */
+//https://wiki.osdev.org/8259_PIC
 void i8259_init(void) {
-    outb(ICW1, MASTER_8259_PORT);	// ICW1: select 8259A-1 init
+    outb(ICW1, MASTER_8259_PORT);	        // starts the initialization sequence (in cascade mode)
 	outb(ICW1, SLAVE_8259_PORT);
 
-	outb(ICW2_MASTER, MASTER_8259_DATA);
-    outb(ICW2_SLAVE, SLAVE_8259_DATA);
+	outb(ICW2_MASTER, MASTER_8259_DATA);    // ICW2: Master PIC vector offset
+    outb(ICW2_SLAVE, SLAVE_8259_DATA);      // ICW2: Slave PIC vector offset
 
-	outb(ICW3_MASTER, MASTER_8259_DATA);
-    outb(ICW3_SLAVE, SLAVE_8259_DATA);
+	outb(ICW3_MASTER, MASTER_8259_DATA);    // ICW3: tell Master PIC that there is a slave PIC at IRQ2 (0000 0100)
+    outb(ICW3_SLAVE, SLAVE_8259_DATA);      // ICW3: tell Slave PIC its cascade identity (0000 0010)
 
     outb(ICW4, MASTER_8259_DATA);
     outb(ICW4, SLAVE_8259_DATA);
 
-    outb(master_mask_buf, MASTER_8259_DATA);
-    outb(slave_mask_buf, SLAVE_8259_DATA);
+//    outb(master_mask_buf, MASTER_8259_DATA);
+//    outb(slave_mask_buf, SLAVE_8259_DATA);
 
-    enable_irq(SLAVE_IRQ);
+//    enable_irq(SLAVE_IRQ);
 }
 
 /*

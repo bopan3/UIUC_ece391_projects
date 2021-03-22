@@ -91,6 +91,9 @@ void keyboard_handler() {
     uint8_t scan_code = inb(KEYBOARD_DATA_PORT);            // Store scan code from keyboard
     uint8_t ascii_code;                                     // Store the corresponding ascii_code
 
+//    if (scan_code >= SCANCODE_SET_SIZE || scan_code < 0x02)
+//        return;
+
     // Check for special keys
     if (spe_key_check(scan_code)) {
         send_eoi(IRQ_NUM_KEYBOARD);
@@ -98,13 +101,16 @@ void keyboard_handler() {
         return;
     }
 
-    // Set ascii_code in respond to caps_flag
-    if (caps_flag | SHIFT_FLAG)
-        ascii_code = scancode_to_ascii[scan_code][1];
-    else
-        ascii_code = scancode_to_ascii[scan_code][0];
+    if (ctrl_flag & ('l' == scancode_to_ascii[scan_code][0])) {
+        clear();
+    } else if (scan_code < SCANCODE_SET_SIZE && scan_code >= 0x02) {
+        // Set ascii_code in respond to caps_flag
+        if (caps_flag | SHIFT_FLAG)
+            ascii_code = scancode_to_ascii[scan_code][1];
+        else
+            ascii_code = scancode_to_ascii[scan_code][0];
 
-    if (scan_code < SCANCODE_SET_SIZE && scan_code >= 0x02){
+        // Display to screen and feed to line_buffer
         putc(ascii_code);
         line_buf_in(ascii_code);
     }
