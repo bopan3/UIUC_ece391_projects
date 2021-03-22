@@ -59,18 +59,18 @@ int CP1_idt_test_2(){
 	/* To test interrupt suppression, issue an exception and try to press the key, only exception prompt will appear */
 
 	/* Exceptions */
-	asm volatile("int $0");		// EXCP_Divide_Error
+	// asm volatile("int $0");		// EXCP_Divide_Error
 	// asm volatile("int $6");		// EXCP_Invalid_Opcode
-	asm volatile("int $14");		// EXCP_Page_Fault
+	// asm volatile("int $14");		// EXCP_Page_Fault
 	// asm volatile("int $17");		// EXCP_Alignment_Check 
 	// asm volatile("int $19");		// EXCP_SIMD_Floating_Point
 
 	/* Interrupt */
 	// asm volatile("int $2");		// IRQ_NMI_Interrupt
 	// asm volatile("int $32");		// IRQ_Timer_Chip
-	// asm volatile("int $40");		// IRQ_Real_Time_Clock
+	// asm volatile("int $40");		// IRQ_Real_Time_Clock (may not have print message)
 	// asm volatile("int $46");		// IRQ_Ide0
-	// asm volatile("int $33");		// IRQ_Keyboard
+	// asm volatile("int $33");		// IRQ_Keyboard (may not have print message)
 
 	/* System call */
 	// asm volatile("int $128");		// SYS_System_Call
@@ -146,8 +146,8 @@ int pic_test(){
 /* Test suite entry point */
 void launch_tests(){
 	/* Check point 1 */
-	TEST_OUTPUT("CP1_idt_test_1", CP1_idt_test_1());
-	TEST_OUTPUT("CP1_idt_test_2", CP1_idt_test_2());
+	// TEST_OUTPUT("CP1_idt_test_1", CP1_idt_test_1());
+	// TEST_OUTPUT("CP1_idt_test_2", CP1_idt_test_2());
 	// TEST_OUTPUT("CP1_idt_test_3", CP1_idt_test_3());
     // TEST_OUTPUT("pic_test", pic_test());
 }
