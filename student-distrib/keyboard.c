@@ -67,7 +67,7 @@ void keyboard_handler(){
     cli();
     uint8_t scan_code = inb(KEYBOARD_DATA_PORT);
     uint8_t ascii_code;
-    if (scan_code < SCANCODE_SET_SIZE && scan_code >= 0){
+    if (scan_code < SCANCODE_SET_SIZE ){
         ascii_code = scancode_to_ascii[scan_code][0];
         putc(ascii_code);
     }
