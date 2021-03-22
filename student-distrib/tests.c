@@ -167,7 +167,7 @@ int paging_test(){
 			return result;
 		}
 	}
-	printf("===== Page Dict Setting Valid! ===\n");
+	printf("===== Page Dict Setting Valid!\n");
 	for (i = 0; i < PT_SIZE; i++){
 		if (((i * _4KB_) == VIDEO) ^ page_table[i].P){
 			/* only the video memory 4kb chunk is valid */
