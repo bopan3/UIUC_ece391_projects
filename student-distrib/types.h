@@ -21,6 +21,16 @@ typedef unsigned short uint16_t;
 typedef char int8_t;
 typedef unsigned char uint8_t;
 
+/* Type defined for dentry */
+typedef struct dentry
+{
+    char        f_name[32];     // file name
+    uint32_t    f_type;         // file type
+    uint32_t    n_inode;        // inode number
+    uint8_t     reserve[24];    // resevered space
+} dentry_t;
+
+
 #endif /* ASM */
 
 #endif /* _TYPES_H */
