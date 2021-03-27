@@ -11,6 +11,8 @@
 #define BLUESCREEN      0x10    // color combination for blue screen
 #define NORMALSCREEN    0x7     // color combination for normal screen
 
+#define BCKSPACE        0x08    // keycode for backspace
+
 static int screen_x;
 static int screen_y;
 static int screen_color = NORMALSCREEN;     // Color combination of word and background
@@ -26,6 +28,25 @@ void clear(void) {
         *(uint8_t *)(video_mem + (i << 1)) = ' ';
         *(uint8_t *)(video_mem + (i << 1) + 1) = screen_color;
     }
+    screen_x = 0;
+    screen_y = 0;
+    update_cursor();
+}
+
+/* void update_cursor(void);
+ * Inputs: void
+ * Return Value: none
+ * Function: Update the cursor position at the current screen location
+ */
+// https://wiki.osdev.org/Text_Mode_Cursor
+void update_cursor(void) {
+    uint16_t pos = screen_y * NUM_COLS + screen_x;
+
+    outb(0x0E, 0x3D4);
+    outb((uint8_t) ((pos >> 8)), 0x3D5);
+
+    outb(0x0F, 0x3D4);
+    outb((uint8_t) (pos), 0x3D5);
 }
 
 /* Standard printf().
@@ -173,7 +194,7 @@ int32_t puts(int8_t* s) {
  *  Function: Output a character to the console */
 void putc(uint8_t c) {
     if(c == '\n' || c == '\r') {                // Check if meets line increment
-        if (screen_y == (NUM_ROWS - 1)) {       // Check if it reaches bottom of the screen
+        if ((NUM_ROWS - 1) == screen_y) {       // Check if it reaches bottom of the screen
             // go through every line in the console
             int i,j;                            // loop index
             for (i = 0; i < NUM_ROWS; ++i) {
@@ -192,6 +213,41 @@ void putc(uint8_t c) {
         } else
             screen_y++;                         // Bottom not reached, just increment y
         screen_x = 0;
+        update_cursor();
+    } else if (BCKSPACE == c) {                 // Handle backspace
+        if ((0 == screen_x) & (0 == screen_y))
+            return;
+        screen_x--;
+        if (-1 == screen_x) {
+            screen_x = NUM_COLS - 1;
+            screen_y--;
+        }
+        *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1)) = ' ';
+        *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1) + 1) = screen_color;
+        update_cursor();
+    } else if ((NUM_COLS - 1) == screen_x) {    // Reach end of the a line, new line
+        if ((NUM_ROWS - 1) == screen_y) {       // Check if it reaches bottom of the screen
+            // go through every line in the console
+            int i,j;                            // loop index
+            for (i = 0; i < NUM_ROWS; ++i) {
+                for (j = 0; j < NUM_COLS; ++j) {
+                    if (i == (NUM_ROWS - 1)) {
+                        // If it is the last line, empty it
+                        *(uint8_t *) (video_mem + ((NUM_COLS * i + j) << 1)) = ' ';
+                        *(uint8_t *) (video_mem + ((NUM_COLS * i + j) << 1) + 1) = screen_color;
+                    } else {
+                        // Else, copy the next line to current line
+                        *(uint8_t *)(video_mem + ((NUM_COLS * i + j) << 1)) = *(uint8_t *)(video_mem + ((NUM_COLS * (i+1) + j) << 1));
+                        *(uint8_t *)(video_mem + ((NUM_COLS * i + j) << 1) + 1) = screen_color;
+                    }
+                }
+            }
+            screen_x = 0;                       // Set x back to beginning of a line
+        } else {                                // Bottom not reached, just increment y and reset x
+            screen_y++;
+            screen_x = 0;
+        }
+        update_cursor();
     } else {
         // Following is the part that does the actual displaying
         *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1)) = c;
@@ -199,6 +255,7 @@ void putc(uint8_t c) {
         screen_x++;
         screen_x %= NUM_COLS;
         screen_y = (screen_y + (screen_x / NUM_COLS)) % NUM_ROWS;
+        update_cursor();
     }
 }
 
