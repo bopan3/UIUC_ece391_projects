@@ -23,7 +23,6 @@
 
 
 /* KEY_FLAGS */
-volatile uint8_t enter_flag = 0;
 static uint8_t l_shift_flag = 0;
 static uint8_t r_shift_flag = 0;
 static uint8_t ctrl_flag = 0;
@@ -116,7 +115,7 @@ void keyboard_handler() {
                 ascii_code = scancode_to_ascii[scan_code][0];
 
             // Display to screen and feed to line_buffer
-            putc(ascii_code);
+//            putc(ascii_code);
             line_buf_in(ascii_code);
         }
         send_eoi(IRQ_NUM_KEYBOARD);
@@ -139,9 +138,6 @@ int spe_key_check(uint8_t scan_code) {
                 caps_flag = 1;
             else
                 caps_flag = 0;
-            return 1;
-        case ENTER:
-            enter_flag = 1;
             return 1;
         case L_SHIFT_PRESS:
             l_shift_flag = 1;

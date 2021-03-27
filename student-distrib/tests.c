@@ -4,6 +4,7 @@
 #include "lib.h"
 #include "handlers.h"
 #include "paging.h"
+#include "terminal.h"
 
 #define PASS 1
 #define FAIL 0
@@ -313,6 +314,26 @@ int paging_test_pf(){
 }
 
 /* Checkpoint 2 tests */
+/* term_read_write_test
+ * Test if the read and write function of terminal works correctly
+ * Inputs: None
+ * Outputs: PASS/FAIL
+ * Side Effects: None
+ * Coverage: paging_init()
+ * Files: paging.c/h
+ */
+int term_read_write_test() {
+    int result = PASS;
+
+    while (1) {
+        char test_buf[128];
+        printf("==========================Read & Write test starts...==========================\nPlease type anything and press enter:\n");
+        terminal_read(0, test_buf, 128);
+        printf("My turn:\n");
+        terminal_write(0, test_buf, 128);
+    }
+    return result;
+}
 /* Checkpoint 3 tests */
 /* Checkpoint 4 tests */
 /* Checkpoint 5 tests */
@@ -321,9 +342,12 @@ int paging_test_pf(){
 /* Test suite entry point */
 void launch_tests(){
 	/* Check point 1 */
-	TEST_OUTPUT("CP1_idt_test_1", CP1_idt_test_1());
+	// TEST_OUTPUT("CP1_idt_test_1", CP1_idt_test_1());
 	// TEST_OUTPUT("CP1_idt_test_2", CP1_idt_test_2());
-  // TEST_OUTPUT("pic_test", pic_test());
-	TEST_OUTPUT("Paging Test", paging_test());
-	TEST_OUTPUT("Paging Test: Page Fault", paging_test_pf());
+    // TEST_OUTPUT("pic_test", pic_test());
+	// TEST_OUTPUT("Paging Test", paging_test());
+	// TEST_OUTPUT("Paging Test: Page Fault", paging_test_pf());
+
+    /* Check point 2 */
+    term_read_write_test();
 }
