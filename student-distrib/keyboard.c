@@ -103,7 +103,7 @@ void keyboard_handler() {
         sti();
         return;
     }
-    if (scan_code < SCANCODE_SET_SIZE && scan_code >= 0){
+    if (scan_code < SCANCODE_SET_SIZE){
 
         if (ctrl_flag & ('l' == scancode_to_ascii[scan_code][0])) {
             clear();
