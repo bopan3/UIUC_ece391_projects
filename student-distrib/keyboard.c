@@ -33,6 +33,7 @@ static uint8_t caps_flag = 0;
 
 /*
 * The table used to map the scancode to ascii
+* The table is adapt from https://wiki.osdev.org/Keyboard
 */
 uint8_t scancode_to_ascii[SCANCODE_SET_SIZE][2] = {
     {EMP, EMP}, {EMP, EMP},     
@@ -49,7 +50,7 @@ uint8_t scancode_to_ascii[SCANCODE_SET_SIZE][2] = {
     {'u', 'U'}, {'i', 'I'},
     {'o', 'O'}, {'p', 'P'},
     {'[', '{'}, {']', '}'},
-    {ENTER, ENTER}, {EMP, EMP},     // , Left Control
+    {ENTER, ENTER}, {EMP, EMP},  // , Left Control
     {'a', 'A'}, {'s', 'S'},
     {'d', 'D'}, {'f', 'F'},
     {'g', 'G'}, {'h', 'H'},
@@ -103,22 +104,24 @@ void keyboard_handler() {
         sti();
         return;
     }
+    if (scan_code < SCANCODE_SET_SIZE && scan_code >= 0){
 
-    if (ctrl_flag & ('l' == scancode_to_ascii[scan_code][0])) {
-        clear();
-    } else {
-        // Set ascii_code in respond to caps_flag and SHIFT_FLAG
-        if (caps_flag | SHIFT_FLAG)
-            ascii_code = scancode_to_ascii[scan_code][1];
-        else
-            ascii_code = scancode_to_ascii[scan_code][0];
+        if (ctrl_flag & ('l' == scancode_to_ascii[scan_code][0])) {
+            clear();
+        } else {
+            // Set ascii_code in respond to caps_flag and SHIFT_FLAG
+            if (caps_flag | SHIFT_FLAG)
+                ascii_code = scancode_to_ascii[scan_code][1];
+            else
+                ascii_code = scancode_to_ascii[scan_code][0];
 
-        // Display to screen and feed to line_buffer
-        putc(ascii_code);
-        line_buf_in(ascii_code);
+            // Display to screen and feed to line_buffer
+            putc(ascii_code);
+            line_buf_in(ascii_code);
+        }
+        send_eoi(IRQ_NUM_KEYBOARD);
+        sti();
     }
-    send_eoi(IRQ_NUM_KEYBOARD);
-    sti();
 }
 
 /*
