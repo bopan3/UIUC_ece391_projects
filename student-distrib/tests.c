@@ -5,6 +5,7 @@
 #include "handlers.h"
 #include "paging.h"
 #include "terminal.h"
+#include "file_sys.h"
 
 #define PASS 1
 #define FAIL 0
@@ -24,11 +25,9 @@ static inline void assertion_failure(){
 
 /*-------------------- Checkpoint 1 tests --------------------*/
 
-/*
- * Check point 1.1 (Initialize the IDT, Test 1)
+/* Check point 1.1 (Initialize the IDT, Test 1)
  * Coverage: Asserts that first 10 IDT entries are not NULL
  * Files: x86_desc.h/S
- * Edited by WNC
  */
 int CP1_idt_test_1(){
 	TEST_HEADER;
@@ -46,12 +45,10 @@ int CP1_idt_test_1(){
 	return result;
 }
 
-/*
- * Check point 1.1 (Initialize the IDT, Test 2)
+/* Check point 1.1 (Initialize the IDT, Test 2)
  * Coverage: Raise exception/interrupt, print a prompt and freezing the screen;
  * 			 multiple exceptions; suppress interrupt when exception is excuting
  * Files: idt.c
- * Edited by WNC
  */
 int CP1_idt_test_2(){
 	TEST_HEADER;
@@ -313,7 +310,8 @@ int paging_test_pf(){
 	return result;	/* All safe test should pass, and any one of the unsafe test would cause Page Fault */
 }
 
-/* Checkpoint 2 tests */
+/*-------------------- Checkpoint 2 tests --------------------*/
+
 /* term_read_write_test
  * Test if the read and write function of terminal works correctly
  * Inputs: None
@@ -334,6 +332,25 @@ int term_read_write_test() {
     }
     return result;
 }
+
+
+/* Check point 2.3 (File system)
+ * Coverage: search for file name
+ * Files: file_sys/c/h
+ */
+int cp2_filesys_test_1() {
+	int32_t n;
+	struct dentry_t result;
+	n = read_dentry_by_name("ls" , &result);
+	printf("return value: %d\n", n);
+	printf("name: %s, type: %d, inode #: %d\n", result.f_name, result.f_type, result.idx_inode);
+	return PASS;
+}
+
+
+
+
+
 /* Checkpoint 3 tests */
 /* Checkpoint 4 tests */
 /* Checkpoint 5 tests */
@@ -349,5 +366,6 @@ void launch_tests(){
 	// TEST_OUTPUT("Paging Test: Page Fault", paging_test_pf());
 
     /* Check point 2 */
-    term_read_write_test();
+    // term_read_write_test();
+	TEST_OUTPUT("cp2_filesys_test_1", cp2_filesys_test_1());
 }
