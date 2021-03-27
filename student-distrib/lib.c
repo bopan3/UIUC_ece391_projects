@@ -242,6 +242,9 @@ void putc(uint8_t c) {
                     }
                 }
             }
+            // Display the most recent input c
+            *(uint8_t *) (video_mem + ((NUM_COLS * (NUM_ROWS - 1) - 1) << 1)) = c;
+            *(uint8_t *) (video_mem + ((NUM_COLS * (NUM_ROWS - 1) - 1) << 1) + 1) = screen_color;
             screen_x = 0;                       // Set x back to beginning of a line
         } else {                                // Bottom not reached, just increment y and reset x
             screen_y++;

@@ -21,6 +21,6 @@ extern int32_t terminal_write(int32_t fd, const void* buf, int32_t nbytes);
 
 void line_buf_in(char curr);
 
-void line_buf_clear();
+void line_buf_clear(void);
 
 #endif //MP3_TERMINAL_H

@@ -90,7 +90,8 @@ int32_t terminal_write(int32_t fd, const void* buf, int32_t nbytes) {
 
 void line_buf_in(char curr) {
     // If the line buffer is already full, only change* when receiving line feed
-    if (num_char >= LINE_BUF_SIZE) {
+    // minus 2 since the last two char of BUFFER must be '\n' and '\0'
+    if (num_char >= LINE_BUF_SIZE - 2) {
         if (('\n' == curr) | ('\r' == curr)) {
             line_buf[LINE_BUF_SIZE - 2] = '\n';
             enter_flag = 1;
