@@ -22,7 +22,6 @@ static inline void assertion_failure(){
 	asm volatile("int $15");
 }
 
-
 /*-------------------- Checkpoint 1 tests --------------------*/
 
 /* Check point 1.1 (Initialize the IDT, Test 1)
@@ -335,30 +334,15 @@ int term_read_write_test() {
 
 
 /* Check point 2.3 (File system)
- * Coverage: search for file name
+ * Coverage: list all file information
  * Files: file_sys/c/h
  */
 int cp2_filesys_test_1() {
 	int32_t n, i, num_dentry;
 	struct dentry_t result[30];
-	char* name_list[30];
 	char temp[33];
 
-	name_list[0] = "shel";
-	name_list[1] = "shell";
-	name_list[2] = "shelll";
-
-	// Read by name
-	// for (i = 0; i < 3; i++) {
-	// 	n = read_dentry_by_name((uint8_t*)name_list[i] , &result[i]);
-	// 	strncpy((int8_t*)temp, (int8_t*)result[i].f_name, 32);
-	// 	temp[33] = '\0';
-	// 	printf("input name: %s\n", temp);
-	// 	printf("return value: %d\n", n);
-	// 	printf("name: %s, type: %d, inode #: %d\n", result[i].f_name, result[i].f_type, result[i].idx_inode);
-	// 	printf("----------\n");
-	// }
-
+	printf("--------------------\n");
 
 	// Read by index
 	for (i = 0; i < 30; i++) {
@@ -368,30 +352,92 @@ int cp2_filesys_test_1() {
 			break;
 		}
 	}
-	printf("There are %d dentries:\n", num_dentry);
+
 	for (i = 0; i < num_dentry; i++) {
 		strncpy((int8_t*)temp, (int8_t*)result[i].f_name, 32);
 		temp[33] = '\0';
-		printf("%s\n", temp);
+		printf("Name: %s  |  Type: %d  |  Size(byte): %d\n", temp, result[i].f_type, result[i].f_size);
 	}
-
-	// Error condition test
-	// for (i = num_dentry-1; i < num_dentry+2; i++) {
-	// 	n = read_dentry_by_index((uint32_t)i, &result[i]);
-	// 	strncpy((int8_t*)temp, (int8_t*)result[i].f_name, 32);
-	// 	temp[33] = '\0';
-	// 	printf("input number: %d\n", i);
-	// 	printf("return value: %d\n", n);
-	// 	printf("name: %s, type: %d, inode #: %d\n", result[i].f_name, result[i].f_type, result[i].idx_inode);
-	// 	printf("----------\n");
-	// }
 	
 	return PASS;
 }
 
+/* Check point 2.3 (File system)
+ * Coverage: read short files
+ * Files: file_sys/c/h
+ */
+int cp2_filesys_test_2() {
+	int32_t fd;
+	int32_t length;
+	int32_t nbytes = 1000;
+	char buf[nbytes+1];
 
+	printf("--------------------\n");
 
+	fd = file_open((uint8_t*)"frame1.txt");		// use frame0.txt / frame1.txt
+	length = file_read(fd, (uint8_t*)buf, nbytes);
+	buf[length+1] = '\0';
+	printf("File name: frame1.txt\n");
+	printf("Bytes readed: %d\n", length);
+	printf("Content:\n%s\n", buf);
+	file_close(fd);
 
+	return PASS;
+}
+
+/* Check point 2.3 (File system)
+ * Coverage: read executables
+ * Files: file_sys/c/h
+ */
+int cp2_filesys_test_3() {
+	int32_t fd;
+	int32_t length;
+	int32_t nbytes = 10000;
+	char buf[nbytes+1];
+
+	printf("--------------------\n");
+
+	fd = file_open((uint8_t*)"grep");		// use grep / ls
+	length = file_read(fd, (uint8_t*)buf, nbytes);
+	buf[length+1] = '\0';
+	printf("File name: grep\n");
+	printf("Bytes readed: %d\n", length);
+	printf("Content:\n%s ...... %s\n", buf, buf+length-30);
+	file_close(fd);
+
+	return PASS;
+}
+
+/* Check point 2.3 (File system)
+ * Coverage: read large files
+ * Files: file_sys/c/h
+ */
+int cp2_filesys_test_4() {
+	int32_t fd;
+	int32_t length;
+	int32_t nbytes = 100000;
+	char buf[nbytes+1];
+
+	printf("--------------------\n");
+
+	fd = file_open((uint8_t*)"verylargetextwithverylongname.tx");		// use fish / verylargetextwithverylongname.tx
+	length = file_read(fd, (uint8_t*)buf, nbytes);
+	buf[length+1] = '\0';
+	printf("File name: verylargetextwithverylongname.tx\n");
+	printf("Bytes readed: %d\n", length);
+	printf("Content:\n%s", buf);
+	file_close(fd);
+
+	return PASS;
+}
+
+/* Check point 2.3 (File system)
+ * Coverage: check garbage values / open dictionary
+ * Files: file_sys/c/h
+ */
+int cp2_filesys_test_5() {
+	return PASS;
+}
 
 /* Checkpoint 3 tests */
 /* Checkpoint 4 tests */
@@ -409,5 +455,9 @@ void launch_tests(){
 
     /* Check point 2 */
     // term_read_write_test();
-	TEST_OUTPUT("cp2_filesys_test_1", cp2_filesys_test_1());
+	// TEST_OUTPUT("cp2_filesys_test_1", cp2_filesys_test_1());		// list all file information
+	TEST_OUTPUT("cp2_filesys_test_2", cp2_filesys_test_2());		// read short file
+	TEST_OUTPUT("cp2_filesys_test_3", cp2_filesys_test_3());		// read executable
+	// TEST_OUTPUT("cp2_filesys_test_4", cp2_filesys_test_4());		// read large file
+	// TEST_OUTPUT("cp2_filesys_test_4", cp2_filesys_test_5());		// check garbage values / open dictionary
 }
