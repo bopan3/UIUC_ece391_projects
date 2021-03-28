@@ -9,5 +9,6 @@ uint32_t file_sys_addr;
 // Function declarations
 void filesys_init();
 int32_t read_dentry_by_name(const uint8_t* fname, dentry_t* dentry);
+int32_t read_dentry_by_index(uint32_t index, dentry_t* dentry);
 
 #endif

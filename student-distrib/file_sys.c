@@ -111,9 +111,23 @@ int32_t read_dentry_by_name(const uint8_t* fname, dentry_t* dentry) {
  *   RETURN VALUE: 0 if success, -1 if anything bad happened
  *   SIDE EFFECTS: none
  */
-// int32_t read_dentry_by_index(uint32_t index, dentry_t* dentry) {
-//     return 0;
-// }
+int32_t read_dentry_by_index(uint32_t index, dentry_t* dentry) {
+
+    int length = strlen((int8_t*)(p_dentry[index].f_name));    // without '\0'
+
+    // Check index
+    if (index < 0 || index >= n_dentry_b) {
+        return -1;
+    }
+
+    strncpy((int8_t*)(dentry->f_name), (int8_t*)(p_dentry[index].f_name), length);
+    if (length < STR_LEN)
+        dentry->f_name[length] = '\0';
+    dentry->f_type = p_dentry[index].f_type;
+    dentry->idx_inode = p_dentry[index].idx_inode; 
+
+    return 0;
+}
 
 /* 
  * <name>

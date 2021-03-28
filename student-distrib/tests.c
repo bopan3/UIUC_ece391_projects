@@ -339,11 +339,53 @@ int term_read_write_test() {
  * Files: file_sys/c/h
  */
 int cp2_filesys_test_1() {
-	int32_t n;
-	struct dentry_t result;
-	n = read_dentry_by_name("ls" , &result);
-	printf("return value: %d\n", n);
-	printf("name: %s, type: %d, inode #: %d\n", result.f_name, result.f_type, result.idx_inode);
+	int32_t n, i, num_dentry;
+	struct dentry_t result[30];
+	char* name_list[30];
+	char temp[33];
+
+	name_list[0] = "shel";
+	name_list[1] = "shell";
+	name_list[2] = "shelll";
+
+	// Read by name
+	// for (i = 0; i < 3; i++) {
+	// 	n = read_dentry_by_name((uint8_t*)name_list[i] , &result[i]);
+	// 	strncpy((int8_t*)temp, (int8_t*)result[i].f_name, 32);
+	// 	temp[33] = '\0';
+	// 	printf("input name: %s\n", temp);
+	// 	printf("return value: %d\n", n);
+	// 	printf("name: %s, type: %d, inode #: %d\n", result[i].f_name, result[i].f_type, result[i].idx_inode);
+	// 	printf("----------\n");
+	// }
+
+
+	// Read by index
+	for (i = 0; i < 30; i++) {
+		n = read_dentry_by_index((uint32_t)i, &result[i]);
+		if (n == -1) {
+			num_dentry = i;
+			break;
+		}
+	}
+	printf("There are %d dentries:\n", num_dentry);
+	for (i = 0; i < num_dentry; i++) {
+		strncpy((int8_t*)temp, (int8_t*)result[i].f_name, 32);
+		temp[33] = '\0';
+		printf("%s\n", temp);
+	}
+
+	// Error condition test
+	// for (i = num_dentry-1; i < num_dentry+2; i++) {
+	// 	n = read_dentry_by_index((uint32_t)i, &result[i]);
+	// 	strncpy((int8_t*)temp, (int8_t*)result[i].f_name, 32);
+	// 	temp[33] = '\0';
+	// 	printf("input number: %d\n", i);
+	// 	printf("return value: %d\n", n);
+	// 	printf("name: %s, type: %d, inode #: %d\n", result[i].f_name, result[i].f_type, result[i].idx_inode);
+	// 	printf("----------\n");
+	// }
+	
 	return PASS;
 }
 
