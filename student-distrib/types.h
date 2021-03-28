@@ -26,7 +26,8 @@ typedef struct dentry_t {
     char        f_name[32];     // file name
     uint32_t    f_type;         // file type
     uint32_t    idx_inode;      // inode number
-    uint8_t     reserved[24];   // resevered space
+    uint32_t    f_size;         // size of file in byte
+    uint8_t     reserved[20];   // resevered space
 } dentry_t;
 
 typedef struct boot_block_t {
