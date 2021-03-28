@@ -339,50 +339,101 @@ int32_t file_close(int32_t fd) {
     return 0;
 }
 
-// /* 
-//  * <name>
-//  *   DESCRIPTION: 
-//  *   INPUTS: 
-//  *   OUTPUTS: 
-//  *   RETURN VALUE: 0 if success, -1 if anything bad happened
-//  *   SIDE EFFECTS: none
-//  */
-// int32_t directory_open() {
-//     return 0;
-// }
+/* 
+ * direct_open
+ *   DESCRIPTION: open a directory
+ *   INPUTS: directname - name of directory
+ *   OUTPUTS: none
+ *   RETURN VALUE: 0 if success, -1 if anything bad happened
+ *   SIDE EFFECTS: none
+ */
+int32_t direct_open(const uint8_t* directname) {
+    
+    struct dentry_t result;     // structure to store the search result
 
-// /* 
-//  * <name>
-//  *   DESCRIPTION: 
-//  *   INPUTS: 
-//  *   OUTPUTS: 
-//  *   RETURN VALUE: 0 if success, -1 if anything bad happened
-//  *   SIDE EFFECTS: none
-//  */
-// int32_t directory_read() {
-//     return 0;
-// }
+    // Check current number of opened files
+    if (file_count >= N_FILES) {
+        return -1;
+    }
 
-// /* 
-//  * <name>
-//  *   DESCRIPTION: 
-//  *   INPUTS: 
-//  *   OUTPUTS: 
-//  *   RETURN VALUE: 0 if success, -1 if anything bad happened
-//  *   SIDE EFFECTS: none
-//  */
-// int32_t directory_write() {
-//     return 0;
-// }
+    // Search the file
+    if (-1 == read_dentry_by_name(directname, &result)) {
+        return -1;
+    }
 
-// /* 
-//  * <name>
-//  *   DESCRIPTION: 
-//  *   INPUTS: 
-//  *   OUTPUTS: 
-//  *   RETURN VALUE: 0 if success, -1 if anything bad happened
-//  *   SIDE EFFECTS: none
-//  */
-// int32_t directory_close() {
-//     return 0;
-// }
+    // Check type
+    if (result.f_type != 0) {
+        return -1;
+    }
+
+    return 0;
+}
+
+/* 
+ * direct_read
+ *   DESCRIPTION: read the file name
+ *   INPUTS: fd - file descriptor
+ *           buf - buffer that store the data to read
+ *           nbytes - number of bytes to read
+ *   OUTPUTS: buf which stores the file name
+ *   RETURN VALUE: 0 if success, -1 if anything bad happened
+ *   SIDE EFFECTS: none
+ */
+int32_t direct_read(int32_t fd, uint8_t* buf, int32_t nbytes) {
+    
+    uint32_t idx_inode;     // index of inode block
+    uint32_t i;             // loop counter
+    struct dentry_t temp;   // store temp dentry in loop
+
+    // Check "."
+    if (fd == 0) {
+        strncpy((int8_t*)buf, (int8_t*)".", 3);
+        return 0;
+    } 
+
+    // Check discriptor
+    if (fd < 0 || fd >= file_count) {
+        return -1;
+    }
+
+    // Loop trough boot block to find the file name
+    idx_inode = file_array[fd].idx_inode;
+    for (i = 0; i < n_dentry_b; i++) {
+        read_dentry_by_index(i, &temp);
+        if (temp.idx_inode == idx_inode) {
+            break;
+        }
+    }
+
+    // Read file name
+    strncpy((int8_t*)buf, (int8_t*)temp.f_name, 32);
+    buf[33] = '\0';
+
+    return 0;
+}
+
+/* 
+ * direct_write
+ *   DESCRIPTION: do nothing
+ *   INPUTS: fd - file descriptor
+ *           buf - buffer that store the data to write
+ *           nbytes - number of bytes to write
+ *   OUTPUTS: none
+ *   RETURN VALUE: -1
+ *   SIDE EFFECTS: none
+ */
+int32_t direct_write(int32_t fd, uint8_t* buf, int32_t nbytes) {
+    return -1;
+}
+
+/* 
+ * direct_close
+ *   DESCRIPTION: do nothing
+ *   INPUTS: fd - file descriptor
+ *   OUTPUTS: none
+ *   RETURN VALUE: 0
+ *   SIDE EFFECTS: none
+ */
+int32_t direct_close(int32_t fd) {
+    return 0;
+}

@@ -436,6 +436,30 @@ int cp2_filesys_test_4() {
  * Files: file_sys/c/h
  */
 int cp2_filesys_test_5() {
+	int32_t fd, fd1, fd2, fd3;
+	int32_t nbytes = 40;
+	char buf[nbytes+1];
+
+	printf("--------------------\n");
+
+	fd = direct_open((uint8_t*)".");
+	direct_read(fd, (uint8_t*)buf, nbytes);
+	printf("File name: %s\n", buf);
+	direct_close(fd);
+
+	fd1 = file_open((uint8_t*)"frame1.txt");
+	fd2 = file_open((uint8_t*)"grep");
+	fd3 = file_open((uint8_t*)"verylargetextwithverylongname.tx");
+	direct_read(fd1, (uint8_t*)buf, nbytes);
+	printf("File name: %s\n", buf);
+	direct_read(fd2, (uint8_t*)buf, nbytes);
+	printf("File name: %s\n", buf);
+	direct_read(fd3, (uint8_t*)buf, nbytes);
+	printf("File name: %s\n", buf);
+	file_close(fd3);
+	file_close(fd2);
+	file_close(fd1);
+
 	return PASS;
 }
 
@@ -455,9 +479,9 @@ void launch_tests(){
 
     /* Check point 2 */
     // term_read_write_test();
-	// TEST_OUTPUT("cp2_filesys_test_1", cp2_filesys_test_1());		// list all file information
-	TEST_OUTPUT("cp2_filesys_test_2", cp2_filesys_test_2());		// read short file
-	TEST_OUTPUT("cp2_filesys_test_3", cp2_filesys_test_3());		// read executable
-	// TEST_OUTPUT("cp2_filesys_test_4", cp2_filesys_test_4());		// read large file
-	// TEST_OUTPUT("cp2_filesys_test_4", cp2_filesys_test_5());		// check garbage values / open dictionary
+	// TEST_OUTPUT("File System test 1", cp2_filesys_test_1());		// list all file information
+	// TEST_OUTPUT("File System test 2", cp2_filesys_test_2());		// read short file
+	// TEST_OUTPUT("File System test 3", cp2_filesys_test_3());		// read executable
+	// TEST_OUTPUT("File System test 4", cp2_filesys_test_4());		// read large file
+	TEST_OUTPUT("File System test 5", cp2_filesys_test_5());		// check garbage values / open dictionary
 }
