@@ -115,7 +115,7 @@ void keyboard_handler() {
                 else
                     ascii_code = scancode_to_ascii[scan_code][0];
             } else {
-                if (caps_flag | SHIFT_FLAG)
+                if ((caps_flag | SHIFT_FLAG) & (caps_flag != SHIFT_FLAG))
                     ascii_code = scancode_to_ascii[scan_code][1];
                 else
                     ascii_code = scancode_to_ascii[scan_code][0];

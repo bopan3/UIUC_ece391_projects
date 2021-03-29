@@ -97,7 +97,7 @@ void line_buf_in(char curr) {
             putc(curr);
         } else if (BCKSPACE == curr) {
             line_buf[LINE_BUF_SIZE - 1] = '\0';
-            num_char = LINE_BUF_SIZE - 1;
+            num_char--;
             putc(curr);
         }
     } else {
