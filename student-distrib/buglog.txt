@@ -1,4 +1,5 @@
-Checkpoint 1:
+==================================================
+===================== Checkpoint 1 ====================
 
 Contributer: Xiong Neng
 Date: Mar 20th 2021
@@ -42,3 +43,30 @@ Date: Mar 21th 2021
 Files: rtc.c
 Bug: The rtc interrupt only happen once. 
 Solution: set the register c for rtc in the end of each rtc interupt to make sure the interupt can happen next time.
+
+==================================================
+===================== Checkpoint 2 ====================
+
+Contributer: Xiong Neng
+Date: Mar 27th 2021
+Files: lib.c
+Bug: The last character of a line will not be displayed since it directly goes to the next line.
+Solution: In putc() changing new line without line feed, add one situation which displays the most recent input character.
+
+Contributer: Xiong Neng
+Date: Mar 28th 2021
+Files: terminal.c
+Bug: the terminal read function does not compile for NULL pointer transfer.
+Solution: use a intermediate temp buffer to convert the pointer into int8_t * pointer, so that they are compatible.
+
+Contributer: Wang Nachuan
+Date: Mar 28th 2021
+Files: file_sys.c
+Bug: content in buffer returned by read function dose not match content in the file 
+Solution: afterwards we find that not only data blocks, bt also inode blocks does not locate continuously in memory, so we cannot make this assumption.
+
+Contributer: Pan Bo
+Date: Mar 29th 2021
+Files: rtc.c
+Bug: the frequency is inversed
+reason: for formular to compute rate is wrong, the correct version is frequency =  32768 >> (rate-1). 
