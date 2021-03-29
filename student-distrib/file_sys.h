@@ -19,7 +19,7 @@ int32_t file_write(int32_t fd, uint8_t* buf, int32_t nbytes);
 int32_t file_close(int32_t fd);
 
 int32_t direct_open(const uint8_t* directname);
-int32_t direct_read(int32_t fd, uint8_t* buf, int32_t nbytes);
+int32_t direct_read(uint8_t* buf);
 int32_t direct_write(int32_t fd, uint8_t* buf, int32_t nbytes);
 int32_t direct_close(int32_t fd);
 

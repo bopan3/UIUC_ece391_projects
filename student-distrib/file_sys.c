@@ -18,6 +18,7 @@ static struct data_block_t* p_data;            // pointer to data block array
 /* Initialize a file discriptor array here (only for check piont 2) */
 static struct file_des_t file_array[8];       // temporarily used descriptor array
 static int32_t file_count;                    // count number of file opened
+static int32_t direct_read_count;             // count the file name to be read
 
 /* Some parameters */
 #define STR_LEN 32
@@ -31,10 +32,6 @@ static int32_t file_count;                    // count number of file opened
  *      a. file name does not exists (read_dentry_by_name)
  *      b. invalde file index (read_dentry_by_index)
  *      c. inode number out of range (read_data)
- *      d.
- *      e.
- *      f.
- *      g.
  */ 
 
 /* 
@@ -52,6 +49,8 @@ void filesys_init() {
     p_dentry = ((dentry_t*)file_sys_addr) + 1;        // skip the firt segment of boot block
     p_inode = ((inode_block_t*)file_sys_addr) + 1;    // skip the boot block 
     p_data = ((data_block_t*)file_sys_addr) + n_inode_b + 1;      // skip the boot block and inode blocks
+
+    direct_read_count = 0;
     
     file_count = 2;     // only used for check point 2
 }
@@ -333,7 +332,7 @@ int32_t file_write(int32_t fd, uint8_t* buf, int32_t nbytes) {
 int32_t file_close(int32_t fd) {
 
     // Preserve first two slot for stdin, stdout
-    if (fd <= 2 || file_count <= 2) {
+    if (fd < 2 || file_count <= 2 || fd > 7) {
         return -1;
     }
 
@@ -384,40 +383,23 @@ int32_t direct_open(const uint8_t* directname) {
  *           buf - buffer that store the data to read
  *           nbytes - number of bytes to read
  *   OUTPUTS: buf which stores the file name
- *   RETURN VALUE: 0 if success, -1 if anything bad happened
+ *   RETURN VALUE: 1 if success, 0 if reach the end
  *   SIDE EFFECTS: none
  */
-int32_t direct_read(int32_t fd, uint8_t* buf, int32_t nbytes) {
-    
-    uint32_t idx_inode;     // index of inode block
-    uint32_t i;             // loop counter
+int32_t direct_read(uint8_t* buf) {
+
     struct dentry_t temp;   // store temp dentry in loop
 
-    // Check "."
-    if (fd == 0) {
-        strncpy((int8_t*)buf, (int8_t*)".", 3);
+    if (0 != read_dentry_by_index(direct_read_count, &temp)) {
         return 0;
-    } 
-
-    // Check discriptor
-    if (fd < 0 || fd >= file_count) {
-        return -1;
     }
-
-    // Loop trough boot block to find the file name
-    idx_inode = file_array[fd].idx_inode;
-    for (i = 0; i < n_dentry_b; i++) {
-        read_dentry_by_index(i, &temp);
-        if (temp.idx_inode == idx_inode) {
-            break;
-        }
-    }
-
+    
     // Read file name
     strncpy((int8_t*)buf, (int8_t*)temp.f_name, 32);
     buf[33] = '\0';
 
-    return 0;
+    direct_read_count += 1;
+    return 1;
 }
 
 /* 
