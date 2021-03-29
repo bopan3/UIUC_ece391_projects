@@ -84,12 +84,13 @@ int32_t read_dentry_by_name(const uint8_t* fname, dentry_t* dentry) {
         find_flage = 1;
 
         // compare the name until a different characters or number 32 is reached
-        for (j = 0; j <  length; j++) {
+        for (j = 0; j < length; j++) {
             if (fname[j] != fname_d[j]) {
                 find_flage = 0;
                 break;
             }
         }
+
         // After end, check if fname_d still have character
         if ((length < STR_LEN) && (fname_d[j] != '\0')) {
             find_flage = 0;
@@ -255,6 +256,7 @@ int32_t file_open(const uint8_t* filename) {
 
     // Add a new descriptor to the array
     file_array[file_count].idx_inode = result.idx_inode;
+    file_array[file_count].file_type = result.f_type;
     file_array[file_count].file_pos = 0;
     file_array[file_count].flages = 0;
 
@@ -281,6 +283,11 @@ int32_t file_read(int32_t fd, uint8_t* buf, int32_t nbytes) {
 
     // Check discriptor
     if (fd < 0 || fd >= N_FILES) {
+        return -1;
+    }
+
+    // Check file type
+    if (file_array[fd].file_type != 2) {
         return -1;
     }
 
@@ -333,6 +340,7 @@ int32_t file_close(int32_t fd) {
     file_array[fd].idx_inode = 0;
     file_array[fd].file_pos = 0;
     file_array[fd].flages = 0;
+    file_array[fd].file_type = 0;
 
     file_count -= 1;
 
@@ -362,7 +370,7 @@ int32_t direct_open(const uint8_t* directname) {
     }
 
     // Check type
-    if (result.f_type != 0) {
+    if (result.f_type != 1) {
         return -1;
     }
 
