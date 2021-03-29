@@ -3,7 +3,7 @@
 
 // test launcher
 void launch_tests();
-#define TEST_RTC 0
+#define TEST_RTC 1
 
 #endif /* TESTS_H */
 

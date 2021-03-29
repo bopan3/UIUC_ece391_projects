@@ -6,7 +6,9 @@
 #include "paging.h"
 #include "terminal.h"
 #include "file_sys.h"
+#include "rtc.h"
 
+#define NULL 0
 #define PASS 1
 #define FAIL 0
 
@@ -309,7 +311,6 @@ int paging_test_pf(){
 	return result;	/* All safe test should pass, and any one of the unsafe test would cause Page Fault */
 }
 
-/*-------------------- Checkpoint 2 tests --------------------*/
 
 /* term_read_write_test
  * Test if the read and write function of terminal works correctly
@@ -481,9 +482,34 @@ int cp2_filesys_test_5() {
 	return PASS;
 }
 
+/* Checkpoint 2 tests 
+ * Test if the rtc driver works correctly
+ * Outputs: PASS/FAIL
+ * Side Effects: None
+ * Coverage: rtc_read,rtc_open,rtc_write,
+ * Files: rtc.c/h
+ */
+int rtc_driver_test(){
+	int num_err=0;
+	int i;
+	int freq_parameter;
+	num_err+=rtc_open(NULL);
+	for (freq_parameter=2;freq_parameter<=1024;freq_parameter*=2){
+    	num_err+=rtc_write(NULL, &freq_parameter, sizeof(int32_t));
+		for(i=0; i<freq_parameter*5; i++){  //5 is just a randon choosen number
+			num_err+=rtc_read(NULL,NULL,NULL);
+			putc('1');
+		}
+	}
+	if (num_err!=0){
+		return FAIL;
+	}
+	else{
+		return PASS;
+	}
+}
 /* Checkpoint 3 tests */
 /* Checkpoint 4 tests */
-/* Checkpoint 5 tests */
 
 
 /* Test suite entry point */
@@ -501,5 +527,11 @@ void launch_tests(){
 	// TEST_OUTPUT("File System test 2", cp2_filesys_test_2());		// read short file
 	// TEST_OUTPUT("File System test 3", cp2_filesys_test_3());		// read executable
 	// TEST_OUTPUT("File System test 4", cp2_filesys_test_4());		// read large file
-	TEST_OUTPUT("File System test 5", cp2_filesys_test_5());		// open, close, write / handle error condition
+	//TEST_OUTPUT("File System test 5", cp2_filesys_test_5());		// open, close, write / handle error condition
+	//TEST_OUTPUT("CP1_idt_test_1", CP1_idt_test_1());
+	// TEST_OUTPUT("CP1_idt_test_2", CP1_idt_test_2());
+  // TEST_OUTPUT("pic_test", pic_test());
+	//TEST_OUTPUT("Paging Test", paging_test());
+	//TEST_OUTPUT("Paging Test: Page Fault", paging_test_pf());
+	TEST_OUTPUT("CP2:rtc_driver_test", rtc_driver_test());
 }
