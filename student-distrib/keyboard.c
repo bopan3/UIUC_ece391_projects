@@ -47,28 +47,28 @@ uint8_t scancode_to_ascii[SCANCODE_SET_SIZE][2] = {     // two ascii char for ea
     {'3', '#'}, {'4', '$'},
     {'5', '%'}, {'6', '^'},
     {'7', '&'}, {'8', '*'},
-    {'9', '('}, {'0', ')'},
+    {'9', '('}, {'0', ')'},     // 1A
     {'-', '_'}, {'=', '+'},
     {BCKSPACE, BCKSPACE}, {' ', ' '},    
-    {'q', 'Q'}, {'w', 'W'},
+    {'q', 'Q'}, {'w', 'W'},      // 10, 11
     {'e', 'E'}, {'r', 'R'},
     {'t', 'T'}, {'y', 'Y'},
     {'u', 'U'}, {'i', 'I'},
     {'o', 'O'}, {'p', 'P'},
-    {'[', '{'}, {']', '}'},
+    {'[', '{'}, {']', '}'},      // 2A 2B
     {ENTER, ENTER}, {EMP, EMP},  // , Left Control
     {'a', 'A'}, {'s', 'S'},
-    {'d', 'D'}, {'f', 'F'},
+    {'d', 'D'}, {'f', 'F'},     // 30, 31
     {'g', 'G'}, {'h', 'H'},
     {'j', 'J'}, {'k', 'K'},
-    {'l', 'L'}, {';', ':'},
-    {'\'', '"'}, {'`', '~'},
+    {'l', 'L'}, {';', ':'},     // 36, 37
+    {'\'', '"'}, {'`', '~'},    // 38, 39
     {EMP, EMP}, {'\\', '|'},    // Left Shift,
     {'z', 'Z'}, {'x', 'X'},
     {'c', 'C'}, {'v', 'V'},
-    {'b', 'B'}, {'n', 'N'},
-    {'m', 'M'}, {',', '<'},
-    {'.', '>'}, {'/', '?'},
+    {'b', 'B'}, {'n', 'N'},     // 40, 41
+    {'m', 'M'}, {',', '<'},     // 42, 43
+    {'.', '>'}, {'/', '?'},     // 44, 45
     {EMP, EMP}, {EMP, EMP},     // Right Shift,
     {EMP, EMP}, {' ', ' '},    
 };
@@ -118,7 +118,8 @@ void keyboard_handler() {
         } else {
             // Set ascii_code in respond to caps_flag and SHIFT_FLAG
             // Spacial case for numbers and -,= do not change when only caps_flag
-            if ((scan_code <= 0x0D) | (0x29 == scan_code)) {      // <= 0x0D for 1-9 and -,= 0x29 for `
+            // <= 0x0D for 1-9 and -,= 0x39 for `, 0x2A for
+            if ((scan_code <= 0x0D) | (0x2A == scan_code) | (0x2B == scan_code) | (0x37 == scan_code) | (0x38 == scan_code) | (0x39 == scan_code) | (0x3B == scan_code) | (0x43 == scan_code) | (0x44 == scan_code) | (0x45 == scan_code)) {
                 if (SHIFT_FLAG)
                     ascii_code = scancode_to_ascii[scan_code][HIGHER];
                 else
