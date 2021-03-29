@@ -10,10 +10,16 @@
 #define BIT_6 0x40
 #define MAX_FREQ_LEVEL 10  // the maximun frequency is 2^10
 #define MIN_FREQ_LEVEL 1   // the minimun frequency is 2^1
+#define MAX_FREQ 1024 
+#define MIN_FREQ 2
+#define NULL 0
 
-static void rtc_byte_write(rtc_register,rtc_data);
-static int8_t rtc_byte_read(rtc_register);
-static int8_t rtc_set_freq_level(freq_level);
+static void rtc_byte_write(int8_t rtc_register, int8_t rtc_data);
+static int8_t rtc_byte_read(int8_t rtc_register);
+static void rtc_set_real_freq_level(int8_t freq_level);
+int virtual_freq;           // later for a field in the fd
+volatile int current_count; // when the current count reach zero, we indicate a virtual irq  （later for file position field of fd）
+volatile int virtual_iqr_got; // later for a field in the fd
 
 // all register handling codes for RTC are adapt from https://wiki.osdev.org/RTC
 /* 
@@ -34,7 +40,7 @@ void rtc_init(){
       enable_irq(IRQ_NUM_RTC);
       //a read on RTC_REG_C to allow next irq
       rtc_byte_read(RTC_REG_C);
-      rtc_set_freq_level(1);
+      rtc_set_real_freq_level(MAX_FREQ_LEVEL);
       sti();
 }
 
@@ -48,7 +54,12 @@ void rtc_init(){
  */
 void rtc_handler(){
     cli();
-    test_interrupts();
+    //test_interrupts();
+    current_count=current_count-virtual_freq;
+    if (current_count==0){
+        virtual_iqr_got=1;
+        current_count=MAX_FREQ;
+    }
     //a read on RTC_REG_C to allow next irq
     rtc_byte_read(RTC_REG_C);
     send_eoi(IRQ_NUM_RTC);
@@ -63,7 +74,7 @@ void rtc_handler(){
  *   RETURN VALUE: none
  *   SIDE EFFECTS:  data written to the rtc_register
  */
-void rtc_byte_write(rtc_register,rtc_data){
+void rtc_byte_write(int8_t rtc_register,int8_t rtc_data){
       outb( rtc_register, RTC_IDX_PORT);		// select register
       outb( rtc_data    , RTC_DATA_PORT);	    // write data
 }
@@ -76,19 +87,19 @@ void rtc_byte_write(rtc_register,rtc_data){
  *   RETURN VALUE: data read from the rtc_register
  *   SIDE EFFECTS:  
  */
-int8_t rtc_byte_read(rtc_register){
+int8_t rtc_byte_read(int8_t rtc_register){
       outb( rtc_register, RTC_IDX_PORT);		// select register
       return inb(RTC_DATA_PORT);	            // read data
 }
 /* 
- * rtc_set_freq_level
- *   DESCRIPTION: set the frequency of rtc
+ * rtc_set_real_freq_level
+ *   DESCRIPTION: set the real frequency of rtc
  *   INPUTS: freq_level
  *   OUTPUTS: none
  *   RETURN VALUE: 
  *   SIDE EFFECTS:  the frequency of ryc will be  to 2^freq_level
  */
-int8_t rtc_set_freq_level(freq_level){
+void rtc_set_real_freq_level(int8_t freq_level){
       int8_t prev;
       int8_t rate = 16-freq_level;              // 16 is the total num of rate levels(15) +1     The default value of rate is 0110, or 6.
       rate &= 0x0F;			    // rate must be above 2 and not over 15
@@ -98,4 +109,79 @@ int8_t rtc_set_freq_level(freq_level){
       sti();
 }
 
+/* 
+ * rtc_open
+ *   DESCRIPTION: Open and initialize RTC file
+ *   INPUTS: filename  - String filename
+ *   OUTPUTS: none
+ *   RETURN VALUE: 0
+ *   SIDE EFFECTS: 
+ */
+int32_t rtc_open(const uint8_t* filename) {
+    virtual_freq=2; // 2HZ is the defualt frequency
+    current_count=MAX_FREQ;
+    virtual_iqr_got=0;
+    return 0;
+}
 
+/* 
+ * rtc_close
+ *   DESCRIPTION: close RTC file and reset the relate parameters
+ *   INPUTS: filename  - String filename
+ *   OUTPUTS: none
+ *   RETURN VALUE: 0
+ *   SIDE EFFECTS: 
+ */
+int32_t rtc_close(const uint8_t* filename) {
+    virtual_freq=0; // change the freq to 0 to indicate the rtc is not opened
+    current_count=MAX_FREQ;
+    virtual_iqr_got=0;
+    return 0;
+}
+
+/* 
+ * rtc_read
+ *   DESCRIPTION: wait for an virtual RTC irq 
+ *   INPUTS: fd (File descriptor number)
+ *           buf  (Output data pointer)
+ *           nbytes (Number of bytes read)
+ *   OUTPUTS: none
+ *   RETURN VALUE: 0
+ *   SIDE EFFECTS: 
+ */
+int32_t rtc_read(int32_t fd, void* buf, int32_t nbytes) {
+    cli();
+    virtual_iqr_got=0;
+    sti();
+    while (virtual_iqr_got==0){};
+    return 0;
+}
+
+/* 
+ * rtc_write
+ *   DESCRIPTION: wait for an virtual RTC irq 
+ *   INPUTS: fd (File descriptor number)
+ *           buf  (Output data pointer)
+ *           nbytes (Number of bytes to write) 
+ *   OUTPUTS: none
+ *   RETURN VALUE: 0 on success, -1 on invalid freqency
+ *   SIDE EFFECTS: change the virtual irq freq
+ */
+int32_t rtc_write(int32_t fd, void* buf, int32_t nbytes) {
+    int try_freq; // the freqency we try to change to 
+    try_freq=   *((int*) buf);
+    // check NULL pointer and wrong nbytes
+    if (buf==NULL || (nbytes != sizeof(int32_t)) ){
+        return -1;
+    }
+
+    // Check if  try_freq is not powers or out of bound
+    if( ((try_freq & (try_freq - 1)) != 0) ||  (try_freq > MAX_FREQ || try_freq < MIN_FREQ)   ) {
+        return -1;
+    }
+
+    cli();
+    virtual_freq=try_freq;
+    sti();
+    return 0;
+}
