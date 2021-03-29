@@ -471,7 +471,7 @@ int cp2_filesys_test_5() {
 	printf("file_open shoud return file descriptors: fd1=%d, fd2=%d, fd3=%d\n", fd1, fd2, fd3);	
 	printf("direct_open shoud return 0: fd=%d\n", fd);	
 	printf("file_write shoud return -1: %d\n",file_write(fd1, (uint8_t*)buf, nbytes));
-	printf("direct_write shoud return -1: %d\n",file_write(fd1, (uint8_t*)buf, nbytes));
+	printf("direct_write shoud return -1: %d\n",direct_write(fd1, (uint8_t*)buf, nbytes));
 	printf("direct_close should return 0: %d\n", direct_close(fd));
 	printf("file_close should return 0: %d\n", file_close(fd3));
 	file_close(fd2);
