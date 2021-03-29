@@ -39,7 +39,7 @@ void i8259_init(void) {
 //    outb(master_mask_buf, MASTER_8259_DATA);
 //    outb(slave_mask_buf, SLAVE_8259_DATA);
 
-//    enable_irq(SLAVE_IRQ);
+    enable_irq(SLAVE_IRQ);                  // Enable slave irq
 }
 
 /*
