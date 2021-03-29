@@ -387,9 +387,7 @@ int32_t direct_open(const uint8_t* directname) {
  *   SIDE EFFECTS: none
  */
 int32_t direct_read(uint8_t* buf) {
-    
-    uint32_t idx_inode;     // index of inode block
-    uint32_t i;             // loop counter
+
     struct dentry_t temp;   // store temp dentry in loop
 
     if (0 != read_dentry_by_index(direct_read_count, &temp)) {
