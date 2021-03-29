@@ -452,7 +452,7 @@ int cp2_filesys_test_4() {
 
 /* Check point 2.3 (File system)
  * Coverage: open, close, write / handle error condition
- * Files: file_sys/c/h
+ * Files: file_sys.c/.h
  */
 int cp2_filesys_test_5() {
 	int32_t fd, fd1, fd2, fd3;
@@ -461,7 +461,7 @@ int cp2_filesys_test_5() {
 
 
 	printf("--------------------\n");
-	printf("I. Open, close, write, direct_read:\n");
+	printf("I. Open, close, write:\n");
 
 	fd1 = file_open((uint8_t*)"frame1.txt");
 	fd2 = file_open((uint8_t*)"grep");
@@ -472,17 +472,6 @@ int cp2_filesys_test_5() {
 	printf("direct_open shoud return 0: fd=%d\n", fd);	
 	printf("file_write shoud return -1: %d\n",file_write(fd1, (uint8_t*)buf, nbytes));
 	printf("direct_write shoud return -1: %d\n",file_write(fd1, (uint8_t*)buf, nbytes));
-
-	printf("direct_read should read file name:\n");
-	direct_read(fd, (uint8_t*)buf, nbytes);
-	printf("File name of fd: %s\n", buf);
-	direct_read(fd1, (uint8_t*)buf, nbytes);
-	printf("File name of fd1: %s\n", buf);
-	direct_read(fd2, (uint8_t*)buf, nbytes);
-	printf("File name of fd2: %s\n", buf);
-	direct_read(fd3, (uint8_t*)buf, nbytes);
-	printf("File name of fd3: %s\n", buf);
-
 	printf("direct_close should return 0: %d\n", direct_close(fd));
 	printf("file_close should return 0: %d\n", file_close(fd3));
 	file_close(fd2);
@@ -492,10 +481,35 @@ int cp2_filesys_test_5() {
 	printf("II. handle error condition:\n");
 	printf("Invalid file name 1 (return -1): %d\n", file_open((uint8_t*)"shel"));	
 	printf("Invalid file name 2 (return -1): %d\n", file_open((uint8_t*)"shelll"));
-	printf("Invalid directory name (return -1): %d\n", file_open((uint8_t*)".."));
+	printf("Invalid directory name (return -1): %d\n", direct_open((uint8_t*)".."));
 	printf("Invalid file descriptor (return -1): %d\n", file_read(9, (uint8_t*)buf, nbytes));
 	fd1 = file_open((uint8_t*)"rtc");
 	printf("Try to read non-regular file (return -1): %d\n", file_read(fd1, (uint8_t*)buf, nbytes));
+
+	return PASS;
+}
+
+/* Check point 2.3 (File system)
+ * Coverage: direct_read
+ * Files: file_sys.c/.h
+ */
+int cp2_filesys_test_6() {
+	uint8_t buf[40];		// 40 > 32
+	uint8_t i;
+	
+	/* In our understanding, as long as the the direct_read achieve the end of file list,
+	   it just stops and return 0 */
+
+	printf("--------------------\n");
+
+	// 20 > number of files
+	for (i = 0; i < 20; i++) {
+		if (0 != direct_read(buf)) {
+			printf("File name: %s\n", buf);
+		} else {
+			printf("Return 0\n");
+		}
+	}
 
 	return PASS;
 }
@@ -577,5 +591,6 @@ void launch_tests(){
 	// TEST_OUTPUT("File System test 2", cp2_filesys_test_2());		// read short file
 	// TEST_OUTPUT("File System test 3", cp2_filesys_test_3());		// read executable
 	// TEST_OUTPUT("File System test 4", cp2_filesys_test_4());		// read large file
-	//TEST_OUTPUT("File System test 5", cp2_filesys_test_5());		// open, close, write / handle error condition
+	// TEST_OUTPUT("File System test 5", cp2_filesys_test_5());		// open, close, write / handle error condition
+	// TEST_OUTPUT("File System test 6", cp2_filesys_test_6());			// direct_read
 }
