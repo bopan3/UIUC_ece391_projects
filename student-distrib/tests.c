@@ -482,7 +482,7 @@ int cp2_filesys_test_5() {
 	return PASS;
 }
 
-/* Checkpoint 2 tests 
+/* Checkpoint 2: rtc driver function test
  * Test if the rtc driver works correctly
  * Outputs: PASS/FAIL
  * Side Effects: None
@@ -494,14 +494,44 @@ int rtc_driver_test(){
 	int i;
 	int freq_parameter;
 	num_err+=rtc_open(NULL);
+	// start with 2HZ, next loop freq= prev freq*2, largest freq is 1024
 	for (freq_parameter=2;freq_parameter<=1024;freq_parameter*=2){
+		clear();
     	num_err+=rtc_write(NULL, &freq_parameter, sizeof(int32_t));
 		for(i=0; i<freq_parameter*5; i++){  //5 is just a randon choosen number
 			num_err+=rtc_read(NULL,NULL,NULL);
 			putc('1');
 		}
 	}
+	rtc_close(NULL);
 	if (num_err!=0){
+		return FAIL;
+	}
+	else{
+		return PASS;
+	}
+}
+/* Checkpoint 2: rtc driver edge test
+ * Test if the rtc driver works correctly in edge condition
+ * Outputs: PASS/FAIL
+ * Side Effects: None
+ * Coverage: rtc_read,rtc_open,rtc_write,
+ * Files: rtc.c/h
+ */
+int rtc_driver_edge_case_test(){
+	int num_err=0;
+	int freq_parameter;
+	num_err+=rtc_open(NULL);
+	freq_parameter=1; //try 1 HZ, should return -1 for write 
+    num_err+=rtc_write(NULL, &freq_parameter, sizeof(int32_t));
+	freq_parameter=2048; //try 2048 HZ, should return -1 for write 
+    num_err+=rtc_write(NULL, &freq_parameter, sizeof(int32_t));
+	freq_parameter=3; //try 3(not a power of 2) HZ, should return -1 for write 
+    num_err+=rtc_write(NULL, &freq_parameter, sizeof(int32_t));
+	freq_parameter=1024; //try wrong parameter size, should return -1 for write
+    num_err+=rtc_write(NULL, &freq_parameter, sizeof(int16_t));
+	
+	if (num_err!=-4){
 		return FAIL;
 	}
 	else{
@@ -522,6 +552,8 @@ void launch_tests(){
 	// TEST_OUTPUT("Paging Test: Page Fault", paging_test_pf());
 
     /* Check point 2 */
+	TEST_OUTPUT("CP2:rtc_driver_test", rtc_driver_test());
+	TEST_OUTPUT("CP2:rtc_driver_edge_case_test", rtc_driver_edge_case_test());
     // term_read_write_test();
 	// TEST_OUTPUT("File System test 1", cp2_filesys_test_1());		// list all file information
 	// TEST_OUTPUT("File System test 2", cp2_filesys_test_2());		// read short file
@@ -533,5 +565,5 @@ void launch_tests(){
   // TEST_OUTPUT("pic_test", pic_test());
 	//TEST_OUTPUT("Paging Test", paging_test());
 	//TEST_OUTPUT("Paging Test: Page Fault", paging_test_pf());
-	TEST_OUTPUT("CP2:rtc_driver_test", rtc_driver_test());
+
 }
