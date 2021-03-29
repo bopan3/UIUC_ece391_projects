@@ -249,6 +249,9 @@ void putc(uint8_t c) {
         } else {                                // Bottom not reached, just increment y and reset x
             screen_y++;
             screen_x = 0;
+            // Display the most recent input c
+            *(uint8_t *) (video_mem + ((NUM_COLS * (screen_y) - 1) << 1)) = c;
+            *(uint8_t *) (video_mem + ((NUM_COLS * (screen_y) - 1) << 1) + 1) = screen_color;
         }
         update_cursor();
     } else {
