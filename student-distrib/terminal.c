@@ -92,6 +92,14 @@ int32_t terminal_write(int32_t fd, const void* buf, int32_t nbytes) {
     return 0;
 }
 
+/*
+ *   line_buf_in
+ *   DESCRIPTION: receive input char from keyboard and store into line buffer
+ *   INPUTS: curr -- the current input character
+ *   OUTPUTS: display the character if it is successfully received
+ *   RETURN VALUE: none
+ *   SIDE EFFECTS: change the line input buffer and char index
+ */
 void line_buf_in(char curr) {
     // If the line buffer is already full, only change* when receiving line feed
     if (num_char >= LINE_BUF_SIZE - 2) {        // minus 2 since the last two char of BUFFER must be '\n' and '\0'
@@ -112,7 +120,7 @@ void line_buf_in(char curr) {
             num_char = 0;                       // reset buffer index to 0
             putc(curr);
         } else if (BCKSPACE == curr) {
-            if (num_char > 0 && num_char < LINE_BUF_SIZE) { // If there're contents in buffer, delete the last one
+            if (num_char > 0 && num_char < LINE_BUF_SIZE) { // If there are contents in buffer, delete the last one
                 line_buf[--num_char] = '\0';
                 putc(curr);
             }
@@ -123,6 +131,14 @@ void line_buf_in(char curr) {
     }
 }
 
+/*
+ *   line_buf_clear
+ *   DESCRIPTION: clear the line input buffer and reset index
+ *   INPUTS: none
+ *   OUTPUTS: none
+ *   RETURN VALUE: none
+ *   SIDE EFFECTS: clear the line input buffer and reset index
+ */
 void line_buf_clear() {
     int i;                      // loop index
 

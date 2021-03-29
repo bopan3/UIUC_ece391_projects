@@ -12,6 +12,8 @@
 #define OFF     0
 #define LOWER   0
 #define HIGHER  1
+#define SPECIAL 1
+#define COMMON  0
 
 /* Special Keycodes */
 #define BCKSPACE                0x08
@@ -89,7 +91,7 @@ void keyboard_init() {
  *   INPUTS: none
  *   OUTPUTS: none
  *   RETURN VALUE: none
- *   SIDE EFFECTS:  convert the scancode (from port) to ascii, and print it onto the terminal
+ *   SIDE EFFECTS:  convert the scancode (from port) to ascii, and pass it to terminal
  */
 void keyboard_handler() {
     cli();
@@ -142,7 +144,7 @@ void keyboard_handler() {
  *   DESCRIPTION: check for special keys pressed or not
  *   INPUTS: scan_code -- the incoming key code
  *   OUTPUTS: none
- *   RETURN VALUE: none
+ *   RETURN VALUE: 1 if it is a special key, 0 if not
  *   SIDE EFFECTS:  convert the scancode (from port) to ascii, and print it onto the terminal
  */
 int spe_key_check(uint8_t scan_code) {
@@ -152,27 +154,27 @@ int spe_key_check(uint8_t scan_code) {
                 caps_flag = ON;
             else
                 caps_flag = OFF;
-            return 1;       // return 1 to shown special key found
+            return SPECIAL;       // return 1 to shown special key found
         case L_SHIFT_PRESS:
             l_shift_flag = ON;
-            return 1;
+            return SPECIAL;
         case R_SHIFT_PRESS:
             r_shift_flag = ON;
-            return 1;
+            return SPECIAL;
         case L_SHIFT_RELEASE:
             l_shift_flag = OFF;
-            return 1;
+            return SPECIAL;
         case R_SHIFT_RELEASE:
             r_shift_flag = OFF;
-            return 1;
+            return SPECIAL;
         case CTRL_PRESS:
             ctrl_flag = ON;
-            return 1;
+            return SPECIAL;
         case CTRL_RELEASE:
             ctrl_flag = OFF;
-            return 1;
+            return SPECIAL;
         default:
-            return 0;
+            return COMMON;
     }
 }
 
