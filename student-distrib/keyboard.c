@@ -47,28 +47,28 @@ uint8_t scancode_to_ascii[SCANCODE_SET_SIZE][2] = {     // two ascii char for ea
     {'3', '#'}, {'4', '$'},
     {'5', '%'}, {'6', '^'},
     {'7', '&'}, {'8', '*'},
-    {'9', '('}, {'0', ')'},     // 1A
+    {'9', '('}, {'0', ')'},     // A
     {'-', '_'}, {'=', '+'},
-    {BCKSPACE, BCKSPACE}, {' ', ' '},    
+    {BCKSPACE, BCKSPACE}, {' ', ' '},
     {'q', 'Q'}, {'w', 'W'},      // 10, 11
     {'e', 'E'}, {'r', 'R'},
     {'t', 'T'}, {'y', 'Y'},
     {'u', 'U'}, {'i', 'I'},
     {'o', 'O'}, {'p', 'P'},
-    {'[', '{'}, {']', '}'},      // 2A 2B
+    {'[', '{'}, {']', '}'},      // 1A 1B
     {ENTER, ENTER}, {EMP, EMP},  // , Left Control
     {'a', 'A'}, {'s', 'S'},
-    {'d', 'D'}, {'f', 'F'},     // 30, 31
+    {'d', 'D'}, {'f', 'F'},     // 20, 21
     {'g', 'G'}, {'h', 'H'},
     {'j', 'J'}, {'k', 'K'},
-    {'l', 'L'}, {';', ':'},     // 36, 37
-    {'\'', '"'}, {'`', '~'},    // 38, 39
-    {EMP, EMP}, {'\\', '|'},    // Left Shift,
+    {'l', 'L'}, {';', ':'},     // 26, 27
+    {'\'', '"'}, {'`', '~'},    // 28, 29
+    {EMP, EMP}, {'\\', '|'},    // Left Shift, 2A, 2B
     {'z', 'Z'}, {'x', 'X'},
     {'c', 'C'}, {'v', 'V'},
-    {'b', 'B'}, {'n', 'N'},     // 40, 41
-    {'m', 'M'}, {',', '<'},     // 42, 43
-    {'.', '>'}, {'/', '?'},     // 44, 45
+    {'b', 'B'}, {'n', 'N'},     // 30, 31
+    {'m', 'M'}, {',', '<'},     // 32, 33
+    {'.', '>'}, {'/', '?'},     // 34, 35
     {EMP, EMP}, {EMP, EMP},     // Right Shift,
     {EMP, EMP}, {' ', ' '},    
 };
@@ -118,8 +118,8 @@ void keyboard_handler() {
         } else {
             // Set ascii_code in respond to caps_flag and SHIFT_FLAG
             // Spacial case for numbers and -,= do not change when only caps_flag
-            // <= 0x0D for 1-9 and -,= 0x39 for `, 0x2A for
-            if ((scan_code <= 0x0D) | (0x2A == scan_code) | (0x2B == scan_code) | (0x37 == scan_code) | (0x38 == scan_code) | (0x39 == scan_code) | (0x3B == scan_code) | (0x43 == scan_code) | (0x44 == scan_code) | (0x45 == scan_code)) {
+            // <= 0x0D for 1-9 and -,= , 0x1A for [, 0x1B for ], 0x27 for ;, 0x28 for ', 0x29 for `, 0x2B for \, 0x33 for ,, 0x34 for ., 0x35 for /
+            if ((scan_code <= 0x0D) | (0x1A == scan_code) | (0x1B == scan_code) | (0x27 == scan_code) | (0x28 == scan_code) | (0x29 == scan_code) | (0x2B == scan_code) | (0x33 == scan_code) | (0x34 == scan_code) | (0x35 == scan_code)) {
                 if (SHIFT_FLAG)
                     ascii_code = scancode_to_ascii[scan_code][HIGHER];
                 else
