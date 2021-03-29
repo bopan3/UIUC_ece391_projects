@@ -6,7 +6,10 @@
 #include "terminal.h"
 #include "lib.h"
 
-volatile uint8_t enter_flag = 0;        /* Record the state of whether enter is pressed */
+#define ON          1
+#define OFF         0
+
+volatile uint8_t enter_flag = OFF;      /* Record the state of whether enter is pressed */
 static char line_buf[LINE_BUF_SIZE];    /* The line buffer */
 static int num_char = 0;                /* Record current number of chars in line buffer */
 
@@ -48,16 +51,19 @@ int32_t terminal_read(int32_t fd, void* buf, int32_t nbytes) {
     int i;                          // Loop index
 
     // While enter not pressed, wait for enter
-    while (0 == enter_flag) {}
+    while (OFF == enter_flag) {}
     cli();
 
+    // Define a temp buffer for data transfer
     int8_t * temp_buf = (int8_t *)buf;
+    // Copy the buffer content
     for (i = 0; (i < nbytes-1) && (i < LINE_BUF_SIZE); i++) {
         temp_buf[i] = line_buf[i];
     }
 
+    // Clear the buffer
     line_buf_clear();
-    enter_flag = 0;
+    enter_flag = OFF;
 
     sti();
     return i;
@@ -88,26 +94,25 @@ int32_t terminal_write(int32_t fd, const void* buf, int32_t nbytes) {
 
 void line_buf_in(char curr) {
     // If the line buffer is already full, only change* when receiving line feed
-    // minus 2 since the last two char of BUFFER must be '\n' and '\0'
-    if (num_char >= LINE_BUF_SIZE - 2) {
+    if (num_char >= LINE_BUF_SIZE - 2) {        // minus 2 since the last two char of BUFFER must be '\n' and '\0'
         if (('\n' == curr) | ('\r' == curr)) {
-            line_buf[LINE_BUF_SIZE - 2] = '\n';
-            enter_flag = 1;
-            num_char = 0;
+            line_buf[LINE_BUF_SIZE - 2] = '\n'; // minus 2 since the last two char of BUFFER must be '\n' and '\0'
+            enter_flag = ON;
+            num_char = 0;                       // reset buffer index to 0
             putc(curr);
         } else if (BCKSPACE == curr) {
-            line_buf[LINE_BUF_SIZE - 1] = '\0';
+            line_buf[LINE_BUF_SIZE - 1] = '\0'; // minus 1 since the last char of BUFFER must be '\0'
             num_char--;
             putc(curr);
         }
     } else {
         if (('\n' == curr) | ('\r' == curr)) {
             line_buf[num_char] = '\n';
-            enter_flag = 1;
-            num_char = 0;
+            enter_flag = ON;
+            num_char = 0;                       // reset buffer index to 0
             putc(curr);
         } else if (BCKSPACE == curr) {
-            if (num_char > 0 && num_char < LINE_BUF_SIZE) {
+            if (num_char > 0 && num_char < LINE_BUF_SIZE) { // If there're contents in buffer, delete the last one
                 line_buf[--num_char] = '\0';
                 putc(curr);
             }
@@ -120,6 +125,8 @@ void line_buf_in(char curr) {
 
 void line_buf_clear() {
     int i;                      // loop index
+
+    // fill with '\0'
     for (i = 0; i < LINE_BUF_SIZE ; ++i) {
         line_buf[i] = '\0';
     }

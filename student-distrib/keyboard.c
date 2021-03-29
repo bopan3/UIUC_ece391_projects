@@ -8,6 +8,11 @@
 #define IRQ_NUM_KEYBOARD 0x01
 #define KEYBOARD_DATA_PORT 0x60
 
+#define ON      1
+#define OFF     0
+#define LOWER   0
+#define HIGHER  1
+
 /* Special Keycodes */
 #define BCKSPACE                0x08
 #define ENTER                   0x0A
@@ -23,10 +28,10 @@
 
 
 /* KEY_FLAGS */
-static uint8_t l_shift_flag = 0;
-static uint8_t r_shift_flag = 0;
-static uint8_t ctrl_flag = 0;
-static uint8_t caps_flag = 0;
+static uint8_t l_shift_flag = OFF;
+static uint8_t r_shift_flag = OFF;
+static uint8_t ctrl_flag = OFF;
+static uint8_t caps_flag = OFF;
 
 #define SHIFT_FLAG              (l_shift_flag | r_shift_flag)
 
@@ -34,7 +39,7 @@ static uint8_t caps_flag = 0;
 * The table used to map the scancode to ascii
 * The table is adapt from https://wiki.osdev.org/Keyboard
 */
-uint8_t scancode_to_ascii[SCANCODE_SET_SIZE][2] = {
+uint8_t scancode_to_ascii[SCANCODE_SET_SIZE][2] = {     // two ascii char for each entry
     {EMP, EMP}, {EMP, EMP},     
     {'1', '!'}, {'2', '@'},
     {'3', '#'}, {'4', '$'},
@@ -98,27 +103,29 @@ void keyboard_handler() {
         return;
     }
 
-    if ((scan_code >= SCANCODE_SET_SIZE) || (scan_code < 0x02)){
+    // make sure inside legit range
+    if ((scan_code >= SCANCODE_SET_SIZE) || (scan_code < 0x02)){    // < 0x02 since the first two are empty
         send_eoi(IRQ_NUM_KEYBOARD);
         sti();
         return;
     }
     if (scan_code < SCANCODE_SET_SIZE){
 
-        if (ctrl_flag & ('l' == scancode_to_ascii[scan_code][0])) {
+        if (ctrl_flag & ('l' == scancode_to_ascii[scan_code][LOWER])) {
             clear();
         } else {
             // Set ascii_code in respond to caps_flag and SHIFT_FLAG
-            if ((scan_code <= 0x0D) | (0x29 == scan_code)) {            // Spacial case for numbers and -,= do not change when only caps_flag
+            // Spacial case for numbers and -,= do not change when only caps_flag
+            if ((scan_code <= 0x0D) | (0x29 == scan_code)) {      // <= 0x0D for 1-9 and -,= 0x29 for `
                 if (SHIFT_FLAG)
-                    ascii_code = scancode_to_ascii[scan_code][1];
+                    ascii_code = scancode_to_ascii[scan_code][HIGHER];
                 else
-                    ascii_code = scancode_to_ascii[scan_code][0];
+                    ascii_code = scancode_to_ascii[scan_code][LOWER];
             } else {
                 if ((caps_flag | SHIFT_FLAG) & (caps_flag != SHIFT_FLAG))
-                    ascii_code = scancode_to_ascii[scan_code][1];
+                    ascii_code = scancode_to_ascii[scan_code][HIGHER];
                 else
-                    ascii_code = scancode_to_ascii[scan_code][0];
+                    ascii_code = scancode_to_ascii[scan_code][LOWER];
             }
 
             // Display to screen and feed to line_buffer
@@ -141,28 +148,28 @@ void keyboard_handler() {
 int spe_key_check(uint8_t scan_code) {
     switch (scan_code) {
         case CAPS_PRESS:
-            if (0 == caps_flag)
-                caps_flag = 1;
+            if (OFF == caps_flag)
+                caps_flag = ON;
             else
-                caps_flag = 0;
-            return 1;
+                caps_flag = OFF;
+            return 1;       // return 1 to shown special key found
         case L_SHIFT_PRESS:
-            l_shift_flag = 1;
+            l_shift_flag = ON;
             return 1;
         case R_SHIFT_PRESS:
-            r_shift_flag = 1;
+            r_shift_flag = ON;
             return 1;
         case L_SHIFT_RELEASE:
-            l_shift_flag = 0;
+            l_shift_flag = OFF;
             return 1;
         case R_SHIFT_RELEASE:
-            r_shift_flag = 0;
+            r_shift_flag = OFF;
             return 1;
         case CTRL_PRESS:
-            ctrl_flag = 1;
+            ctrl_flag = ON;
             return 1;
         case CTRL_RELEASE:
-            ctrl_flag = 0;
+            ctrl_flag = OFF;
             return 1;
         default:
             return 0;

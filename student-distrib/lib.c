@@ -11,6 +11,9 @@
 #define BLUESCREEN      0x10    // color combination for blue screen
 #define NORMALSCREEN    0x7     // color combination for normal screen
 
+#define CURSOR_L    0x3D5
+#define CURSOR_H    0x3D4
+
 #define BCKSPACE        0x08    // keycode for backspace
 
 static int screen_x;
@@ -28,8 +31,10 @@ void clear(void) {
         *(uint8_t *)(video_mem + (i << 1)) = ' ';
         *(uint8_t *)(video_mem + (i << 1) + 1) = screen_color;
     }
+    // reset coordinates
     screen_x = 0;
     screen_y = 0;
+    // update cursor
     update_cursor();
 }
 
@@ -42,11 +47,11 @@ void clear(void) {
 void update_cursor(void) {
     uint16_t pos = screen_y * NUM_COLS + screen_x;
 
-    outb(0x0E, 0x3D4);
-    outb((uint8_t) ((pos >> 8)), 0x3D5);
+    outb(0x0E, CURSOR_H);                       // 0x0E, 0x0F for line cursor
+    outb((uint8_t) ((pos >> 8)), CURSOR_L);     // right shift 8 bits to get lower bits of cursor position
 
-    outb(0x0F, 0x3D4);
-    outb((uint8_t) (pos), 0x3D5);
+    outb(0x0F, CURSOR_H);
+    outb((uint8_t) (pos), CURSOR_L);
 }
 
 /* Standard printf().
