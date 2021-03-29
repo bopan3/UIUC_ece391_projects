@@ -31,10 +31,6 @@ static int32_t file_count;                    // count number of file opened
  *      a. file name does not exists (read_dentry_by_name)
  *      b. invalde file index (read_dentry_by_index)
  *      c. inode number out of range (read_data)
- *      d.
- *      e.
- *      f.
- *      g.
  */ 
 
 /* 
@@ -333,7 +329,7 @@ int32_t file_write(int32_t fd, uint8_t* buf, int32_t nbytes) {
 int32_t file_close(int32_t fd) {
 
     // Preserve first two slot for stdin, stdout
-    if (fd <= 2 || file_count <= 2) {
+    if (fd < 2 || file_count <= 2 || fd > 7) {
         return -1;
     }
 

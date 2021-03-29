@@ -392,17 +392,35 @@ int cp2_filesys_test_2() {
 int cp2_filesys_test_3() {
 	int32_t fd;
 	int32_t length;
-	int32_t nbytes = 10000;
-	char buf[nbytes+1];
+	int32_t nbytes = 100000;
+	int32_t i;
+	uint8_t buf[nbytes+1];
+
+	/* We eliminate the '\0' character */
 
 	printf("--------------------\n");
 
-	fd = file_open((uint8_t*)"grep");
-	length = file_read(fd, (uint8_t*)buf, nbytes);
+	fd = file_open((uint8_t*)"ls");
+	length = file_read(fd, buf, nbytes);
 	buf[length+1] = '\0';
-	printf("File name: grep\n");
+	printf("File name: ls\n");
 	printf("Bytes readed: %d\n", length);
-	printf("Content:\n%s ...... %s\n", buf, buf+length-30);
+	printf("Content:\n");
+	// Print all characters
+	for (i = 0; i < length; i++) {
+		if (buf[i] != '\0')
+			putc(buf[i]);
+	}
+	printf("\n");
+	// Print first 100 characters
+	// printf("--------------------\n");
+	// printf("In addition, characters at begining:\n");
+	// for (i = 0; i < 100; i++) {
+	// 	if (buf[i] != '\0')
+	// 		putc(buf[i]);
+	// }
+	// printf("\n");
+
 	file_close(fd);
 
 	return PASS;
@@ -501,5 +519,5 @@ void launch_tests(){
 	// TEST_OUTPUT("File System test 2", cp2_filesys_test_2());		// read short file
 	// TEST_OUTPUT("File System test 3", cp2_filesys_test_3());		// read executable
 	// TEST_OUTPUT("File System test 4", cp2_filesys_test_4());		// read large file
-	TEST_OUTPUT("File System test 5", cp2_filesys_test_5());		// open, close, write / handle error condition
+	// TEST_OUTPUT("File System test 5", cp2_filesys_test_5());		// open, close, write / handle error condition
 }
