@@ -109,10 +109,17 @@ void keyboard_handler() {
             clear();
         } else {
             // Set ascii_code in respond to caps_flag and SHIFT_FLAG
-            if (caps_flag | SHIFT_FLAG)
-                ascii_code = scancode_to_ascii[scan_code][1];
-            else
-                ascii_code = scancode_to_ascii[scan_code][0];
+            if ((scan_code <= 0x0D) | (0x29 == scan_code)) {            // Spacial case for numbers and -,= do not change when only caps_flag
+                if (SHIFT_FLAG)
+                    ascii_code = scancode_to_ascii[scan_code][1];
+                else
+                    ascii_code = scancode_to_ascii[scan_code][0];
+            } else {
+                if (caps_flag | SHIFT_FLAG)
+                    ascii_code = scancode_to_ascii[scan_code][1];
+                else
+                    ascii_code = scancode_to_ascii[scan_code][0];
+            }
 
             // Display to screen and feed to line_buffer
 //            putc(ascii_code);

@@ -6,11 +6,9 @@
 #include "terminal.h"
 #include "lib.h"
 
-volatile uint8_t enter_flag = 0;
-
+volatile uint8_t enter_flag = 0;        /* Record the state of whether enter is pressed */
 static char line_buf[LINE_BUF_SIZE];    /* The line buffer */
 static int num_char = 0;                /* Record current number of chars in line buffer */
-static int enter_pressed = 0;           /* Record the state of whether enter is pressed */
 
 /*
 *	terminal_open
@@ -95,6 +93,7 @@ void line_buf_in(char curr) {
         if (('\n' == curr) | ('\r' == curr)) {
             line_buf[LINE_BUF_SIZE - 2] = '\n';
             enter_flag = 1;
+            num_char = 0;
             putc(curr);
         } else if (BCKSPACE == curr) {
             line_buf[LINE_BUF_SIZE - 1] = '\0';
@@ -105,6 +104,7 @@ void line_buf_in(char curr) {
         if (('\n' == curr) | ('\r' == curr)) {
             line_buf[num_char] = '\n';
             enter_flag = 1;
+            num_char = 0;
             putc(curr);
         } else if (BCKSPACE == curr) {
             if (num_char > 0 && num_char < LINE_BUF_SIZE) {
