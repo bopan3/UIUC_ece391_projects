@@ -10,11 +10,6 @@ static uint32_t n_dentry_b;
 static uint32_t n_inode_b;
 static uint32_t n_data_block_b;
 
-/* Casting file_sys_addr to different type of pointers for convenience */
-static struct dentry_t* p_dentry;              // pointer to dentry array (start from 0)
-static struct inode_block_t* p_inode;          // pointer to inode block array
-static struct data_block_t* p_data;            // pointer to data block array
-
 /* Initialize a file discriptor array here (only for check piont 2) */
 static struct file_des_t file_array[8];       // temporarily used descriptor array
 static int32_t file_count;                    // count number of file opened
