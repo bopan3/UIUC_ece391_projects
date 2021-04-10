@@ -102,7 +102,6 @@ int32_t read_dentry_by_name(const uint8_t* fname, dentry_t* dentry) {
                 dentry->f_name[length] = '\0';
             dentry->f_type = p_dentry[i].f_type;
             dentry->idx_inode = p_dentry[i].idx_inode; 
-            dentry->f_size = p_inode[p_dentry[i].idx_inode].length;
             return 0;
         }
     }
@@ -134,7 +133,6 @@ int32_t read_dentry_by_index(uint32_t index, dentry_t* dentry) {
         dentry->f_name[length] = '\0';
     dentry->f_type = p_dentry[index].f_type;
     dentry->idx_inode = p_dentry[index].idx_inode; 
-    dentry->f_size = p_inode[p_dentry[index].idx_inode].length;
 
     return 0;
 }
@@ -255,12 +253,11 @@ int32_t file_open(const uint8_t* filename) {
 
     // Add a new descriptor to the array
     file_array[file_count].idx_inode = result.idx_inode;
-    file_array[file_count].file_type = result.f_type;
     file_array[file_count].file_pos = 0;
     file_array[file_count].flages = 0;
 
     file_count += 1;
-    return (file_count - 1);
+    return file_count - 1;
 }
 
 /* 
@@ -271,9 +268,9 @@ int32_t file_open(const uint8_t* filename) {
  *           nbytes - number of bytes to read
  *   OUTPUTS: nbytes of file contents
  *   RETURN VALUE: 0 if success, -1 if anything bad happened
- *   SIDE EFFECTS: none
+ *   SIDE EFFECTS: none 
  */
-int32_t file_read(int32_t fd, uint8_t* buf, int32_t nbytes) {
+int32_t file_read(int32_t fd, void* buf, int32_t nbytes) {
 
     uint32_t idx_inode;     // index of inode block
     uint32_t offset;        // starting address in file
@@ -281,14 +278,14 @@ int32_t file_read(int32_t fd, uint8_t* buf, int32_t nbytes) {
     int32_t length;         // length of reading
 
     // Check discriptor
-    if (fd < 0 || fd >= N_FILES) {
-        return -1;
-    }
+    // if (fd < 0 || fd >= N_FILES) {
+    //     return -1;
+    // }
 
     // Check file type
-    if (file_array[fd].file_type != 2) {
-        return -1;
-    }
+    // if (file_array[fd].file_type != 2) {
+    //     return -1;
+    // }
 
     // Calculate parameters
     idx_inode = file_array[fd].idx_inode;
@@ -299,7 +296,7 @@ int32_t file_read(int32_t fd, uint8_t* buf, int32_t nbytes) {
     }
 
     // Read the file
-    length = read_data(idx_inode, offset, buf, nbytes);
+    length = read_data(idx_inode, offset, (uint8_t*)buf, nbytes);
     if (length >= 0) {
         file_array[fd].file_pos += length;
     }
@@ -317,7 +314,7 @@ int32_t file_read(int32_t fd, uint8_t* buf, int32_t nbytes) {
  *   RETURN VALUE: -1
  *   SIDE EFFECTS: none
  */
-int32_t file_write(int32_t fd, uint8_t* buf, int32_t nbytes) {
+int32_t file_write(int32_t fd, const void* buf, int32_t nbytes) {
     return -1;
 }
 
@@ -339,7 +336,6 @@ int32_t file_close(int32_t fd) {
     file_array[fd].idx_inode = 0;
     file_array[fd].file_pos = 0;
     file_array[fd].flages = 0;
-    file_array[fd].file_type = 0;
 
     file_count -= 1;
 
@@ -386,7 +382,7 @@ int32_t direct_open(const uint8_t* directname) {
  *   RETURN VALUE: 1 if success, 0 if reach the end
  *   SIDE EFFECTS: none
  */
-int32_t direct_read(uint8_t* buf) {
+int32_t direct_read(int32_t fd, void* buf, int32_t nbytes) {
 
     struct dentry_t temp;   // store temp dentry in loop
 
@@ -395,8 +391,7 @@ int32_t direct_read(uint8_t* buf) {
     }
     
     // Read file name
-    strncpy((int8_t*)buf, (int8_t*)temp.f_name, 32);
-    buf[33] = '\0';
+    strncpy((int8_t*)buf, (int8_t*)temp.f_name, 33);
 
     direct_read_count += 1;
     return 1;
@@ -412,7 +407,7 @@ int32_t direct_read(uint8_t* buf) {
  *   RETURN VALUE: -1
  *   SIDE EFFECTS: none
  */
-int32_t direct_write(int32_t fd, uint8_t* buf, int32_t nbytes) {
+int32_t direct_write(int32_t fd, const void* buf, int32_t nbytes) {
     return -1;
 }
 
@@ -427,3 +422,21 @@ int32_t direct_write(int32_t fd, uint8_t* buf, int32_t nbytes) {
 int32_t direct_close(int32_t fd) {
     return 0;
 }
+
+
+/*-------------------- Assistance functions --------------------*/ 
+
+/* 
+ * get_file_size
+ *   DESCRIPTION: get size of file
+ *   INPUTS: inode - number of inode
+ *   OUTPUTS: none
+ *   RETURN VALUE: size of file if success, -1 if anything bad happened
+ *   SIDE EFFECTS: none
+ */
+int32_t get_file_size(uint32_t inode) {
+    if (inode >= n_inode_b)
+        return -1;
+    return p_inode[inode].length;
+}
+
