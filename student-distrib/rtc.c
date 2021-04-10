@@ -132,22 +132,22 @@ int32_t rtc_open(const uint8_t* filename) {
  *   RETURN VALUE: 0
  *   SIDE EFFECTS: 
  */
-int32_t rtc_close(const uint8_t* filename) {
+int32_t rtc_close(int32_t fd) {
     virtual_freq=0; // change the freq to 0 to indicate the rtc is not opened
     current_count=MAX_FREQ;
     virtual_iqr_got=0;
     return 0;
 }
 
-/* 
+/*
  * rtc_read
- *   DESCRIPTION: wait for an virtual RTC irq 
+ *   DESCRIPTION: wait for an virtual RTC irq
  *   INPUTS: fd (File descriptor number)
  *           buf  (Output data pointer)
  *           nbytes (Number of bytes read)
  *   OUTPUTS: none
  *   RETURN VALUE: 0
- *   SIDE EFFECTS: 
+ *   SIDE EFFECTS:
  */
 int32_t rtc_read(int32_t fd, void* buf, int32_t nbytes) {
     cli();
@@ -157,17 +157,17 @@ int32_t rtc_read(int32_t fd, void* buf, int32_t nbytes) {
     return 0;
 }
 
-/* 
+/*
  * rtc_write
- *   DESCRIPTION: wait for an virtual RTC irq 
+ *   DESCRIPTION: wait for an virtual RTC irq
  *   INPUTS: fd (File descriptor number)
  *           buf  (Output data pointer)
- *           nbytes (Number of bytes to write) 
+ *           nbytes (Number of bytes to write)
  *   OUTPUTS: none
  *   RETURN VALUE: 0 on success, -1 on invalid freqency
  *   SIDE EFFECTS: change the virtual irq freq
  */
-int32_t rtc_write(int32_t fd, void* buf, int32_t nbytes) {
+int32_t rtc_write(int32_t fd, const void* buf, int32_t nbytes) {
     int try_freq; // the freqency we try to change to 
     try_freq=   *((int*) buf);
     // check NULL pointer and wrong nbytes

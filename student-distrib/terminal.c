@@ -20,8 +20,8 @@ static int num_char = 0;                /* Record current number of chars in lin
 *	outputs: nothing
 *	effects: none
 */
-int32_t terminal_open(const uint8_t filename) {
-    return 0;
+int32_t terminal_open(const uint8_t* filename) {
+    return -1;
 }
 
 /*
@@ -32,7 +32,7 @@ int32_t terminal_open(const uint8_t filename) {
 *	effects: none
 */
 int32_t terminal_close(int32_t fd) {
-    return 0;
+    return -1;
 }
 
 /*

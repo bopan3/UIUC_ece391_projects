@@ -11,7 +11,7 @@
 #define BCKSPACE            0x08
 #define LINE_BUF_SIZE       128
 
-extern int32_t terminal_open(const uint8_t filename);
+extern int32_t terminal_open(const uint8_t* filename);
 
 extern int32_t terminal_close(int32_t fd);
 
