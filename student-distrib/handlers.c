@@ -57,17 +57,3 @@ void irq_handler(int irq_vect) {
 }
 
 
-/* 
- * sys_handler
- *   DESCRIPTION: save registers and pass control to a system call handler specified by exp_vect
- *   INPUTS: exp_num - index of exception in IDT
- *   OUTPUTS: none
- *   RETURN VALUE: none
- *   SIDE EFFECTS: excute exception handler
- */
-void sys_handler(int exp_vect) {
-    while(1){}
-    return;
-}
-
-
