@@ -66,5 +66,70 @@ asm_irq_linkage(irq_PS2_Mouse, IRQ_PS2_Mouse);
 asm_irq_linkage(irq_Ide0, IRQ_Ide0);
 
 /*------------------- System call -------------------*/
+call_table:
+    .long 0x0   /* NULL, a placeholder, since call number is 1-index based */
+    .long halt
+    .long execute
+    .long read
+    .long write
+    .long open 
+    .long close
+    .long getargs
+    .long vidmap
+    .long set_handler
+    .long sigreturn 
 
-// .globl asm_sys_linkage
+
+
+.globl asm_sys_linkage
+
+asm_sys_linkage:
+    /* save all regs value */
+    /* EAX for call num and return value */
+    /* EIP set by call */
+    pushl %ebx
+    pushl %ecx
+    pushl %edx
+    pushl %esi
+    pushl %edi
+    pushl %ebp
+    pushl %esp
+    pushfl 
+
+    /* push args to kernel stack */
+    pushl %edx  /* mode */
+    pushl %ecx  /* flags */
+    pushl %ebx  /* name */
+
+    /* call */
+    /* first check if call number valid, from 1~10 */
+    cmpl $0, %eax 
+    jle sys_invalid
+    cmpl $10, %eax 
+    jg  sys_invalid
+    jmp sys_valid
+
+sys_invalid:
+    movl $-1, %eax  /* indicate an error */
+    jmp sys_iret
+
+sys_valid:
+    /* via call number and call table */
+    call *call_table(, %eax, 4)
+
+sys_iret:
+    /* pop args from kernel stack */
+    addl $12, %esp
+
+    /* restore all regs value */
+    popfl 
+    popl %esp
+    popl %ebp
+    popl %edi
+    popl %esi 
+    popl %edx
+    popl %ecx
+    popl %ebx
+
+    /* return from kernel to user */
+    iret 
