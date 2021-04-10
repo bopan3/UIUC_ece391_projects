@@ -16,7 +16,6 @@
 typedef struct file_des_t {
     // file_ops*   file_ops_ptr;
     uint32_t    idx_inode;
-    uint32_t    file_type;
     uint32_t    file_pos;   // position where last read ends
     uint32_t    flages;     // flages that indicate file's state
 } file_des_t;

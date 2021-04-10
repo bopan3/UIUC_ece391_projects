@@ -357,7 +357,7 @@ int cp2_filesys_test_1() {
 	for (i = 0; i < num_dentry; i++) {
 		strncpy((int8_t*)temp, (int8_t*)result[i].f_name, 32);
 		temp[33] = '\0';
-		printf("Name: %s  |  Type: %d  |  Size(byte): %d\n", temp, result[i].f_type, result[i].f_size);
+		printf("Name: %s  |  Type: %d  |  Size(byte): %d\n", temp, result[i].f_type, get_file_size(result[i].idx_inode));
 	}
 	
 	return PASS;
@@ -468,7 +468,7 @@ int cp2_filesys_test_5() {
 	fd3 = file_open((uint8_t*)"verylargetextwithverylongname.tx");
 	fd = direct_open((uint8_t*)".");
 
-	printf("file_open shoud return file descriptors: fd1=%d, fd2=%d, fd3=%d\n", fd1, fd2, fd3);	
+	printf("file_open shoud return 0: fd1=%d, fd2=%d, fd3=%d\n", fd1, fd2, fd3);	
 	printf("direct_open shoud return 0: fd=%d\n", fd);	
 	printf("file_write shoud return -1: %d\n",file_write(fd1, (uint8_t*)buf, nbytes));
 	printf("direct_write shoud return -1: %d\n",direct_write(fd1, (uint8_t*)buf, nbytes));
@@ -504,7 +504,7 @@ int cp2_filesys_test_6() {
 
 	// 20 > number of files
 	for (i = 0; i < 20; i++) {
-		if (0 != direct_read(buf)) {
+		if (0 != direct_read(0, buf, 1)) {
 			printf("File name: %s\n", buf);
 		} else {
 			printf("Return 0\n");
@@ -591,6 +591,6 @@ void launch_tests(){
 	// TEST_OUTPUT("File System test 2", cp2_filesys_test_2());		// read short file
 	// TEST_OUTPUT("File System test 3", cp2_filesys_test_3());		// read executable
 	// TEST_OUTPUT("File System test 4", cp2_filesys_test_4());		// read large file
-	// TEST_OUTPUT("File System test 5", cp2_filesys_test_5());		// open, close, write / handle error condition
+	TEST_OUTPUT("File System test 5", cp2_filesys_test_5());		// open, close, write / handle error condition
 	// TEST_OUTPUT("File System test 6", cp2_filesys_test_6());			// direct_read
 }
