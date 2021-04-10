@@ -15,6 +15,11 @@ static struct dentry_t* p_dentry;              // pointer to dentry array (start
 static struct inode_block_t* p_inode;          // pointer to inode block array
 static struct data_block_t* p_data;            // pointer to data block array
 
+/* Initialize a file discriptor array here (only for check piont 2) */
+static struct file_des_t file_array[8];       // temporarily used descriptor array
+static int32_t file_count;                    // count number of file opened
+static int32_t direct_read_count;             // count the file name to be read
+
 /* Some parameters */
 #define STR_LEN 32
 #define BLOCK_SIZE 4096
@@ -44,6 +49,10 @@ void filesys_init() {
     p_dentry = ((dentry_t*)file_sys_addr) + 1;        // skip the firt segment of boot block
     p_inode = ((inode_block_t*)file_sys_addr) + 1;    // skip the boot block 
     p_data = ((data_block_t*)file_sys_addr) + n_inode_b + 1;      // skip the boot block and inode blocks
+
+    direct_read_count = 0;
+    
+    file_count = 2;     // only used for check point 2
 }
 
 /* 
@@ -229,7 +238,26 @@ int32_t read_data(uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t length
  *   SIDE EFFECTS: none
  */
 int32_t file_open(const uint8_t* filename) {
-    return 0;
+
+    struct dentry_t result;     // structure to store the search result
+
+    // Check current number of opened files
+    if (file_count >= N_FILES) {
+        return -1;
+    }
+
+    // Search the file
+    if (-1 == read_dentry_by_name(filename, &result)) {
+        return -1;
+    }
+
+    // Add a new descriptor to the array
+    file_array[file_count].idx_inode = result.idx_inode;
+    file_array[file_count].file_pos = 0;
+    file_array[file_count].flages = 0;
+
+    file_count += 1;
+    return file_count - 1;
 }
 
 /* 
