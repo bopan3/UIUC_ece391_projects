@@ -254,7 +254,7 @@ int32_t file_open(const uint8_t* filename) {
     // Add a new descriptor to the array
     file_array[file_count].idx_inode = result.idx_inode;
     file_array[file_count].file_pos = 0;
-    file_array[file_count].flages = 0;
+    file_array[file_count].flags = 0;
 
     file_count += 1;
     return file_count - 1;
@@ -335,7 +335,7 @@ int32_t file_close(int32_t fd) {
 
     file_array[fd].idx_inode = 0;
     file_array[fd].file_pos = 0;
-    file_array[fd].flages = 0;
+    file_array[fd].flags = 0;
 
     file_count -= 1;
 

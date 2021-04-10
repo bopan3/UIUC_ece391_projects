@@ -25,6 +25,8 @@
 #define R_SHIFT_RELEASE         0xB6
 #define CTRL_PRESS              0x1D
 #define CTRL_RELEASE            0x9D
+#define ALT_PRESS               0x38
+#define ALT_RELEASE             0xB8
 #define CAPS_PRESS              0x3A
 
 
@@ -34,6 +36,7 @@ static uint8_t l_shift_flag = OFF;
 static uint8_t r_shift_flag = OFF;
 static uint8_t ctrl_flag = OFF;
 static uint8_t caps_flag = OFF;
+static uint8_t alt_flag = OFF;
 
 #define SHIFT_FLAG              (l_shift_flag | r_shift_flag)
 
@@ -173,6 +176,12 @@ int spe_key_check(uint8_t scan_code) {
             return SPECIAL;
         case CTRL_RELEASE:
             ctrl_flag = OFF;
+            return SPECIAL;
+        case ALT_PRESS:
+            alt_flag = ON;
+            return SPECIAL;
+        case ALT_RELEASE:
+            alt_flag = OFF;
             return SPECIAL;
         default:
             return COMMON;

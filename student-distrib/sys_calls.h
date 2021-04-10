@@ -43,10 +43,10 @@ fop_t stdi_fop_t;
 fop_t stdo_fop_t;
 
 /* end a process, returning the wanted value to its parent process */
-int32_t halt(uint8_t status);
+//int32_t halt(uint8_t status);
 
 /* initiate and start a new program, guide the processor to the new program */
-int32_t execute(const uint8_t* command);
+//int32_t execute(const uint8_t* command);
 
 /* open a file */
 int32_t open(const uint8_t* fname);

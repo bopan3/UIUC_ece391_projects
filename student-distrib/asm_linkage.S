@@ -68,16 +68,22 @@ asm_irq_linkage(irq_Ide0, IRQ_Ide0);
 /*------------------- System call -------------------*/
 call_table:
     .long 0x0   /* NULL, a placeholder, since call number is 1-index based */
-    .long halt
-    .long execute
+//    .long halt
+//    .long execute
+    .long 0x0
+    .long 0x0
     .long read
     .long write
     .long open 
     .long close
-    .long getargs
-    .long vidmap
-    .long set_handler
-    .long sigreturn 
+    .long 0x0
+    .long 0x0
+    .long 0x0
+    .long 0x0
+//    .long getargs
+//    .long vidmap
+//    .long set_handler
+//    .long sigreturn
 
 
 

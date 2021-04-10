@@ -7,7 +7,7 @@
 #include "terminal.h"
 #include "rtc.h"
 
-// For test
+// For test only
 int32_t pid = 1;
 
 /*
@@ -51,7 +51,7 @@ int32_t open(const uint8_t* fname){
             cur_pcb->file_array[i].file_pos = 0;        // 0 as the file has not been read yet
             cur_pcb->file_array[i].flags = INUSE;
 
-            return 0;
+            return i;
         }
     }
     // exiting the while loop means all fds are full, fail
