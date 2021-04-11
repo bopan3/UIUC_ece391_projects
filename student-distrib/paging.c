@@ -115,24 +115,24 @@ void paging_init(void){
 void paging_set_user_mapping(int32_t pid){
     /* first time setting mapping */
     if(page_dict[USER_PROG_ADDR].P == 0){
-        page_dict[i].P = 1;         /* make it present */
-        page_dict[i].RW = 1;        /* RW enable */
-        page_dict[i].US = 1;        /* for user code */
-        page_dict[i].PWT = 0;       /* always write back policy */
-        page_dict[i].PCD = 1;       /* 1 for code and data */
-        page_dict[i].A = 0;         /* set to 1 by processor */
+        page_dict[USER_PROG_ADDR].P = 1;         /* make it present */
+        page_dict[USER_PROG_ADDR].RW = 1;        /* RW enable */
+        page_dict[USER_PROG_ADDR].US = 1;        /* for user code */
+        page_dict[USER_PROG_ADDR].PWT = 0;       /* always write back policy */
+        page_dict[USER_PROG_ADDR].PCD = 1;       /* 1 for code and data */
+        page_dict[USER_PROG_ADDR].A = 0;         /* set to 1 by processor */
 
-        page_dict[i].bit6 = 0;      /* set to 0 as Dirty for 4MB */
-        page_dict[i].PS = 1;        /* for 4MB */
-        page_dict[i].G = 0;         
-        page_dict[i].Avail = 0;     /* not used */
+        page_dict[USER_PROG_ADDR].bit6 = 0;      /* set to 0 as Dirty for 4MB */
+        page_dict[USER_PROG_ADDR].PS = 1;        /* for 4MB */
+        page_dict[USER_PROG_ADDR].G = 0;
+        page_dict[USER_PROG_ADDR].Avail = 0;     /* not used */
         
         /* setting address */
-        page_dict[i].bit12 = 0;     /* PAT not used */
-        page_dict[i].bit21_13 = 0;  /* reserved, must be 0 */
+        page_dict[USER_PROG_ADDR].bit12 = 0;     /* PAT not used */
+        page_dict[USER_PROG_ADDR].bit21_13 = 0;  /* reserved, must be 0 */
         
     }
-    page_dict[i].bit31_22 = pid+2;  /* start from 8MB */
+    page_dict[USER_PROG_ADDR].bit31_22 = pid+2;  /* start from 8MB */
 
     TLB_flush();
 }

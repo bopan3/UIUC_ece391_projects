@@ -34,7 +34,7 @@ int32_t open(const uint8_t* fname){
         return -1;
 
     // get the pointer to current pcb
-    pcb_block_t* cur_pcb = (pcb_block_t*)(0x800000 - 0x2000*(pid+1));
+    pcb* cur_pcb = (pcb*)(_8MB_ - _8KB_*(pid+1));
 
     // loop through all dynamic fds
     for (i = INI_FILES; i < N_FILES; ++i) {
@@ -79,7 +79,7 @@ int32_t close(int32_t fd){
         return -1;
 
     // find the current PCB
-    pcb_block_t* cur_pcb = (pcb_block_t*)(0x800000 - 0x2000*(pid+1));
+    pcb* cur_pcb = (pcb*)(_8MB_ - _8KB_*(pid+1));
 
     // check if the current file descriptor is freed
     if(cur_pcb->file_array[fd].flags == UNUSE)
@@ -116,7 +116,7 @@ int32_t read(int32_t fd, void* buf, int32_t nbytes){
         return -1;
 
     // find the current PCB
-    pcb_block_t* cur_pcb = (pcb_block_t*)(0x800000 - 0x2000*(pid+1));
+    pcb* cur_pcb = (pcb*)(_8MB_ - _8KB_*(pid+1));
     // check if the current file descriptor is in use
     if(cur_pcb->file_array[fd].flags == UNUSE)
         return -1;
@@ -148,7 +148,7 @@ int32_t write(int32_t fd, const void* buf, int32_t nbytes) {
         return -1;
 
     // find the current PCB
-    pcb_block_t* cur_pcb = (pcb_block_t*)(0x800000 - 0x2000*(pid+1));
+    pcb* cur_pcb = (pcb*)(_8MB_ - _8KB_*(pid+1));
     // check if the current file descriptor is in use
     if(cur_pcb->file_array[fd].flags == UNUSE)
         return -1;

@@ -54,7 +54,7 @@ do {                                \
     :   /* no outputs */            \
     :   /* no inputs */             \
     :   "eax"                       \
-    );
+    );                              \
 }while (0);
 
 
