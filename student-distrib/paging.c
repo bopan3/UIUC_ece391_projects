@@ -102,3 +102,37 @@ void paging_init(void){
     enable_paging_hw(page_dict);
     
 }
+
+/* 
+ * paging_set_user_mapping
+ *   DESCRIPTION: for the use of execute system call, to set mapping from virtual to physical
+ *   INPUTS: pid - index of task, indicate the address of user program chunks 
+ *   OUTPUTS: none
+ *   RETURN VALUE: -1 - for invalid result
+ *                  0 - for success
+ *   SIDE EFFECTS:  none
+ */
+void paging_set_user_mapping(int32_t pid){
+    /* first time setting mapping */
+    if(page_dict[USER_PROG_ADDR].P == 0){
+        page_dict[i].P = 1;         /* make it present */
+        page_dict[i].RW = 1;        /* RW enable */
+        page_dict[i].US = 1;        /* for user code */
+        page_dict[i].PWT = 0;       /* always write back policy */
+        page_dict[i].PCD = 1;       /* 1 for code and data */
+        page_dict[i].A = 0;         /* set to 1 by processor */
+
+        page_dict[i].bit6 = 0;      /* set to 0 as Dirty for 4MB */
+        page_dict[i].PS = 1;        /* for 4MB */
+        page_dict[i].G = 0;         
+        page_dict[i].Avail = 0;     /* not used */
+        
+        /* setting address */
+        page_dict[i].bit12 = 0;     /* PAT not used */
+        page_dict[i].bit21_13 = 0;  /* reserved, must be 0 */
+        
+    }
+    page_dict[i].bit31_22 = pid+2;  /* start from 8MB */
+
+    TLB_flush();
+}
