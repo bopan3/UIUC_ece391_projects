@@ -20,6 +20,55 @@ int32_t pid, new_pid;
  *   RETURN VALUE: 0 if success, -1 if anything bad happened
  *   SIDE EFFECTS: none
  */
+int32_t halt(uint8 t status){
+    int i;              /* loop index */
+
+    /* Get pcb info */
+    pcb* cur_pcb_ptr = get_pcb_ptr(pid);
+    pcb* prev_pcb_ptr;
+
+    /* intend to halt shell */
+    if (cur_pcb_ptr->pid == ROOT_TASK){
+        /* then go back to shell */
+        /* TODO */
+    }
+
+    /*  Restore parent data */
+    prev_pcb_ptr = get_pcb_ptr(cur_pcb_ptr->prev_pid);
+    task_array[pid] = 0;        /* release the pid entry at task array */
+    pid = prev_pcb_ptr->pid;    /* update pid */
+
+    /* tss update */
+    tss.ss0 = KERNEL_DS;
+    tss.esp0 = _8MB_ - (_8KB_ * (pid+1)) - 4;   /*  */ 
+
+    /* Restore parent paging */
+    paging_set_user_mapping(pid);    
+    
+    /* Close any relevant FDs */
+    /* close normal file */
+    for (i = 2; i < N_FILES; i++){
+        if (cur_pcb_ptr->file_array[i].flags == INUSE){
+            close(i);
+        }
+    }
+    /* close stdin, stdout */
+    /* TODO */
+
+    /* Jump to execute return */
+
+    asm volatile(
+        "xorl %%eax, %%eax;"
+        "movb %0, %%eax;"
+        "movl %1, %%ebp;"
+        "movl %2, %%esp;"
+        "leave;"
+        "ret;"
+        : /* No output */
+        : "r"(status), "r"(cur_pcb_ptr->kernel_ebp), "r"(cur_pcb_ptr->kernel_esp)
+        : "esp", "ebp", "eax"   
+    )
+}
 
 int32_t execute(const uint8_t* command){
     uint8_t filename[FILENAME_LEN];     /* filename array */
