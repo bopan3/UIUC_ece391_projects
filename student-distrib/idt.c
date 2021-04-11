@@ -28,12 +28,13 @@ void f_name() {                               \
     return;                                   \
 }                                             \
 
-#define IDT_sys_entry(f_name, vect, msg)      \
-void f_name() {                               \
-    printf("SYSTEM CALL #0x%x: %s\n", vect, msg);\
-    asm volatile("sti");                      \
-    return;                                   \
-}                                             \
+/*#define IDT_sys_entry(f_name, vect, msg)      \
+//void f_name() {                               \
+//    printf("SYSTEM CALL #0x%x: %s\n", vect, msg);\
+//    asm volatile("sti");                      \
+//    return;                                   \
+//}                                             \
+*/
 
 /* Exceptions */
 IDT_exp_entry(excp_Divide_Error, EXCP_Divide_Error, "Divide Error");
@@ -56,7 +57,7 @@ IDT_exp_entry(excp_Machine_Check, EXCP_Machine_Check, "Machine Check");
 IDT_exp_entry(excp_SIMD_Floating_Point, EXCP_SIMD_Floating_Point, "SIMD Floating-Point Exception");
 
 /* System call */
-IDT_sys_entry(System_Call, SYS_System_Call, "System call");
+//IDT_sys_entry(System_Call, SYS_System_Call, "System call");
 
 
 /* 
@@ -123,7 +124,7 @@ void idt_init() {
     SET_IDT_ENTRY(idt[46], irq_Ide0);
 
     /* Set system call vector (0x80) */
-    SET_IDT_ENTRY(idt[0x80], System_Call);
+    SET_IDT_ENTRY(idt[0x80], asm_sys_linkage);
 }
 
 

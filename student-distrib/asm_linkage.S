@@ -69,9 +69,8 @@ asm_irq_linkage(irq_Ide0, IRQ_Ide0);
 call_table:
     .long 0x0   /* NULL, a placeholder, since call number is 1-index based */
 //    .long halt
-//    .long execute
     .long 0x0
-    .long 0x0
+    .long execute
     .long read
     .long write
     .long open 
