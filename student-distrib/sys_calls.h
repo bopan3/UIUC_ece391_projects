@@ -97,9 +97,9 @@ int32_t _parse_cmd_(const uint8_t* command, uint8_t* filename, uint8_t* args);
 
 int32_t _file_validation_(const uint8_t* filename);
 
-int32_t _mem_setting_(const uint8_t* filename, uint8_t* eip_buf);
+int32_t _mem_setting_(const uint8_t* filename, int32_t* eip);
 
-int32_t _PCB_setting_(const uint8_t* filename, const uint8_t* args, uint8_t* eip_buf);
+int32_t _PCB_setting_(const uint8_t* filename, const uint8_t* args, int32_t* eip);
 
 void _fd_init_(pcb* pcb_addr);
 

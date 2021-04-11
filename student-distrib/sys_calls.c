@@ -14,8 +14,7 @@
 int8_t task_array[MAX_PROC] = {0};
 int32_t pid, new_pid;
 
-// For test only
-int32_t pid = 1;
+
 
 /*
  *   open
@@ -264,7 +263,8 @@ int32_t halt(uint8_t status){
 int32_t execute(const uint8_t* command){
     uint8_t filename[FILENAME_LEN];     /* filename array */
     uint8_t args[TERM_LEN];             /* args array */
-    uint8_t eip_buf[USER_START_SIZE];   /* buffer to store the start address of program */
+    // uint8_t eip_buf[USER_START_SIZE];   /* buffer to store the start address of program */
+    int32_t eip;   
     pcb* cur_pcb;                       /* for getting pcb ptr of current pid */
 
     /* Sanity check */
@@ -283,11 +283,11 @@ int32_t execute(const uint8_t* command){
     }
 
     /* settting memory part */
-    if (SYS_CALL_FAIL == _mem_setting_(filename, args)) return SYS_CALL_FAIL;
+    if (SYS_CALL_FAIL == _mem_setting_(filename, &eip)) return SYS_CALL_FAIL;
 
 
     /* setting PCB */
-    if (SYS_CALL_FAIL == _PCB_setting_(filename, args, eip_buf));
+    if (SYS_CALL_FAIL == _PCB_setting_(filename, args, &eip)) return SYS_CALL_FAIL;
 
     /* context switch */
     cur_pcb = get_pcb_ptr(pid);
@@ -401,7 +401,7 @@ int32_t _file_validation_(const uint8_t* filename){
  *                  0 - for success
  *   SIDE EFFECTS:  none
  */
-int32_t _mem_setting_(const uint8_t* filename, uint8_t* eip_buf){
+int32_t _mem_setting_(const uint8_t* filename, int32_t* eip){
     dentry_t den;              /* for loading user program */
     uint8_t* Loading_address;   /* as the buf to load program */
     // int32_t pid;                /* PID for the new process */
@@ -426,13 +426,13 @@ int32_t _mem_setting_(const uint8_t* filename, uint8_t* eip_buf){
     read_dentry_by_name(filename, &den);
     Loading_address = (uint8_t*)0x8048000; /* fixed address */
     read_data(den.idx_inode, 0, Loading_address, get_file_size(den.idx_inode));
-    strncpy((int8_t*)(eip_buf), (int8_t*)(Loading_address+24), USER_START_SIZE); /* Byte 24 - 27 is the address for program start */
-
+    // strncpy((int8_t*)(eip_buf), (int8_t*)(Loading_address+24), USER_START_SIZE); /* Byte 24 - 27 is the address for program start */
+    *eip = *(int32_t*)(Loading_address+24);
     return SUCCESS;
 
 }
 
-int32_t _PCB_setting_(const uint8_t* filename, const uint8_t* args, uint8_t* eip_buf){
+int32_t _PCB_setting_(const uint8_t* filename, const uint8_t* args, int32_t* eip){
 
     /* Getting pcb base address */
     pcb* new_pcb_ptr = get_pcb_ptr(new_pid);
@@ -446,7 +446,7 @@ int32_t _PCB_setting_(const uint8_t* filename, const uint8_t* args, uint8_t* eip
     _fd_init_(new_pcb_ptr);
 
     /* Regs info */
-    new_pcb_ptr->user_eip = *((uint32_t*) eip_buf);
+    new_pcb_ptr->user_eip = *eip;
     // new_pcb_ptr->user_esp =
 
 
