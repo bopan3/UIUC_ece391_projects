@@ -50,6 +50,11 @@ int32_t terminal_close(int32_t fd) {
 int32_t terminal_read(int32_t fd, void* buf, int32_t nbytes) {
     int i;                          // Loop index
 
+    // check NULL pointer and wrong nbytes
+    if (buf == NULL)
+        return -1;
+
+    sti();
     // While enter not pressed, wait for enter
     while (OFF == enter_flag) {}
     cli();
@@ -59,6 +64,10 @@ int32_t terminal_read(int32_t fd, void* buf, int32_t nbytes) {
     // Copy the buffer content
     for (i = 0; (i < nbytes-1) && (i < LINE_BUF_SIZE); i++) {
         temp_buf[i] = line_buf[i];
+        if ('\n' == line_buf[i]){
+            i++;
+            break;
+        }
     }
 
     // Clear the buffer
@@ -82,6 +91,11 @@ int32_t terminal_read(int32_t fd, void* buf, int32_t nbytes) {
 int32_t terminal_write(int32_t fd, const void* buf, int32_t nbytes) {
     int i;                          // Loop index
     uint8_t curr;
+
+    // check NULL pointer and wrong nbytes
+    if (buf == NULL)
+        return -1;
+
     cli();
     for(i = 0; i < nbytes; ++i) {
         curr = ((char*) buf)[i];

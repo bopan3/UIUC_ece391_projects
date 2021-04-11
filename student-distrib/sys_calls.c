@@ -293,6 +293,7 @@ int32_t execute(const uint8_t* command){
     // pcb* prev_pcb = get_pcb_ptr(cur_pcb->prev_pid);
 
 //    _ASM_switch_(_0_SS, ESP, _0_CS, EIP);
+    sti();
     _context_switch_();
 
     // Position that halt() jumps to
