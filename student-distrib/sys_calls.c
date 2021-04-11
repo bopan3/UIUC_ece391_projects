@@ -1,5 +1,5 @@
 /*
- * Functions of system call 
+ * Functions of system call
  */
 
 
@@ -11,8 +11,8 @@
 #include "types.h"
 #include "paging.h"
 
-int8_t task_array[MAX_PROC] = {0}; 
-int32_t pid, new_pid;   
+int8_t task_array[MAX_PROC] = {0};
+int32_t pid, new_pid;
 
 // For test only
 int32_t pid = 1;
@@ -207,6 +207,55 @@ void fop_t_init() {
     stdo_fop_t.write = terminal_write;
     stdo_fop_t.open = terminal_open;
     stdo_fop_t.close = terminal_close;
+    
+int32_t halt(uint8 t status){
+    int i;              /* loop index */
+
+    /* Get pcb info */
+    pcb* cur_pcb_ptr = get_pcb_ptr(pid);
+    pcb* prev_pcb_ptr;
+
+    /* intend to halt shell */
+    if (cur_pcb_ptr->pid == ROOT_TASK){
+        /* then go back to shell */
+        /* TODO */
+    }
+
+    /*  Restore parent data */
+    prev_pcb_ptr = get_pcb_ptr(cur_pcb_ptr->prev_pid);
+    task_array[pid] = 0;        /* release the pid entry at task array */
+    pid = prev_pcb_ptr->pid;    /* update pid */
+
+    /* tss update */
+    tss.ss0 = KERNEL_DS;
+    tss.esp0 = _8MB_ - (_8KB_ * (pid+1)) - 4;   /*  */
+
+    /* Restore parent paging */
+    paging_set_user_mapping(pid);
+
+    /* Close any relevant FDs */
+    /* close normal file */
+    for (i = 2; i < N_FILES; i++){
+        if (cur_pcb_ptr->file_array[i].flags == INUSE){
+            close(i);
+        }
+    }
+    /* close stdin, stdout */
+    /* TODO */
+
+    /* Jump to execute return */
+
+    asm volatile(
+        "xorl %%eax, %%eax;"
+        "movb %0, %%eax;"
+        "movl %1, %%ebp;"
+        "movl %2, %%esp;"
+        "leave;"
+        "ret;"
+        : /* No output */
+        : "r"(status), "r"(cur_pcb_ptr->kernel_ebp), "r"(cur_pcb_ptr->kernel_esp)
+        : "esp", "ebp", "eax"
+    )
 }
 
 int32_t execute(const uint8_t* command){
@@ -248,7 +297,7 @@ int32_t execute(const uint8_t* command){
 
 
 // =================== helper function ===============
-/* 
+/*
  * _parse_cmd_
  *   DESCRIPTION: helper function to parse the command sting to filename and args
  *   INPUTS: command - command array
@@ -262,7 +311,7 @@ int32_t execute(const uint8_t* command){
 int32_t _parse_cmd_(const uint8_t* command, uint8_t* filename, uint8_t* args){
     int cmd_len = strlen((int8_t*)(command));          /* length of command string */
     int filename_len = 0;                   /* length of file name of program */
-    int arg_len = 0;                        /* length of args string */        
+    int arg_len = 0;                        /* length of args string */
     int i;                                  /* loop index through command string */
 
     /* Step 1: find program filename */
@@ -307,7 +356,7 @@ int32_t _parse_cmd_(const uint8_t* command, uint8_t* filename, uint8_t* args){
     return SUCCESS;
 }
 
-/* 
+/*
  * _file_validation_
  *   DESCRIPTION: helper function to verify the file
  *   INPUTS: filename - filename array
@@ -324,15 +373,15 @@ int32_t _file_validation_(const uint8_t* filename){
     if (SYS_CALL_FAIL == read_dentry_by_name(filename, validation_dentry)) return SYS_CALL_FAIL;
 
     /* Valid if read dentry work */
-    if (VALIDATION_READ_SIZE != read_data(validation_dentry->idx_inode, 0, 
+    if (VALIDATION_READ_SIZE != read_data(validation_dentry->idx_inode, 0,
                                             validation_buf, VALIDATION_READ_SIZE)){
         return SYS_CALL_FAIL;
     }
 
     /* Check Magic Number at Head to verify if the file is executable */
-    /* Magic Number of 4 Byte from Appendix C, 
+    /* Magic Number of 4 Byte from Appendix C,
         only if the head 4 Byte is same then it is executable */
-    if (validation_buf[0] != 0x7f || validation_buf[1] != 0x45 || 
+    if (validation_buf[0] != 0x7f || validation_buf[1] != 0x45 ||
         validation_buf[2] != 0x4c || validation_buf[3] != 0x46){
             return SYS_CALL_FAIL;
         }
@@ -340,7 +389,7 @@ int32_t _file_validation_(const uint8_t* filename){
     return SUCCESS;
 }
 
-/* 
+/*
  * _mem_setting_
  *   DESCRIPTION: helper function to verify the file
  *   INPUTS: filename - filename array
@@ -359,7 +408,7 @@ int32_t _mem_setting_(const uint8_t* filename, uint8_t* eip_buf){
     for (i = 0; i < MAX_PROC; i++){
         if (task_array[i] == 0){
             new_pid = i;
-            task_array[i] = 1; 
+            task_array[i] = 1;
             break;
         }
     }
@@ -381,10 +430,10 @@ int32_t _mem_setting_(const uint8_t* filename, uint8_t* eip_buf){
 }
 
 int32_t _PCB_setting_(const uint8_t* filename, const uint8_t* args, uint8_t* eip_buf){
-    
+
     /* Getting pcb base address */
     pcb* new_pcb_ptr = get_pcb_ptr(new_pid);
- 
+
     /* filed settings */
     new_pcb_ptr->pid = new_pid;
     new_pcb_ptr->prev_pid = pid;
@@ -395,7 +444,7 @@ int32_t _PCB_setting_(const uint8_t* filename, const uint8_t* args, uint8_t* eip
 
     /* Regs info */
     new_pcb_ptr->user_eip = *((uint32_t*) eip_buf);
-    // new_pcb_ptr->user_esp = 
+    // new_pcb_ptr->user_esp =
 
 
     /* Finally, update global PID  */
@@ -456,4 +505,3 @@ void _context_switch_(){
 pcb* get_pcb_ptr(int32_t pid){
     return (pcb*)_8MB_ - _8KB_ *(pid + 1);
 }
-

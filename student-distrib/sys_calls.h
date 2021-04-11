@@ -20,6 +20,7 @@
 #define MAX_PROC 6
 #define INVALID_NODE -1
 #define USER_START_SIZE 4
+#define ROOT_TASK -1
 #define USER_ESP 0x8000000 + 0x400000 - 1 /* 128 MB for start user + 4 MB for stack size - 1 entry */
 /* File operation tables */
 // typedef struct file_ops_t {
