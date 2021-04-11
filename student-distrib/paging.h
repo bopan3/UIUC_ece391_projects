@@ -11,6 +11,7 @@
 #define _10BIT_         0x3FF           // mask to get 10 bits
 #define ADDR_OFF        12              // skip 12 LSB to get address filed
 
+#define USER_PROG_ADDR 32               /* 128 MB / 4MB per entry */
 
 /* Set the reg in hardware to enable page mode.  
  * Description: This macro takes a 32-bit address which points to 
@@ -44,7 +45,17 @@ do {                                        \
 } while (0);
 
 
-
+#define TLB_flush()                 \
+do {                                \
+    asm volatile ("               \n\
+    movl %%cr3, %%eax             \n\
+    movl %%eax, %%cr3             \n\
+    "                               \
+    :   /* no outputs */            \
+    :   /* no inputs */             \
+    :   "eax"                       \
+    );
+}while (0);
 
 
 
@@ -95,3 +106,4 @@ PDE page_dict[PD_SIZE] __attribute__((aligned (_4KB_)));    /* Page Dict */
 PTE page_table[PT_SIZE] __attribute__((aligned (_4KB_)));   /* Page Table for first chunk */
 
 void paging_init(void);
+extern void paging_set_user_mapping(int32_t pid);

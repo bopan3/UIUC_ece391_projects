@@ -10,6 +10,22 @@
 #define INUSE   1
 #define UNUSE   0
 
+#define _8MB_ 0x800000
+#define _8KB_ 0x2000
+#define FAIL -1
+#define SUCCESS 0
+#define FILENAME_LEN 32
+#define TERM_LEN 128
+#define VALIDATION_READ_SIZE 40
+#define MAX_PROC 6
+#define INVALID_NODE -1
+#define USER_START_SIZE 4
+#define USER_ESP 0x8000000 + 0x400000 - 1 /* 128 MB for start user + 4 MB for stack size - 1 entry */
+/* File operation tables */
+// typedef struct file_ops_t {
+//     /* TODO */
+// } file_ops_t;
+
 #define FILE_RTC    0
 #define FILE_DIREC  1
 #define FILE_REG    2
@@ -30,11 +46,18 @@ typedef struct file_des_t {
     uint32_t    flags;     // flages that indicate file's state
 } file_des_t;
 
- /* PCB block */
- typedef struct pcb_block_t {
-     file_des_t  file_array[N_FILES];
-     /* TODO */
- } pcb_block_t;
+/* PCB struct */
+typedef struct pcb {
+    file_des_t  file_array[N_FILES];
+    uint8_t args[TERM_LEN];
+    uint32_t pid;
+    uint32_t prev_pid;
+
+    // uint32_t user_esp;
+    uint32_t user_eip;
+    uint32_t kernel_esp;
+    uint32_t kernel_eip;
+} pcb;
 
 fop_t rtc_fop_t;
 fop_t dir_fop_t;
@@ -66,5 +89,21 @@ int32_t badwrite(int32_t fd, const void* buf, int32_t nbytes);
 
 /* initialize the file operations table poinetr */
 void fop_t_init();
+
+#define _ASM_switch_(_0_SS, EBP, _0_CS, EIP)    \
+do{                             \
+    asm volatile ("             \n\
+        pushl   %%eax           \n\
+        pushl   %%ebx           \n\
+        pushfl                  \n\
+        pushl   %%ecx           \n\
+        pushl   %%edx           \n\
+        iret                    \n\
+    "                           \
+    :   /* no outputs */        \
+    : "a"(_0_SS), "b"(ESP), "c"(_0_CS), "d"(EIP)    \
+    :                                               \
+    );                                              \
+}while(0);
 
 #endif
