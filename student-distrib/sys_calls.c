@@ -218,7 +218,7 @@ int32_t halt(uint8_t status){
     /* intend to halt shell */
     if (cur_pcb_ptr->pid == cur_pcb_ptr->prev_pid){
         /* then go back to shell */
-        
+
         /* TODO */
     }
 
@@ -459,8 +459,8 @@ int32_t _PCB_setting_(const uint8_t* filename, const uint8_t* args, int32_t* eip
     /* Regs info */
     new_pcb_ptr->user_eip = *eip;
 
-    asm volatile ( "movl %%ebp, %0" : "=r"(kernel_ebp) : :);
-    asm volatile ( "movl %%esp, %0" : "=r"(kernel_esp) : :);
+    asm volatile ( "movl %%ebp, %0" : "=r"(kernel_ebp) );
+    asm volatile ( "movl %%esp, %0" : "=r"(kernel_esp) );
     new_pcb_ptr->kernel_ebp = kernel_ebp;
     new_pcb_ptr->kernel_esp = kernel_esp;
     // new_pcb_ptr->user_esp is always the same
@@ -499,7 +499,8 @@ void _context_switch_(){
     pcb* cur_pcb = get_pcb_ptr(pid);
     // pcb* prev_pcb = get_pcb_ptr(cur_pcb->prev_pid);
     tss.ss0 = KERNEL_DS;
-    tss.esp0 = cur_pcb + _8KB_ - 4;
+    // tss.esp0 = cur_pcb + _8KB_ - 4;
+    tss.esp0 = _8MB_ - (_8KB_ * pid) - 4;
 
     uint32_t _0_SS = (uint32_t) USER_DS;
     uint32_t  ESP = (uint32_t) USER_ESP;
@@ -527,5 +528,5 @@ void _context_switch_(){
 
 
 pcb* get_pcb_ptr(int32_t pid){
-    return (pcb*)_8MB_ - _8KB_ *(pid + 1);
+    return (pcb*)(_8MB_ - _8KB_ *(pid + 1));
 }
