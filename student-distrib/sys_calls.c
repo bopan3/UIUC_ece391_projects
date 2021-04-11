@@ -11,6 +11,9 @@
 #include "types.h"
 #include "paging.h"
 
+// For small test only
+#include "test_assemble.h"
+
 int8_t task_array[MAX_PROC] = {0};
 int32_t pid, new_pid;
 
@@ -298,9 +301,7 @@ int32_t execute(const uint8_t* command){
     // Position that halt() jumps to
     asm volatile (
         "return_from_halt:"
-        : /* No output */
-        : "r"(0) /* Dummy input, not used */
-        : "%eax"
+        : 
     );
 
     return SUCCESS; /* IRET in switch */
@@ -491,7 +492,7 @@ void _context_switch_(){
     pcb* cur_pcb = get_pcb_ptr(pid);
     // pcb* prev_pcb = get_pcb_ptr(cur_pcb->prev_pid);
     tss.ss0 = KERNEL_DS;
-    tss.esp0 = cur_pcb + _8KB_ - 4;
+    tss.esp0 = (uint32_t) (cur_pcb + _8KB_ - 4);
 
     uint32_t _0_SS = (uint32_t) USER_DS;
     uint32_t  ESP = (uint32_t) USER_ESP;
@@ -500,20 +501,28 @@ void _context_switch_(){
 
 //    _ASM_switch_((uint32_t)USER_DS, (uint32_t) USER_ESP, (uint32_t) USER_CS, cur_pcb->user_eip);
 //    _switch_(_0_SS, ESP, _0_CS, EIP);
+    // asm volatile (
+    //     "andl   $0x00FF, %%eax;"
+    //     "pushl   %%eax;"
+    //     "pushl   %%ebx;"
+    //     "pushfl  ;"
+    //     "popl    %%ebx;"
+    //     "orl     $0x200, %%ebx;"
+    //     "pushl   %%ebx;"
+    //     "pushl   %%ecx;"
+    //     "pushl   %%edx;"
+    //     "iret   ;"  
+    // :   /* no outputs */
+    // : "a"(_0_SS), "b"(ESP), "c"(_0_CS), "d"(EIP)
+    // : "memory"
+    // );
     asm volatile (
-        "pushl   %%eax;"
-        "pushl   %%ebx;"
-        "pushfl  ;"
-        "popl    %%edi;"
-        "orl     $0x0200, %%edi;"
-        "pushl   %%edi;"
-        "pushl   %%ecx;"
-        "pushl   %%edx;"
-        "iret   ;"  
+        "jmp    Prepare;" 
     :   /* no outputs */
     : "a"(_0_SS), "b"(ESP), "c"(_0_CS), "d"(EIP)
-    :   "edi"
+    : "memory"
     );
+
 //    return SUCCESS;
 }
 
