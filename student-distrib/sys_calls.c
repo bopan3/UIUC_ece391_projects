@@ -26,10 +26,10 @@ int32_t pid = 0, new_pid = 0;
  */
 int32_t open(const uint8_t* fname){
     int i;                          // Loop index
-    dentry_t *dentry = 0;           // pointer to dentry
+    dentry_t dentry;               // pointer to dentry
 
     // if failed to find the entry, return -1
-    if (-1 == read_dentry_by_name(fname, dentry))
+    if (-1 == read_dentry_by_name(fname, &dentry))
         return -1;
 
     // get the pointer to current pcb
@@ -45,7 +45,7 @@ int32_t open(const uint8_t* fname){
                 uint32_t    file_pos;
                 uint32_t    flages;
              */
-            switch (dentry->f_type) {
+            switch (dentry.f_type) {
                 case FILE_RTC:
                     cur_pcb->file_array[i].file_ops_ptr = &rtc_fop_t;
                 case FILE_DIREC:
@@ -53,7 +53,7 @@ int32_t open(const uint8_t* fname){
                 case FILE_REG:
                     cur_pcb->file_array[i].file_ops_ptr = &reg_fop_t;
             }
-            cur_pcb->file_array[i].idx_inode = dentry->idx_inode;
+            cur_pcb->file_array[i].idx_inode = dentry.idx_inode;
             cur_pcb->file_array[i].file_pos = 0;        // 0 as the file has not been read yet
             cur_pcb->file_array[i].flags = INUSE;
 
