@@ -12,7 +12,7 @@
 #include "paging.h"
 
 int8_t task_array[MAX_PROC] = {0};
-int32_t pid, new_pid;
+int32_t pid = 0, new_pid = 0;
 
 
 
@@ -216,8 +216,9 @@ int32_t halt(uint8_t status){
     pcb* prev_pcb_ptr;
 
     /* intend to halt shell */
-    if (cur_pcb_ptr->pid == ROOT_TASK){
+    if (cur_pcb_ptr->pid == cur_pcb_ptr->prev_pid){
         /* then go back to shell */
+        
         /* TODO */
     }
 
@@ -433,6 +434,7 @@ int32_t _mem_setting_(const uint8_t* filename, int32_t* eip){
 }
 
 int32_t _PCB_setting_(const uint8_t* filename, const uint8_t* args, int32_t* eip){
+    int32_t kernel_ebp, kernel_esp;
 
     /* Getting pcb base address */
     pcb* new_pcb_ptr = get_pcb_ptr(new_pid);
@@ -447,7 +449,12 @@ int32_t _PCB_setting_(const uint8_t* filename, const uint8_t* args, int32_t* eip
 
     /* Regs info */
     new_pcb_ptr->user_eip = *eip;
-    // new_pcb_ptr->user_esp =
+
+    asm volatile ( "movl %%ebp, %0" : "=r"(kernel_ebp) : :);
+    asm volatile ( "movl %%esp, %0" : "=r"(kernel_esp) : :);
+    new_pcb_ptr->kernel_ebp = kernel_ebp;
+    new_pcb_ptr->kernel_esp = kernel_esp;
+    // new_pcb_ptr->user_esp is always the same
 
 
     /* Finally, update global PID  */
