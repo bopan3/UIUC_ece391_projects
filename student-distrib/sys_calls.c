@@ -251,8 +251,7 @@ int32_t halt(uint8_t status){
         "movb %0, %%al;"
         "movl %1, %%ebp;"
         "movl %2, %%esp;"
-        "leave;"
-        "ret;"
+        "jmp return_from_halt;"
         : /* No output */
         : "r"(status), "r"(cur_pcb_ptr->kernel_ebp), "r"(cur_pcb_ptr->kernel_esp)
         : "esp", "ebp", "eax"
@@ -295,7 +294,17 @@ int32_t execute(const uint8_t* command){
     // pcb* prev_pcb = get_pcb_ptr(cur_pcb->prev_pid);
 
 //    _ASM_switch_(_0_SS, ESP, _0_CS, EIP);
+    sti();
     _context_switch_();
+
+    // Position that halt() jumps to
+    asm volatile (
+        "return_from_halt:"
+        : /* No output */
+        : "r"(0) /* Dummy input, not used */
+        : "%eax"
+    );
+
     return SUCCESS; /* IRET in switch */
 }
 
