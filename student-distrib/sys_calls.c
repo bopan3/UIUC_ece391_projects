@@ -218,8 +218,8 @@ int32_t halt(uint8_t status){
     /* intend to halt shell */
     if (cur_pcb_ptr->pid == cur_pcb_ptr->prev_pid){
         /* then go back to shell */
-
-        /* TODO */
+        printf("FAIL TO HALT ROOT SHELL TASK");
+        _context_switch_(); /* back control to shell */
     }
 
     /*  Restore parent data */
@@ -229,7 +229,7 @@ int32_t halt(uint8_t status){
 
     /* tss update */
     tss.ss0 = KERNEL_DS;
-    tss.esp0 = _8MB_ - (_8KB_ * (pid+1)) - 4;   /*  */
+    tss.esp0 = _8MB_ - (_8KB_ * (pid)) - 4;   /*  */
 
     /* Restore parent paging */
     paging_set_user_mapping(pid);
@@ -242,7 +242,8 @@ int32_t halt(uint8_t status){
         }
     }
     /* close stdin, stdout */
-    /* TODO */
+    cur_pcb_ptr->file_array[0].flags = UNUSE;   /* stdi */
+    cur_pcb_ptr->file_array[1].flags = UNUSE;   /* stdo */
 
     /* Jump to execute return */
 
