@@ -57,7 +57,7 @@ typedef struct pcb {
     // uint32_t user_esp;
     uint32_t user_eip;
     uint32_t kernel_esp;
-    uint32_t kernel_eip;
+    uint32_t kernel_ebp;
 } pcb;
 
 fop_t rtc_fop_t;

@@ -207,8 +207,9 @@ void fop_t_init() {
     stdo_fop_t.write = terminal_write;
     stdo_fop_t.open = terminal_open;
     stdo_fop_t.close = terminal_close;
-    
-int32_t halt(uint8 t status){
+}
+
+int32_t halt(uint8_t status){
     int i;              /* loop index */
 
     /* Get pcb info */
@@ -247,7 +248,7 @@ int32_t halt(uint8 t status){
 
     asm volatile(
         "xorl %%eax, %%eax;"
-        "movb %0, %%eax;"
+        "movb %0, %%al;"
         "movl %1, %%ebp;"
         "movl %2, %%esp;"
         "leave;"
@@ -255,7 +256,9 @@ int32_t halt(uint8 t status){
         : /* No output */
         : "r"(status), "r"(cur_pcb_ptr->kernel_ebp), "r"(cur_pcb_ptr->kernel_esp)
         : "esp", "ebp", "eax"
-    )
+    );
+    
+    return SYS_CALL_FAIL;   /* if touch here, it must have something wrong */
 }
 
 int32_t execute(const uint8_t* command){
