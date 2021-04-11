@@ -12,7 +12,7 @@
 
 #define _8MB_ 0x800000
 #define _8KB_ 0x2000
-#define FAIL -1
+#define SYS_CALL_FAIL -1
 #define SUCCESS 0
 #define FILENAME_LEN 32
 #define TERM_LEN 128
@@ -92,7 +92,7 @@ void fop_t_init();
 
 int32_t execute(const uint8_t* command);
 
-int32_t _parse_cmd_(uint8_t* command, uint8_t* filename, uint8_t* args);
+int32_t _parse_cmd_(const uint8_t* command, uint8_t* filename, uint8_t* args);
 
 int32_t _file_validation_(const uint8_t* filename);
 
@@ -106,7 +106,7 @@ void _context_switch_();
 
 pcb* get_pcb_ptr(int32_t pid);
 
-#define _ASM_switch_(_0_SS, EBP, _0_CS, EIP)    \
+#define _switch_(_0_SS, ESP, _0_CS, EIP)    \
 do{                             \
     asm volatile ("             \n\
         pushl   %%eax           \n\
@@ -117,7 +117,7 @@ do{                             \
         iret                    \n\
     "                           \
     :   /* no outputs */        \
-    : "a"(_0_SS), "b"(ESP), "c"(_0_CS), "d"(EIP)    \
+    : "a"((_0_SS)), "b"((ESP)), "c"((_0_CS)), "d"((EIP))    \
     :                                               \
     );                                              \
 }while(0);

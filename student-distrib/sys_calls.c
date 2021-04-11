@@ -34,7 +34,7 @@ int32_t open(const uint8_t* fname){
         return -1;
 
     // get the pointer to current pcb
-    pcb* cur_pcb = (pcb*)(_8MB_ - _8KB_*(pid+1));
+    pcb* cur_pcb = get_pcb_ptr(pid);
 
     // loop through all dynamic fds
     for (i = INI_FILES; i < N_FILES; ++i) {
@@ -79,7 +79,7 @@ int32_t close(int32_t fd){
         return -1;
 
     // find the current PCB
-    pcb* cur_pcb = (pcb*)(_8MB_ - _8KB_*(pid+1));
+    pcb* cur_pcb = get_pcb_ptr(pid);
 
     // check if the current file descriptor is freed
     if(cur_pcb->file_array[fd].flags == UNUSE)
@@ -116,7 +116,7 @@ int32_t read(int32_t fd, void* buf, int32_t nbytes){
         return -1;
 
     // find the current PCB
-    pcb* cur_pcb = (pcb*)(_8MB_ - _8KB_*(pid+1));
+    pcb* cur_pcb = get_pcb_ptr(pid);
     // check if the current file descriptor is in use
     if(cur_pcb->file_array[fd].flags == UNUSE)
         return -1;
@@ -148,7 +148,7 @@ int32_t write(int32_t fd, const void* buf, int32_t nbytes) {
         return -1;
 
     // find the current PCB
-    pcb* cur_pcb = (pcb*)(_8MB_ - _8KB_*(pid+1));
+    pcb* cur_pcb = get_pcb_ptr(pid);
     // check if the current file descriptor is in use
     if(cur_pcb->file_array[fd].flags == UNUSE)
         return -1;
@@ -213,36 +213,36 @@ int32_t execute(const uint8_t* command){
     uint8_t filename[FILENAME_LEN];     /* filename array */
     uint8_t args[TERM_LEN];             /* args array */
     uint8_t eip_buf[USER_START_SIZE];   /* buffer to store the start address of program */
-    int i;                              /* loop index */
     pcb* cur_pcb;                       /* for getting pcb ptr of current pid */
+
     /* Sanity check */
     if (command == NULL) {
-        return FAIL;
+        return SYS_CALL_FAIL;
     }
 
     /* Parse command */
-    if (FAIL == _parse_cmd_(command, filename, args)){
-        return FAIL;
+    if (SYS_CALL_FAIL == _parse_cmd_(command, filename, args)){
+        return SYS_CALL_FAIL;
     }
 
     /* Verify the filename */
-    if (FAIL == _file_validation_(filename)){
-        return FAIL;
+    if (SYS_CALL_FAIL == _file_validation_(filename)){
+        return SYS_CALL_FAIL;
     }
 
     /* settting memory part */
-    if (FAIL == _mem_setting_(filename, args)) return FAIL;
+    if (SYS_CALL_FAIL == _mem_setting_(filename, args)) return SYS_CALL_FAIL;
 
 
     /* setting PCB */
-    if (FAIL == _PCB_setting_(filename, args, eip_buf));
+    if (SYS_CALL_FAIL == _PCB_setting_(filename, args, eip_buf));
 
     /* context switch */
-    pcb* cur_pcb = get_pcb_ptr(pid);
+    cur_pcb = get_pcb_ptr(pid);
     // pcb* prev_pcb = get_pcb_ptr(cur_pcb->prev_pid);
 
-    _ASM_switch_((uint32_t)USER_DS, (uint32_t) USER_ESP, (uint32_t) USER_CS, cur_pcb->user_eip);
-    
+//    _ASM_switch_(_0_SS, ESP, _0_CS, EIP);
+    _context_switch_();
     return SUCCESS; /* IRET in switch */
 }
 
@@ -259,23 +259,23 @@ int32_t execute(const uint8_t* command){
  *                  0 - for success
  *   SIDE EFFECTS:  none
  */
-int32_t _parse_cmd_(uint8_t* command, uint8_t* filename, uint8_t* args){
-    int cmd_len = strlen(command);          /* length of command string */
+int32_t _parse_cmd_(const uint8_t* command, uint8_t* filename, uint8_t* args){
+    int cmd_len = strlen((int8_t*)(command));          /* length of command string */
     int filename_len = 0;                   /* length of file name of program */
     int arg_len = 0;                        /* length of args string */        
     int i;                                  /* loop index through command string */
 
     /* Step 1: find program filename */
     /* strip the head space */
-    for (int i = 0; (i < cmd_len) && (command[i] == ' '); i++){}
+    for (i = 0; (i < cmd_len) && (command[i] == ' '); i++){}
 
     /* check if all command is just space */
-    if (i == cmd_len) return FAIL;
+    if (i == cmd_len) return SYS_CALL_FAIL;
 
     /* get the filename */
     while(command[i] != ' '){
         /* check if length of file name exceed */
-        if (filename_len == FILENAME_LEN) return FAIL;
+        if (filename_len == FILENAME_LEN) return SYS_CALL_FAIL;
 
         /* copy filename */
         filename[filename_len] = command[i];
@@ -321,12 +321,12 @@ int32_t _file_validation_(const uint8_t* filename){
     uint8_t validation_buf[VALIDATION_READ_SIZE];
 
     /* Check if file exist */
-    if (FAIL == read_dentry_by_name(filename, validation_dentry)) return FAIL;
+    if (SYS_CALL_FAIL == read_dentry_by_name(filename, validation_dentry)) return SYS_CALL_FAIL;
 
     /* Valid if read dentry work */
     if (VALIDATION_READ_SIZE != read_data(validation_dentry->idx_inode, 0, 
                                             validation_buf, VALIDATION_READ_SIZE)){
-        return FAIL;
+        return SYS_CALL_FAIL;
     }
 
     /* Check Magic Number at Head to verify if the file is executable */
@@ -334,7 +334,7 @@ int32_t _file_validation_(const uint8_t* filename){
         only if the head 4 Byte is same then it is executable */
     if (validation_buf[0] != 0x7f || validation_buf[1] != 0x45 || 
         validation_buf[2] != 0x4c || validation_buf[3] != 0x46){
-            return FAIL;
+            return SYS_CALL_FAIL;
         }
 
     return SUCCESS;
@@ -354,7 +354,6 @@ int32_t _mem_setting_(const uint8_t* filename, uint8_t* eip_buf){
     uint8_t* Loading_address;   /* as the buf to load program */
     // int32_t pid;                /* PID for the new process */
     int32_t i;                  /* loop index */
-    pcb* new_pcb_ptr;           
 
     /* 1. Find a free entry for new task */
     for (i = 0; i < MAX_PROC; i++){
@@ -366,7 +365,7 @@ int32_t _mem_setting_(const uint8_t* filename, uint8_t* eip_buf){
     }
 
     /* Check if new process request beyond ability */
-    if (i == MAX_PROC) return FAIL;
+    if (i == MAX_PROC) return SYS_CALL_FAIL;
 
     /* 2. Mapping virtual 128 MB to physical image address */
     paging_set_user_mapping(new_pid);
@@ -374,8 +373,8 @@ int32_t _mem_setting_(const uint8_t* filename, uint8_t* eip_buf){
     /* 3. Loading user program via read_data, copy from file system to memory */
     read_dentry_by_name(filename, den);
     Loading_address = (uint8_t*)0x804800; /* fixed address */
-    read_data(den->idx_inode, 0, Loading_address, den->f_size); 
-    strncpy(eip_buf, Loading_address+24, USER_START_SIZE); /* Byte 24 - 27 is the address for program start */
+    read_data(den->idx_inode, 0, Loading_address, get_file_size(den->idx_inode));
+    strncpy((int8_t*)(eip_buf), (int8_t*)(Loading_address+24), USER_START_SIZE); /* Byte 24 - 27 is the address for program start */
 
     return SUCCESS;
 
@@ -389,7 +388,7 @@ int32_t _PCB_setting_(const uint8_t* filename, const uint8_t* args, uint8_t* eip
     /* filed settings */
     new_pcb_ptr->pid = new_pid;
     new_pcb_ptr->prev_pid = pid;
-    strncpy(new_pcb_ptr->args, args, TERM_LEN); /* copy args to PCB */
+    strncpy((int8_t*)(new_pcb_ptr->args), (int8_t*)(args), TERM_LEN); /* copy args to PCB */
 
     /* fd array initialization */
     _fd_init_(new_pcb_ptr);
@@ -402,19 +401,21 @@ int32_t _PCB_setting_(const uint8_t* filename, const uint8_t* args, uint8_t* eip
     /* Finally, update global PID  */
     pid = new_pid;
 
+    return SUCCESS;
 }
+
 void _fd_init_(pcb* pcb_addr){
     int i;      /* loop index */
     for (i = 0; i < N_FILES; i++){
         switch (i){
             case 0: /* stdin */
-                pcb_addr->file_array[i].fop_t = &stdi_fop_t; 
+                pcb_addr->file_array[i].file_ops_ptr = &stdi_fop_t;
                 pcb_addr->file_array[i].flags = INUSE;
                 pcb_addr->file_array[i].idx_inode = INVALID_NODE;
                 pcb_addr->file_array[i].file_pos = 0;    /* Not matter */
                 break;
             case 1: /* stdout */
-                pcb_addr->file_array[i].fop_t = &stdo_fop_t;
+                pcb_addr->file_array[i].file_ops_ptr = &stdo_fop_t;
                 pcb_addr->file_array[i].flags = INUSE;
                 pcb_addr->file_array[i].idx_inode = INVALID_NODE;
                 pcb_addr->file_array[i].file_pos = 0;    /* Not matter */
@@ -430,9 +431,25 @@ void _context_switch_(){
     pcb* cur_pcb = get_pcb_ptr(pid);
     // pcb* prev_pcb = get_pcb_ptr(cur_pcb->prev_pid);
 
-    _ASM_switch_((uint32_t)USER_DS, (uint32_t) USER_ESP, (uint32_t) USER_CS, cur_pcb->user_eip);
+    uint32_t _0_SS = (uint32_t) USER_DS;
+    uint32_t  ESP = (uint32_t) USER_ESP;
+    uint32_t  _0_CS = (uint32_t) USER_CS;
+    uint32_t  EIP = cur_pcb->user_eip;
 
-    return SUCCESS; 
+//    _ASM_switch_((uint32_t)USER_DS, (uint32_t) USER_ESP, (uint32_t) USER_CS, cur_pcb->user_eip);
+//    _switch_(_0_SS, ESP, _0_CS, EIP);
+    asm volatile (
+        "pushl   %%eax;"
+        "pushl   %%ebx;"
+        "pushfl  ;"
+        "pushl   %%ecx;"
+        "pushl   %%edx;"
+        "iret   ;"
+    :   /* no outputs */
+    : "a"(_0_SS), "b"(ESP), "c"(_0_CS), "d"(EIP)
+    :   "memory"
+    );
+//    return SUCCESS;
 }
 
 

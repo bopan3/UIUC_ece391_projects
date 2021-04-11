@@ -21,7 +21,7 @@ static struct data_block_t* p_data;            // pointer to data block array
 #define STR_LEN 32
 #define BLOCK_SIZE 4096
 
-extern pid;     // current number of process, from system call
+extern int32_t pid;     // current number of process, from system call
 
 /*-------------------- Helper functions --------------------*/ 
 
@@ -263,7 +263,7 @@ int32_t file_read(int32_t fd, void* buf, int32_t nbytes) {
     }
 
     // Find the pcb
-    pcb_block_t* cur_pcb = (pcb_block_t*)(0x800000 - 0x2000*(pid+1));          
+    pcb* cur_pcb = (pcb*)(_8MB_ - _8KB_*(pid+1));
 
     // Calculate parameters
     idx_inode = cur_pcb->file_array[fd].idx_inode;
