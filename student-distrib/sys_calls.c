@@ -325,7 +325,7 @@ int32_t _parse_cmd_(const uint8_t* command, uint8_t* filename, uint8_t* args){
     if (i == cmd_len) return SYS_CALL_FAIL;
 
     /* get the filename */
-    while(command[i] != ' '){
+    while(command[i] != ' ' && command[i] != '\n' && command[i] != '\0'){
         /* check if length of file name exceed */
         if (filename_len == FILENAME_LEN) return SYS_CALL_FAIL;
 
@@ -369,14 +369,14 @@ int32_t _parse_cmd_(const uint8_t* command, uint8_t* filename, uint8_t* args){
  *   SIDE EFFECTS:  none
  */
 int32_t _file_validation_(const uint8_t* filename){
-    dentry_t* validation_dentry;
+    dentry_t validation_dentry;
     uint8_t validation_buf[VALIDATION_READ_SIZE];
 
     /* Check if file exist */
-    if (SYS_CALL_FAIL == read_dentry_by_name(filename, validation_dentry)) return SYS_CALL_FAIL;
+    if (SYS_CALL_FAIL == read_dentry_by_name(filename, &validation_dentry)) return SYS_CALL_FAIL;
 
     /* Valid if read dentry work */
-    if (VALIDATION_READ_SIZE != read_data(validation_dentry->idx_inode, 0,
+    if (VALIDATION_READ_SIZE != read_data(validation_dentry.idx_inode, 0,
                                             validation_buf, VALIDATION_READ_SIZE)){
         return SYS_CALL_FAIL;
     }
@@ -402,7 +402,7 @@ int32_t _file_validation_(const uint8_t* filename){
  *   SIDE EFFECTS:  none
  */
 int32_t _mem_setting_(const uint8_t* filename, uint8_t* eip_buf){
-    dentry_t* den;              /* for loading user program */
+    dentry_t den;              /* for loading user program */
     uint8_t* Loading_address;   /* as the buf to load program */
     // int32_t pid;                /* PID for the new process */
     int32_t i;                  /* loop index */
@@ -423,9 +423,9 @@ int32_t _mem_setting_(const uint8_t* filename, uint8_t* eip_buf){
     paging_set_user_mapping(new_pid);
 
     /* 3. Loading user program via read_data, copy from file system to memory */
-    read_dentry_by_name(filename, den);
-    Loading_address = (uint8_t*)0x804800; /* fixed address */
-    read_data(den->idx_inode, 0, Loading_address, get_file_size(den->idx_inode));
+    read_dentry_by_name(filename, &den);
+    Loading_address = (uint8_t*)0x8048000; /* fixed address */
+    read_data(den.idx_inode, 0, Loading_address, get_file_size(den.idx_inode));
     strncpy((int8_t*)(eip_buf), (int8_t*)(Loading_address+24), USER_START_SIZE); /* Byte 24 - 27 is the address for program start */
 
     return SUCCESS;
@@ -482,6 +482,8 @@ void _fd_init_(pcb* pcb_addr){
 void _context_switch_(){
     pcb* cur_pcb = get_pcb_ptr(pid);
     // pcb* prev_pcb = get_pcb_ptr(cur_pcb->prev_pid);
+    tss.ss0 = KERNEL_DS;
+    tss.esp0 = cur_pcb + _8KB_ - 4;
 
     uint32_t _0_SS = (uint32_t) USER_DS;
     uint32_t  ESP = (uint32_t) USER_ESP;
@@ -494,12 +496,15 @@ void _context_switch_(){
         "pushl   %%eax;"
         "pushl   %%ebx;"
         "pushfl  ;"
+        "popl    %%edi;"
+        "orl     $0x0200, %%edi;"
+        "pushl   %%edi;"
         "pushl   %%ecx;"
         "pushl   %%edx;"
-        "iret   ;"
+        "iret   ;"  
     :   /* no outputs */
     : "a"(_0_SS), "b"(ESP), "c"(_0_CS), "d"(EIP)
-    :   "memory"
+    :   "edi"
     );
 //    return SUCCESS;
 }
