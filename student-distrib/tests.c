@@ -7,6 +7,7 @@
 #include "terminal.h"
 #include "file_sys.h"
 #include "rtc.h"
+#include "sys_calls.h"
 
 #define NULL 0
 #define PASS 1
@@ -375,13 +376,19 @@ int cp2_filesys_test_2() {
 
 	printf("--------------------\n");
 
-	fd = file_open((uint8_t*)"frame1.txt");
-	length = file_read(fd, (uint8_t*)buf, nbytes);
+	fd = open((uint8_t*)".");	// frame1.txt
+	length = read(fd, (uint8_t*)buf, nbytes);
 	buf[length+1] = '\0';
-	printf("File name: frame1.txt\n");
+	// printf("File name: frame1.txt\n");
 	printf("Bytes readed: %d\n", length);
 	printf("Content:\n%s\n", buf);
-	file_close(fd);
+	close(fd);
+
+	// dentry_t ret;
+	// length = read_dentry_by_name((uint8_t*)".", &ret);
+	// printf("File name: %s\n", ret.f_name);
+	// printf("File type: %d\n", ret.f_type);
+	// printf("File #: %d\n", ret.idx_inode);
 
 	return PASS;
 }
@@ -588,7 +595,7 @@ void launch_tests(){
 	// TEST_OUTPUT("CP2:rtc_driver_edge_case_test", rtc_driver_edge_case_test());
     // term_read_write_test();
 	// TEST_OUTPUT("File System test 1", cp2_filesys_test_1());		// list all file information
-	// TEST_OUTPUT("File System test 2", cp2_filesys_test_2());		// read short file
+	TEST_OUTPUT("File System test 2", cp2_filesys_test_2());		// read short file
 	// TEST_OUTPUT("File System test 3", cp2_filesys_test_3());		// read executable
 	// TEST_OUTPUT("File System test 4", cp2_filesys_test_4());		// read large file
 //	TEST_OUTPUT("File System test 5", cp2_filesys_test_5());		// open, close, write / handle error condition

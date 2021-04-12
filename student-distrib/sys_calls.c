@@ -29,10 +29,10 @@ int32_t pid = 0, new_pid = 0;
  */
 int32_t open(const uint8_t* fname){
     int i;                          // Loop index
-    dentry_t *dentry = 0;           // pointer to dentry
+    dentry_t dentry;               // pointer to dentry
 
     // if failed to find the entry, return -1
-    if (-1 == read_dentry_by_name(fname, dentry))
+    if (-1 == read_dentry_by_name(fname, &dentry))
         return -1;
 
     // get the pointer to current pcb
@@ -48,15 +48,18 @@ int32_t open(const uint8_t* fname){
                 uint32_t    file_pos;
                 uint32_t    flages;
              */
-            switch (dentry->f_type) {
+            switch (dentry.f_type) {
                 case FILE_RTC:
                     cur_pcb->file_array[i].file_ops_ptr = &rtc_fop_t;
+                    break;
                 case FILE_DIREC:
                     cur_pcb->file_array[i].file_ops_ptr = &dir_fop_t;
+                    break;
                 case FILE_REG:
                     cur_pcb->file_array[i].file_ops_ptr = &reg_fop_t;
+                    break;
             }
-            cur_pcb->file_array[i].idx_inode = dentry->idx_inode;
+            cur_pcb->file_array[i].idx_inode = dentry.idx_inode;
             cur_pcb->file_array[i].file_pos = 0;        // 0 as the file has not been read yet
             cur_pcb->file_array[i].flags = INUSE;
 
@@ -221,8 +224,8 @@ int32_t halt(uint8_t status){
     /* intend to halt shell */
     if (cur_pcb_ptr->pid == cur_pcb_ptr->prev_pid){
         /* then go back to shell */
-        
-        /* TODO */
+        printf("FAIL TO HALT ROOT SHELL TASK");
+        _context_switch_(); /* back control to shell */
     }
 
     /*  Restore parent data */
@@ -232,7 +235,7 @@ int32_t halt(uint8_t status){
 
     /* tss update */
     tss.ss0 = KERNEL_DS;
-    tss.esp0 = _8MB_ - (_8KB_ * (pid+1)) - 4;   /*  */
+    tss.esp0 = _8MB_ - (_8KB_ * (pid)) - 4;   /*  */
 
     /* Restore parent paging */
     paging_set_user_mapping(pid);
@@ -245,7 +248,8 @@ int32_t halt(uint8_t status){
         }
     }
     /* close stdin, stdout */
-    /* TODO */
+    cur_pcb_ptr->file_array[0].flags = UNUSE;   /* stdi */
+    cur_pcb_ptr->file_array[1].flags = UNUSE;   /* stdo */
 
     /* Jump to execute return */
 
@@ -460,8 +464,8 @@ int32_t _PCB_setting_(const uint8_t* filename, const uint8_t* args, int32_t* eip
     /* Regs info */
     new_pcb_ptr->user_eip = *eip;
 
-    asm volatile ( "movl %%ebp, %0" : "=r"(kernel_ebp) : :);
-    asm volatile ( "movl %%esp, %0" : "=r"(kernel_esp) : :);
+    asm volatile ( "movl %%ebp, %0" : "=r"(kernel_ebp) );
+    asm volatile ( "movl %%esp, %0" : "=r"(kernel_esp) );
     new_pcb_ptr->kernel_ebp = kernel_ebp;
     new_pcb_ptr->kernel_esp = kernel_esp;
     // new_pcb_ptr->user_esp is always the same
@@ -500,7 +504,8 @@ void _context_switch_(){
     pcb* cur_pcb = get_pcb_ptr(pid);
     // pcb* prev_pcb = get_pcb_ptr(cur_pcb->prev_pid);
     tss.ss0 = KERNEL_DS;
-    tss.esp0 = (uint32_t) (cur_pcb + _8KB_ - 4);
+    // tss.esp0 = cur_pcb + _8KB_ - 4;
+    tss.esp0 = _8MB_ - (_8KB_ * pid) - 4;
 
     uint32_t _0_SS = (uint32_t) USER_DS;
     uint32_t  ESP = (uint32_t) USER_ESP;
@@ -509,32 +514,26 @@ void _context_switch_(){
 
 //    _ASM_switch_((uint32_t)USER_DS, (uint32_t) USER_ESP, (uint32_t) USER_CS, cur_pcb->user_eip);
 //    _switch_(_0_SS, ESP, _0_CS, EIP);
-    // asm volatile (
-    //     "andl   $0x00FF, %%eax;"
-    //     "pushl   %%eax;"
-    //     "pushl   %%ebx;"
-    //     "pushfl  ;"
-    //     "popl    %%ebx;"
-    //     "orl     $0x200, %%ebx;"
-    //     "pushl   %%ebx;"
-    //     "pushl   %%ecx;"
-    //     "pushl   %%edx;"
-    //     "iret   ;"  
-    // :   /* no outputs */
-    // : "a"(_0_SS), "b"(ESP), "c"(_0_CS), "d"(EIP)
-    // : "memory"
-    // );
     asm volatile (
-        "jmp    Prepare;" 
+        "cli;"
+        "movw    %%ax, %%ds;"
+        "pushl   %%eax;"
+        "pushl   %%ebx;"
+        "pushfl  ;"
+        "popl    %%edi;"
+        "orl     $0x0200, %%edi;"
+        "pushl   %%edi;"
+        "pushl   %%ecx;"
+        "pushl   %%edx;"
+        "iret   ;"  
     :   /* no outputs */
     : "a"(_0_SS), "b"(ESP), "c"(_0_CS), "d"(EIP)
-    : "memory"
+    :   "edi"
     );
-
 //    return SUCCESS;
 }
 
 
 pcb* get_pcb_ptr(int32_t pid){
-    return (pcb*)_8MB_ - _8KB_ *(pid + 1);
+    return (pcb*)(_8MB_ - _8KB_ *(pid + 1));
 }
