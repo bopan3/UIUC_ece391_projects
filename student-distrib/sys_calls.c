@@ -2,8 +2,6 @@
  * Functions of system call
  */
 
-
-
 #include "sys_calls.h"
 #include "file_sys.h"
 #include "terminal.h"
@@ -11,8 +9,9 @@
 #include "types.h"
 #include "paging.h"
 
-int8_t task_array[MAX_PROC] = {0};
-int32_t pid = 0, new_pid = 0;
+/* Global Section */
+int8_t task_array[MAX_PROC] = {0};  /* for hold PID */
+int32_t pid = 0, new_pid = 0;       /* pid cursor */
 
 
 /*
@@ -29,6 +28,8 @@ int32_t getargs (uint8_t* buf, int32_t nbytes){
     sti();
 
     pcb* cur_pcb_ptr;
+
+    /* sanity check */
     if (buf == NULL) return SYS_CALL_FAIL;
 
     /* check if buf in user space */
@@ -329,15 +330,12 @@ int32_t halt(uint8_t status){
  *   SIDE EFFECTS:
  */
 int32_t execute(const uint8_t* command){
-
     sti();
-
     uint8_t filename[FILENAME_LEN];     /* filename array */
     uint8_t args[TERM_LEN];             /* args array */
-    int32_t return_val;
-    // uint8_t eip_buf[USER_START_SIZE];   /* buffer to store the start address of program */
-    int32_t eip;
-    pcb* cur_pcb;                       /* for getting pcb ptr of current pid */
+    int32_t return_val;                 /* for return value from halt */
+    int32_t eip;                        /* to get user program start address */
+
 
     /* Sanity check */
     if (command == NULL) {
@@ -365,17 +363,10 @@ int32_t execute(const uint8_t* command){
             break;
     }
 
-
-
     /* setting PCB */
     if (SYS_CALL_FAIL == _PCB_setting_(filename, args, &eip)) return SYS_CALL_FAIL;
 
     /* context switch */
-    cur_pcb = get_pcb_ptr(pid);
-    // pcb* prev_pcb = get_pcb_ptr(cur_pcb->prev_pid);
-
-//    _ASM_switch_(_0_SS, ESP, _0_CS, EIP);
-    sti();
     _context_switch_();
 
     // Position that halt() jumps to
@@ -398,24 +389,18 @@ int32_t execute(const uint8_t* command){
  *   SIDE EFFECTS:
  */
 int32_t vidmap (uint8_t** screen_start){
-
     sti();
-
     return SYS_CALL_FAIL;
 }
 
 /* Signal Support for extra credit, just fake placeholder now */
 int32_t set_handler (int32_t signum, void* handler_address){
-
     sti();
-
     return SYS_CALL_FAIL;
 }
 
 int32_t sigreturn (void){
-
     sti();
-
     return SYS_CALL_FAIL;
 }
 
@@ -423,11 +408,11 @@ int32_t sigreturn (void){
 
 
 /*
- *   halt
- *   DESCRIPTION: halt a user program to return control back
- *   INPUTS: status - return value to execute
+ *   exp_halt
+ *   DESCRIPTION: halt from exception to return control back
+ *   INPUTS: 
  *   OUTPUTS:
- *   RETURN VALUE: -1 if anything bad happened
+ *   RETURN VALUE: 
  *   SIDE EFFECTS:
  */
 void exp_halt(){
@@ -471,7 +456,6 @@ void exp_halt(){
     cur_pcb_ptr->file_array[1].flags = UNUSE;   /* stdo */
 
     /* Jump to execute return */
-
     asm volatile(
         "xorl %%eax, %%eax;"
         "movl %0, %%eax;"
@@ -499,10 +483,10 @@ void exp_halt(){
  *   SIDE EFFECTS:  none
  */
 int32_t _parse_cmd_(const uint8_t* command, uint8_t* filename, uint8_t* args){
-    int cmd_len = strlen((int8_t*)(command));          /* length of command string */
-    int filename_len = 0;                   /* length of file name of program */
-    int arg_len = 0;                        /* length of args string */
-    int i;                                  /* loop index through command string */
+    int cmd_len = strlen((int8_t*)(command));       /* length of command string */
+    int filename_len = 0;                           /* length of file name of program */
+    int arg_len = 0;                                /* length of args string */
+    int i;                                          /* loop index through command string */
 
     /* Step 1: find program filename */
     /* strip the head space */
@@ -543,7 +527,7 @@ int32_t _parse_cmd_(const uint8_t* command, uint8_t* filename, uint8_t* args){
     }
     /* End the args */
     args[arg_len] = '\0';
-    // printf("%s", args);
+    
     return SUCCESS;
 }
 
@@ -557,15 +541,14 @@ int32_t _parse_cmd_(const uint8_t* command, uint8_t* filename, uint8_t* args){
  *   SIDE EFFECTS:  none
  */
 int32_t _file_validation_(const uint8_t* filename){
-    dentry_t validation_dentry;
-    uint8_t validation_buf[VALIDATION_READ_SIZE];
+    dentry_t validation_dentry;                     /* dentry instance for validation */
+    uint8_t validation_buf[VALIDATION_READ_SIZE];   /* buf for read from dentry */
 
     /* Check if file exist */
     if (SYS_CALL_FAIL == read_dentry_by_name(filename, &validation_dentry)) return SYS_CALL_FAIL;
 
     /* Valid if read dentry work */
-    if (VALIDATION_READ_SIZE != read_data(validation_dentry.idx_inode, 0,
-                                            validation_buf, VALIDATION_READ_SIZE)){
+    if (VALIDATION_READ_SIZE != read_data(validation_dentry.idx_inode, 0, validation_buf, VALIDATION_READ_SIZE)){
         return SYS_CALL_FAIL;
     }
 
@@ -591,9 +574,8 @@ int32_t _file_validation_(const uint8_t* filename){
  *   SIDE EFFECTS:  none
  */
 int32_t _mem_setting_(const uint8_t* filename, int32_t* eip){
-    dentry_t den;              /* for loading user program */
+    dentry_t den;               /* for loading user program */
     uint8_t* Loading_address;   /* as the buf to load program */
-    // int32_t pid;                /* PID for the new process */
     int32_t i;                  /* loop index */
 
     /* 1. Find a free entry for new task */
@@ -616,16 +598,26 @@ int32_t _mem_setting_(const uint8_t* filename, int32_t* eip){
 
     /* 3. Loading user program via read_data, copy from file system to memory */
     read_dentry_by_name(filename, &den);
-    Loading_address = (uint8_t*)0x8048000; /* fixed address */
+    Loading_address = (uint8_t*)0x8048000; /* fixed address, according to Appendix C */
     read_data(den.idx_inode, 0, Loading_address, get_file_size(den.idx_inode));
-    // strncpy((int8_t*)(eip_buf), (int8_t*)(Loading_address+24), USER_START_SIZE); /* Byte 24 - 27 is the address for program start */
+
     *eip = *(int32_t*)(Loading_address+24);
     return SUCCESS;
 
 }
 
+/*
+ *  _PCB_setting_
+ *   DESCRIPTION: helper function to set PCB struct
+ *   INPUTS: filename - filename array
+ *           args - to store in PCB
+ *           eip - user eip value, to store in PCB
+ *   OUTPUTS: none
+ *   RETURN VALUE:  0 - for success
+ *   SIDE EFFECTS:  none
+ */
 int32_t _PCB_setting_(const uint8_t* filename, const uint8_t* args, int32_t* eip){
-    int32_t kernel_ebp, kernel_esp;
+    int32_t kernel_ebp, kernel_esp; /* address value of two register */
 
     /* Getting pcb base address */
     pcb* new_pcb_ptr = get_pcb_ptr(new_pid);
@@ -641,12 +633,12 @@ int32_t _PCB_setting_(const uint8_t* filename, const uint8_t* args, int32_t* eip
     /* Regs info */
     new_pcb_ptr->user_eip = *eip;
 
+    /* move the reg value to variable */
     asm volatile ( "movl %%ebp, %0" : "=r"(kernel_ebp) );
     asm volatile ( "movl %%esp, %0" : "=r"(kernel_esp) );
     new_pcb_ptr->kernel_ebp = kernel_ebp;
     new_pcb_ptr->kernel_esp = kernel_esp;
     // new_pcb_ptr->user_esp is always the same
-
 
     /* Finally, update global PID  */
     pid = new_pid;
@@ -654,8 +646,18 @@ int32_t _PCB_setting_(const uint8_t* filename, const uint8_t* args, int32_t* eip
     return SUCCESS;
 }
 
+/*
+ *  _fd_init_
+ *   DESCRIPTION: helper function to initialize new file array for new PCB
+ *   INPUTS: pcb_addr - PCB struct address
+ *   OUTPUTS: 
+ *   RETURN VALUE: 
+ *   SIDE EFFECTS:  none
+ */
 void _fd_init_(pcb* pcb_addr){
     int i;      /* loop index */
+
+    /* initialize the array in new PCB */
     for (i = 0; i < N_FILES; i++){
         switch (i){
             case 0: /* stdin */
@@ -671,26 +673,35 @@ void _fd_init_(pcb* pcb_addr){
                 pcb_addr->file_array[i].file_pos = 0;    /* Not matter */
                 break;
 
-        default:
+            default:    /* the rest are not used yet */
                 pcb_addr->file_array[i].flags = UNUSE;
         }
     }
+
 }
 
+/*
+ *  _context_switch_
+ *   DESCRIPTION: helper function to do context switch stuff, including asm settings
+ *   INPUTS: 
+ *   OUTPUTS: 
+ *   RETURN VALUE: 
+ *   SIDE EFFECTS:  switch context from kernel to user
+ */
 void _context_switch_(){
-    pcb* cur_pcb = get_pcb_ptr(pid);
-    // pcb* prev_pcb = get_pcb_ptr(cur_pcb->prev_pid);
+    pcb* cur_pcb = get_pcb_ptr(pid);    /* PCB for current PID */
+    
+    /* tss settings */
     tss.ss0 = KERNEL_DS;
-    // tss.esp0 = cur_pcb + _8KB_ - 4;
     tss.esp0 = _8MB_ - (_8KB_ * pid) - 4;
 
+    /* value for asm setting */
     uint32_t _0_SS = (uint32_t) USER_DS;
     uint32_t  ESP = (uint32_t) USER_ESP;
     uint32_t  _0_CS = (uint32_t) USER_CS;
     uint32_t  EIP = cur_pcb->user_eip;
 
-//    _ASM_switch_((uint32_t)USER_DS, (uint32_t) USER_ESP, (uint32_t) USER_CS, cur_pcb->user_eip);
-//    _switch_(_0_SS, ESP, _0_CS, EIP);
+    /* asm setting */
     asm volatile (
         "cli;"
         "movw    %%ax, %%ds;"
@@ -707,10 +718,18 @@ void _context_switch_(){
     : "a"(_0_SS), "b"(ESP), "c"(_0_CS), "d"(EIP)
     :   "edi"
     );
-//    return SUCCESS;
+
 }
 
 
+/*
+ *  get_pcb_ptr
+ *   DESCRIPTION: shortcut function to calculate PCB start address for given PID
+ *   INPUTS: pid - task identifier
+ *   OUTPUTS: 
+ *   RETURN VALUE: PCB start address for given PID
+ *   SIDE EFFECTS:  
+ */
 pcb* get_pcb_ptr(int32_t pid){
     return (pcb*)(_8MB_ - _8KB_ *(pid + 1));
 }

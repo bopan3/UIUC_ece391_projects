@@ -108,9 +108,8 @@ void paging_init(void){
  *   DESCRIPTION: for the use of execute system call, to set mapping from virtual to physical
  *   INPUTS: pid - index of task, indicate the address of user program chunks 
  *   OUTPUTS: none
- *   RETURN VALUE: -1 - for invalid result
- *                  0 - for success
- *   SIDE EFFECTS:  none
+ *   RETURN VALUE:  
+ *   SIDE EFFECTS:  setting the physical address of virtual user program
  */
 void paging_set_user_mapping(int32_t pid){
     /* first time setting mapping */

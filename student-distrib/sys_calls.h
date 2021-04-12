@@ -119,20 +119,5 @@ void _fd_init_(pcb* pcb_addr);
 void _context_switch_();
 pcb* get_pcb_ptr(int32_t pid);
 
-#define _switch_(_0_SS, ESP, _0_CS, EIP)    \
-do{                             \
-    asm volatile ("             \n\
-        pushl   %%eax           \n\
-        pushl   %%ebx           \n\
-        pushfl                  \n\
-        pushl   %%ecx           \n\
-        pushl   %%edx           \n\
-        iret                    \n\
-    "                           \
-    :   /* no outputs */        \
-    : "a"((_0_SS)), "b"((ESP)), "c"((_0_CS)), "d"((EIP))    \
-    :                                               \
-    );                                              \
-}while(0);
 
 #endif

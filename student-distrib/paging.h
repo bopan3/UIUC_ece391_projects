@@ -44,7 +44,13 @@ do {                                        \
     );                                                              \
 } while (0);
 
-
+/*   TLB_flush
+ * Description: This macro reload cr3, to flush the cache
+ * Input: None
+ * Output: None
+ * Return: None
+ * Reference: reload cr3, cache flushed 
+ */
 #define TLB_flush()                 \
 do {                                \
     asm volatile ("               \n\
@@ -105,5 +111,6 @@ typedef struct __attribute__((packed)) PDE_desc {
 PDE page_dict[PD_SIZE] __attribute__((aligned (_4KB_)));    /* Page Dict */
 PTE page_table[PT_SIZE] __attribute__((aligned (_4KB_)));   /* Page Table for first chunk */
 
+/* function prototype */
 void paging_init(void);
 extern void paging_set_user_mapping(int32_t pid);
