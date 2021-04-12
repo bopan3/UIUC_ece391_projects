@@ -18,6 +18,35 @@ int8_t task_array[MAX_PROC] = {0};
 int32_t pid = 0, new_pid = 0;
 
 
+/*
+ *   getargs
+ *   DESCRIPTION: copy program args from kernel to user
+ *   INPUTS: buf - user space buf ptr
+ *           nbytes - buf size
+ *   OUTPUTS:
+ *   RETURN VALUE: 0 if success, -1 if anything bad happened
+ *   SIDE EFFECTS:
+ */
+int32_t getargs (uint8_t* buf, int32_t nbytes){
+    pcb* cur_pcb_ptr;
+    if (buf == NULL) return SYS_CALL_FAIL;
+
+    /* check if buf in user space */
+    if ( ((int32_t) buf >= (int32_t) USER_PAGE_BASE) && (int32_t) buf + nbytes < USER_ESP){
+        cur_pcb_ptr = get_pcb_ptr(pid);
+
+        /* check if args exist */
+        if (cur_pcb_ptr->args[0] == '\0') return SYS_CALL_FAIL;
+
+        /* check if args longer than buf size */
+        if (strlen((int8_t*)cur_pcb_ptr->args) > nbytes) return SYS_CALL_FAIL;
+
+        /* Copy from kernel to user */
+        strncpy((int8_t*)buf, (int8_t*)cur_pcb_ptr->args, nbytes);
+        return SUCCESS;
+    }
+    return SYS_CALL_FAIL;
+}
 
 /*
  *   open
@@ -214,6 +243,14 @@ void fop_t_init() {
     stdo_fop_t.close = terminal_close;
 }
 
+/*
+ *   halt
+ *   DESCRIPTION: halt a user program to return control back 
+ *   INPUTS: status - return value to execute
+ *   OUTPUTS:
+ *   RETURN VALUE: -1 if anything bad happened
+ *   SIDE EFFECTS:
+ */
 int32_t halt(uint8_t status){
     int i;              /* loop index */
 
@@ -224,7 +261,7 @@ int32_t halt(uint8_t status){
     /* intend to halt shell */
     if (cur_pcb_ptr->pid == cur_pcb_ptr->prev_pid){
         /* then go back to shell */
-        printf("FAIL TO HALT ROOT SHELL TASK");
+        printf("[WARINING] FAIL TO HALT ROOT SHELL TASK\n");
         _context_switch_(); /* back control to shell */
     }
 
@@ -235,7 +272,7 @@ int32_t halt(uint8_t status){
 
     /* tss update */
     tss.ss0 = KERNEL_DS;
-    tss.esp0 = _8MB_ - (_8KB_ * (pid)) - 4;   /*  */
+    tss.esp0 = _8MB_ - (_8KB_ * (pid)) - 4; 
 
     /* Restore parent paging */
     paging_set_user_mapping(pid);
@@ -267,6 +304,14 @@ int32_t halt(uint8_t status){
     return SYS_CALL_FAIL;   /* if touch here, it must have something wrong */
 }
 
+/*
+ *   execute
+ *   DESCRIPTION: envoke a user program from kernel 
+ *   INPUTS: command - program name and args
+ *   OUTPUTS:
+ *   RETURN VALUE: 0 if success, -1 if anything bad happened
+ *   SIDE EFFECTS:
+ */
 int32_t execute(const uint8_t* command){
     uint8_t filename[FILENAME_LEN];     /* filename array */
     uint8_t args[TERM_LEN];             /* args array */
@@ -290,7 +335,16 @@ int32_t execute(const uint8_t* command){
     }
 
     /* settting memory part */
-    if (SYS_CALL_FAIL == _mem_setting_(filename, &eip)) return SYS_CALL_FAIL;
+    switch ( _mem_setting_(filename, &eip)){
+        case SYS_CALL_FAIL:
+            return SYS_CALL_FAIL;
+            break;
+        
+        case EXE_LIMIT:
+            return SUCCESS;
+            break;
+    }
+    
 
 
     /* setting PCB */
@@ -310,10 +364,30 @@ int32_t execute(const uint8_t* command){
         : 
     );
 
-    return SUCCESS; /* IRET in switch */
+    return SUCCESS; 
 }
 
+/* Checkpoint 3.4 task */
+/*
+ *   vidmap
+ *   DESCRIPTION: 
+ *   INPUTS: screen_start - 
+ *   OUTPUTS:
+ *   RETURN VALUE: 0 if success, -1 if anything bad happened
+ *   SIDE EFFECTS:
+ */
+int32_t vidmap (uint8_t** screen_start){
+    return SYS_CALL_FAIL;
+}
 
+/* Signal Support for extra credit, just fake placeholder now */
+int32_t set_handler (int32_t signum, void* handler_address){
+    return SYS_CALL_FAIL;
+}
+
+int32_t sigreturn (void){
+    return SYS_CALL_FAIL;
+}
 // =================== helper function ===============
 /*
  * _parse_cmd_
@@ -414,6 +488,7 @@ int32_t _file_validation_(const uint8_t* filename){
  *   OUTPUTS: none
  *   RETURN VALUE: -1 - for invalid result
  *                  0 - for success
+ *                  1 - for exe up limit
  *   SIDE EFFECTS:  none
  */
 int32_t _mem_setting_(const uint8_t* filename, int32_t* eip){
@@ -432,7 +507,10 @@ int32_t _mem_setting_(const uint8_t* filename, int32_t* eip){
     }
 
     /* Check if new process request beyond ability */
-    if (i == MAX_PROC) return SYS_CALL_FAIL;
+    if (i == MAX_PROC) {
+        printf("[WARINING] REACH MAXIMUM NESTED TASK #%d, FAIL TO EXECUTE NEW\n", MAX_PROC);
+        return EXE_LIMIT;
+    }
 
     /* 2. Mapping virtual 128 MB to physical image address */
     paging_set_user_mapping(new_pid);
@@ -538,27 +616,5 @@ pcb* get_pcb_ptr(int32_t pid){
     return (pcb*)(_8MB_ - _8KB_ *(pid + 1));
 }
 
-/* 
- nbytes:
- */
-int32_t getargs (uint8_t* buf, int32_t nbytes){
-    pcb* cur_pcb_ptr;
-    if (buf == NULL) return SYS_CALL_FAIL;
 
-    /* check if buf in user space */
-    if ( ((int32_t) buf >= (int32_t) USER_PAGE_BASE) && (int32_t) buf + nbytes < USER_ESP){
-        cur_pcb_ptr = get_pcb_ptr(pid);
-
-        /* check if args exist */
-        if (cur_pcb_ptr->args[0] == '\0') return SYS_CALL_FAIL;
-
-        /* check if args longer than buf size */
-        if (strlen(cur_pcb_ptr->args) > nbytes) return SYS_CALL_FAIL;
-
-        /* Copy from kernel to user */
-        strncpy(buf, cur_pcb_ptr->args, nbytes);
-        return SUCCESS;
-    }
-    return SYS_CALL_FAIL;
-}
 
