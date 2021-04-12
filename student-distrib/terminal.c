@@ -54,7 +54,6 @@ int32_t terminal_read(int32_t fd, void* buf, int32_t nbytes) {
     if (buf == NULL)
         return -1;
 
-    sti();
     // While enter not pressed, wait for enter
     while (OFF == enter_flag) {}
     cli();
