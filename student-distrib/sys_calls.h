@@ -21,7 +21,9 @@
 #define INVALID_NODE -1
 #define USER_START_SIZE 4
 #define ROOT_TASK -1
-#define USER_ESP 0x8000000 + 0x400000 - 4 /* 128 MB for start user + 4 MB for stack size - 1 entry */
+#define USER_PAGE_BASE 0x8000000
+#define USER_ESP (USER_PAGE_BASE + 0x400000 - 4) /* 128 MB for start user + 4 MB for page size - 4 entry */
+
 /* File operation tables */
 // typedef struct file_ops_t {
 //     /* TODO */

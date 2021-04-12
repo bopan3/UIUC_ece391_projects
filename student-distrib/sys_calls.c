@@ -531,3 +531,28 @@ void _context_switch_(){
 pcb* get_pcb_ptr(int32_t pid){
     return (pcb*)(_8MB_ - _8KB_ *(pid + 1));
 }
+
+/* 
+ nbytes:
+ */
+int32_t getargs (uint8_t* buf, int32_t nbytes){
+    pcb* cur_pcb_ptr;
+    if (buf == NULL) return SYS_CALL_FAIL;
+
+    /* check if buf in user space */
+    if ( ((int32_t) buf >= (int32_t) USER_PAGE_BASE) && (int32_t) buf + nbytes < USER_ESP){
+        cur_pcb_ptr = get_pcb_ptr(pid);
+
+        /* check if args exist */
+        if (cur_pcb_ptr->args[0] == '\0') return SYS_CALL_FAIL;
+
+        /* check if args longer than buf size */
+        if (strlen(cur_pcb_ptr->args) > nbytes) return SYS_CALL_FAIL;
+
+        /* Copy from kernel to user */
+        strncpy(buf, cur_pcb_ptr->args, nbytes);
+        return SUCCESS;
+    }
+    return SYS_CALL_FAIL;
+}
+
