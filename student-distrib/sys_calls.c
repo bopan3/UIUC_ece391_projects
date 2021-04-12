@@ -65,9 +65,13 @@ int32_t open(const uint8_t* fname){
     int i;                          // Loop index
     dentry_t dentry;               // pointer to dentry
 
+    // check if buf is NULL
+    if (NULL == fname)
+        return SYS_CALL_FAIL;
+
     // if failed to find the entry, return -1
-    if (-1 == read_dentry_by_name(fname, &dentry))
-        return -1;
+    if (SYS_CALL_FAIL == read_dentry_by_name(fname, &dentry))
+        return SYS_CALL_FAIL;
 
     // get the pointer to current pcb
     pcb* cur_pcb = get_pcb_ptr(pid);
@@ -101,7 +105,7 @@ int32_t open(const uint8_t* fname){
         }
     }
     // exiting the while loop means all fds are full, fail
-    return -1;
+    return SYS_CALL_FAIL;
 }
 
 /*
@@ -118,18 +122,18 @@ int32_t close(int32_t fd){
 
     // fd number should be between 0 and 8
     if(fd < INI_FILES || fd > N_FILES)
-        return -1;
+        return SYS_CALL_FAIL;
 
     // find the current PCB
     pcb* cur_pcb = get_pcb_ptr(pid);
 
     // check if the current file descriptor is freed
     if(cur_pcb->file_array[fd].flags == UNUSE)
-        return -1;
+        return SYS_CALL_FAIL;
 
     // call the corresponding close function and check if success
-    if (-1 == cur_pcb->file_array[fd].file_ops_ptr->close(fd))
-        return -1;
+    if (SYS_CALL_FAIL == cur_pcb->file_array[fd].file_ops_ptr->close(fd))
+        return SYS_CALL_FAIL;
 
     cur_pcb->file_array[fd].flags = UNUSE;
 
@@ -152,19 +156,19 @@ int32_t read(int32_t fd, void* buf, int32_t nbytes){
 
     // fd number should be between 0 and 8
     if(fd < 0 || fd > N_FILES)
-        return -1;
+        return SYS_CALL_FAIL;
     // check if buf is NULL
     if (buf == NULL)
-        return -1;
+        return SYS_CALL_FAIL;
     // check if the number of bytes to read is legible
-    if (nbytes < 0)
-        return -1;
+    if (nbytes < 0)         // if read negative number bytes, return fail
+        return SYS_CALL_FAIL;
 
     // find the current PCB
     pcb* cur_pcb = get_pcb_ptr(pid);
     // check if the current file descriptor is in use
     if(cur_pcb->file_array[fd].flags == UNUSE)
-        return -1;
+        return SYS_CALL_FAIL;
 
     // read and return the number of bytes read
     int32_t ret = cur_pcb->file_array[fd].file_ops_ptr->read(fd,buf,nbytes);
@@ -187,19 +191,19 @@ int32_t write(int32_t fd, const void* buf, int32_t nbytes) {
 
     // fd number should be between 0 and 8
     if(fd < 0 || fd > N_FILES)
-        return -1;
+        return SYS_CALL_FAIL;
     // check if buf is NULL
     if (buf == NULL)
-        return -1;
+        return SYS_CALL_FAIL;
     // check if the number of bytes to write is legible
-    if (nbytes < 0)
-        return -1;
+    if (nbytes < 0)         // if write negative number bytes, return fail
+        return SYS_CALL_FAIL;
 
     // find the current PCB
     pcb* cur_pcb = get_pcb_ptr(pid);
     // check if the current file descriptor is in use
     if(cur_pcb->file_array[fd].flags == UNUSE)
-        return -1;
+        return SYS_CALL_FAIL;
 
     // write and return the number of bytes wrote
     int32_t ret = cur_pcb->file_array[fd].file_ops_ptr->write(fd,buf,nbytes);
@@ -215,7 +219,7 @@ int32_t write(int32_t fd, const void* buf, int32_t nbytes) {
  *   SIDE EFFECTS: none
  */
 int32_t badread(int32_t fd, void* buf, int32_t nbytes) {
-    return -1;
+    return SYS_CALL_FAIL;
 }
 
 /*
@@ -227,9 +231,17 @@ int32_t badread(int32_t fd, void* buf, int32_t nbytes) {
  *   SIDE EFFECTS: none
  */
 int32_t badwrite(int32_t fd, const void* buf, int32_t nbytes) {
-    return -1;
+    return SYS_CALL_FAIL;
 }
 
+/*
+ *   fop_t_init
+ *   DESCRIPTION: initialize file operations table
+ *   INPUTS: none
+ *   OUTPUTS:
+ *   RETURN VALUE: none
+ *   SIDE EFFECTS: initialize file operations table
+ */
 void fop_t_init() {
     rtc_fop_t.read = rtc_read;
     rtc_fop_t.write = rtc_write;
