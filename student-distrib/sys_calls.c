@@ -334,6 +334,7 @@ int32_t execute(const uint8_t* command){
 
     uint8_t filename[FILENAME_LEN];     /* filename array */
     uint8_t args[TERM_LEN];             /* args array */
+    int32_t return_val;
     // uint8_t eip_buf[USER_START_SIZE];   /* buffer to store the start address of program */
     int32_t eip;   
     pcb* cur_pcb;                       /* for getting pcb ptr of current pid */
@@ -380,10 +381,11 @@ int32_t execute(const uint8_t* command){
     // Position that halt() jumps to
     asm volatile (
         "return_from_halt:"
-        : 
+        "movl %%eax, %0;"
+        : "=r"(return_val)
     );
 
-    return SUCCESS; 
+    return return_val;
 }
 
 /* Checkpoint 3.4 task */
@@ -481,7 +483,6 @@ void exp_halt(){
         : "esp", "ebp", "eax"
     );
     
-    return SYS_CALL_FAIL;   /* if touch here, it must have something wrong */
 }
 
 

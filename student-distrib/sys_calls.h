@@ -107,6 +107,9 @@ int32_t badwrite(int32_t fd, const void* buf, int32_t nbytes);
 /* initialize the file operations table poinetr */
 void fop_t_init();
 
+/* Halt function for exception only */
+void exp_halt();
+
 /* Helper function for execute and halt */
 int32_t _parse_cmd_(const uint8_t* command, uint8_t* filename, uint8_t* args);
 int32_t _file_validation_(const uint8_t* filename);
