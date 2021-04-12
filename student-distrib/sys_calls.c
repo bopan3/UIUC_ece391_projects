@@ -258,7 +258,7 @@ void fop_t_init() {
 
 /*
  *   halt
- *   DESCRIPTION: halt a user program to return control back 
+ *   DESCRIPTION: halt a user program to return control back
  *   INPUTS: status - return value to execute
  *   OUTPUTS:
  *   RETURN VALUE: -1 if anything bad happened
@@ -288,7 +288,7 @@ int32_t halt(uint8_t status){
 
     /* tss update */
     tss.ss0 = KERNEL_DS;
-    tss.esp0 = _8MB_ - (_8KB_ * (pid)) - 4; 
+    tss.esp0 = _8MB_ - (_8KB_ * (pid)) - 4;
 
     /* Restore parent paging */
     paging_set_user_mapping(pid);
@@ -316,13 +316,13 @@ int32_t halt(uint8_t status){
         : "r"(status), "r"(cur_pcb_ptr->kernel_ebp), "r"(cur_pcb_ptr->kernel_esp)
         : "esp", "ebp", "eax"
     );
-    
+
     return SYS_CALL_FAIL;   /* if touch here, it must have something wrong */
 }
 
 /*
  *   execute
- *   DESCRIPTION: envoke a user program from kernel 
+ *   DESCRIPTION: envoke a user program from kernel
  *   INPUTS: command - program name and args
  *   OUTPUTS:
  *   RETURN VALUE: 0 if success, -1 if anything bad happened
@@ -334,8 +334,9 @@ int32_t execute(const uint8_t* command){
 
     uint8_t filename[FILENAME_LEN];     /* filename array */
     uint8_t args[TERM_LEN];             /* args array */
+    int32_t return_val;
     // uint8_t eip_buf[USER_START_SIZE];   /* buffer to store the start address of program */
-    int32_t eip;   
+    int32_t eip;
     pcb* cur_pcb;                       /* for getting pcb ptr of current pid */
 
     /* Sanity check */
@@ -358,12 +359,12 @@ int32_t execute(const uint8_t* command){
         case SYS_CALL_FAIL:
             return SYS_CALL_FAIL;
             break;
-        
+
         case EXE_LIMIT:
             return SUCCESS;
             break;
     }
-    
+
 
 
     /* setting PCB */
@@ -380,17 +381,18 @@ int32_t execute(const uint8_t* command){
     // Position that halt() jumps to
     asm volatile (
         "return_from_halt:"
-        : 
+        "movl %%eax, %0;"
+        : "=r"(return_val)
     );
 
-    return SUCCESS; 
+    return return_val;
 }
 
 /* Checkpoint 3.4 task */
 /*
  *   vidmap
- *   DESCRIPTION: 
- *   INPUTS: screen_start - 
+ *   DESCRIPTION:
+ *   INPUTS: screen_start -
  *   OUTPUTS:
  *   RETURN VALUE: 0 if success, -1 if anything bad happened
  *   SIDE EFFECTS:
@@ -422,7 +424,7 @@ int32_t sigreturn (void){
 
 /*
  *   halt
- *   DESCRIPTION: halt a user program to return control back 
+ *   DESCRIPTION: halt a user program to return control back
  *   INPUTS: status - return value to execute
  *   OUTPUTS:
  *   RETURN VALUE: -1 if anything bad happened
@@ -452,7 +454,7 @@ void exp_halt(){
 
     /* tss update */
     tss.ss0 = KERNEL_DS;
-    tss.esp0 = _8MB_ - (_8KB_ * (pid)) - 4; 
+    tss.esp0 = _8MB_ - (_8KB_ * (pid)) - 4;
 
     /* Restore parent paging */
     paging_set_user_mapping(pid);
@@ -480,7 +482,7 @@ void exp_halt(){
         : "r"(256), "r"(cur_pcb_ptr->kernel_ebp), "r"(cur_pcb_ptr->kernel_esp)
         : "esp", "ebp", "eax"
     );
-    
+
     return ;   /* if touch here, it must have something wrong */
 }
 
@@ -700,7 +702,7 @@ void _context_switch_(){
         "pushl   %%edi;"
         "pushl   %%ecx;"
         "pushl   %%edx;"
-        "iret   ;"  
+        "iret   ;"
     :   /* no outputs */
     : "a"(_0_SS), "b"(ESP), "c"(_0_CS), "d"(EIP)
     :   "edi"
@@ -712,6 +714,3 @@ void _context_switch_(){
 pcb* get_pcb_ptr(int32_t pid){
     return (pcb*)(_8MB_ - _8KB_ *(pid + 1));
 }
-
-
-
