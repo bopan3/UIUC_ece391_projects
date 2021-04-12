@@ -21,7 +21,9 @@
 #define INVALID_NODE -1
 #define USER_START_SIZE 4
 #define ROOT_TASK -1
-#define USER_ESP 0x8000000 + 0x400000 - 4 /* 128 MB for start user + 4 MB for stack size - 1 entry */
+#define USER_PAGE_BASE 0x8000000
+#define USER_ESP (USER_PAGE_BASE + 0x400000 - 4) /* 128 MB for start user + 4 MB for page size - 4 entry */
+#define EXE_LIMIT 1
 /* File operation tables */
 // typedef struct file_ops_t {
 //     /* TODO */
@@ -84,6 +86,20 @@ int32_t read(int32_t fd, void* buf, int32_t nbytes);
 /* writes data to terminal or a device */
 int32_t write(int32_t fd, const void* buf, int32_t nbytes);
 
+/* copy program args from kernel to user */
+int32_t getargs (uint8_t* buf, int32_t nbytes);
+
+/* envoke a user program */
+int32_t execute(const uint8_t* command);
+
+/* Checkpoint 3.4 task */
+int32_t vidmap (uint8_t** screen_start);
+
+/* Signal Support for extra credit, just fake placeholder now */
+int32_t set_handler (int32_t signum, void* handler_address);
+int32_t sigreturn (void);
+
+/* =============================================================================== */
 /* bad calls */
 int32_t badread(int32_t fd, void* buf, int32_t nbytes);
 int32_t badwrite(int32_t fd, const void* buf, int32_t nbytes);
@@ -91,20 +107,13 @@ int32_t badwrite(int32_t fd, const void* buf, int32_t nbytes);
 /* initialize the file operations table poinetr */
 void fop_t_init();
 
-int32_t execute(const uint8_t* command);
-
+/* Helper function for execute and halt */
 int32_t _parse_cmd_(const uint8_t* command, uint8_t* filename, uint8_t* args);
-
 int32_t _file_validation_(const uint8_t* filename);
-
 int32_t _mem_setting_(const uint8_t* filename, int32_t* eip);
-
 int32_t _PCB_setting_(const uint8_t* filename, const uint8_t* args, int32_t* eip);
-
 void _fd_init_(pcb* pcb_addr);
-
 void _context_switch_();
-
 pcb* get_pcb_ptr(int32_t pid);
 
 #define _switch_(_0_SS, ESP, _0_CS, EIP)    \

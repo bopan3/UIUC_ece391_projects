@@ -74,14 +74,10 @@ call_table:
     .long write
     .long open 
     .long close
-    .long 0x0
-    .long 0x0
-    .long 0x0
-    .long 0x0
-//    .long getargs
-//    .long vidmap
-//    .long set_handler
-//    .long sigreturn
+    .long getargs
+    .long vidmap
+    .long set_handler
+    .long sigreturn
 
 
 

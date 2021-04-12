@@ -369,18 +369,15 @@ int cp2_filesys_test_1() {
  * Files: file_sys/c/h
  */
 int cp2_filesys_test_2() {
-	int32_t fd;
 	int32_t length;
-	int32_t nbytes = 1000;
-	char buf[nbytes+1];
 
 	printf("--------------------\n");
 
-	// dentry_t ret;
-	// length = read_dentry_by_name((uint8_t*)".", &ret);
-	// printf("File name: %s\n", ret.f_name);
-	// printf("File type: %d\n", ret.f_type);
-	// printf("File #: %d\n", ret.idx_inode);
+	dentry_t ret;
+	length = read_dentry_by_name((uint8_t*)".", &ret);
+	printf("File name: %s\n", ret.f_name);
+	printf("File type: %d\n", ret.f_type);
+	printf("File #: %d\n", ret.idx_inode);
 
 	return PASS;
 }
