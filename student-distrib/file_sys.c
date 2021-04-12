@@ -331,6 +331,7 @@ int32_t direct_open(const uint8_t* directname) {
 int32_t direct_read(int32_t fd, void* buf, int32_t nbytes) {
 
     struct dentry_t temp;   // store temp dentry in loop
+    int8_t* string = buf;
 
     if (buf == NULL) {
         return -1;
@@ -346,10 +347,9 @@ int32_t direct_read(int32_t fd, void* buf, int32_t nbytes) {
     cur_pcb->file_array[fd].file_pos += 1;
 
     // Read file name
-    strncpy((int8_t*)buf, (int8_t*)temp.f_name, 32);
+    strncpy((int8_t*)buf, (int8_t*)temp.f_name, 33);
+    string[32] = '\0';
 
-    if (temp.idx_inode == 44)   // 44 is the inode number of file with very long name
-        return 32;
     return strlen(buf);
 }
 
