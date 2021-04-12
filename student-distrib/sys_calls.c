@@ -416,7 +416,75 @@ int32_t sigreturn (void){
 
     return SYS_CALL_FAIL;
 }
+
 // =================== helper function ===============
+
+
+/*
+ *   halt
+ *   DESCRIPTION: halt a user program to return control back 
+ *   INPUTS: status - return value to execute
+ *   OUTPUTS:
+ *   RETURN VALUE: -1 if anything bad happened
+ *   SIDE EFFECTS:
+ */
+void exp_halt(){
+
+    sti();
+
+    int i;              /* loop index */
+
+    /* Get pcb info */
+    pcb* cur_pcb_ptr = get_pcb_ptr(pid);
+    pcb* prev_pcb_ptr;
+
+    /* intend to halt shell */
+    if (cur_pcb_ptr->pid == cur_pcb_ptr->prev_pid){
+        /* then go back to shell */
+        printf("[WARINING] FAIL TO HALT ROOT SHELL TASK\n");
+        _context_switch_(); /* back control to shell */
+    }
+
+    /*  Restore parent data */
+    prev_pcb_ptr = get_pcb_ptr(cur_pcb_ptr->prev_pid);
+    task_array[pid] = 0;        /* release the pid entry at task array */
+    pid = prev_pcb_ptr->pid;    /* update pid */
+
+    /* tss update */
+    tss.ss0 = KERNEL_DS;
+    tss.esp0 = _8MB_ - (_8KB_ * (pid)) - 4; 
+
+    /* Restore parent paging */
+    paging_set_user_mapping(pid);
+
+    /* Close any relevant FDs */
+    /* close normal file */
+    for (i = 2; i < N_FILES; i++){
+        if (cur_pcb_ptr->file_array[i].flags == INUSE){
+            close(i);
+        }
+    }
+    /* close stdin, stdout */
+    cur_pcb_ptr->file_array[0].flags = UNUSE;   /* stdi */
+    cur_pcb_ptr->file_array[1].flags = UNUSE;   /* stdo */
+
+    /* Jump to execute return */
+
+    asm volatile(
+        "xorl %%eax, %%eax;"
+        "movl %0, %%eax;"
+        "movl %1, %%ebp;"
+        "movl %2, %%esp;"
+        "jmp return_from_halt;"
+        : /* No output */
+        : "r"(256), "r"(cur_pcb_ptr->kernel_ebp), "r"(cur_pcb_ptr->kernel_esp)
+        : "esp", "ebp", "eax"
+    );
+    
+    return SYS_CALL_FAIL;   /* if touch here, it must have something wrong */
+}
+
+
 /*
  * _parse_cmd_
  *   DESCRIPTION: helper function to parse the command sting to filename and args
