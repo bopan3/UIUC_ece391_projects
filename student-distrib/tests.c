@@ -376,14 +376,6 @@ int cp2_filesys_test_2() {
 
 	printf("--------------------\n");
 
-	fd = open((uint8_t*)".");	// frame1.txt
-	length = read(fd, (uint8_t*)buf, nbytes);
-	buf[length+1] = '\0';
-	// printf("File name: frame1.txt\n");
-	printf("Bytes readed: %d\n", length);
-	printf("Content:\n%s\n", buf);
-	close(fd);
-
 	// dentry_t ret;
 	// length = read_dentry_by_name((uint8_t*)".", &ret);
 	// printf("File name: %s\n", ret.f_name);

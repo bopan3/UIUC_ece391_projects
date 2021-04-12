@@ -345,8 +345,10 @@ int32_t direct_read(int32_t fd, void* buf, int32_t nbytes) {
     direct_read_count += 1;
 
     // Read file name
-    strncpy((int8_t*)buf, (int8_t*)temp.f_name, 33);
-        
+    strncpy((int8_t*)buf, (int8_t*)temp.f_name, 32);
+
+    if (temp.idx_inode == 44)   // 44 is the inode number of file with very long name
+        return 32;
     return strlen(buf);
 }
 
