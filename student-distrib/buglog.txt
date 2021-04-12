@@ -70,3 +70,51 @@ Date: Mar 29th 2021
 Files: rtc.c
 Bug: the frequency is inversed
 reason: for formular to compute rate is wrong, the correct version is frequency =  32768 >> (rate-1). 
+
+==================================================
+===================== Checkpoint 3 ====================
+
+Contributer: Fengqing Jiang
+Date: April 11 2021
+Files: sys_call.c
+Bug: page fault when execute system call
+Reason: the way using pointer is unsafe, for kernel stuff, must allocate the space for varible, 
+        rather than an uninitialized pointer, which may in the unallowed page region 
+
+Contributer: Fengqing Jiang
+Files: sys_call.c
+Bug: if input extra space at the end of the args, it will fail to execute
+Reason: _parse_cmd_ did not handle the args correctly,since use wrong end function to handle space at end of the args
+
+Contributer: Fengqing Jiang
+Files: sys_call.c
+Bug: it could not execute any sub-program in shell, and Page Fault
+Reason: the shortcut calculate function was incorrect with brackets， then it leads to strange address, then Page Fault
+
+Contributer: Fengqing Jiang
+Files: sys_call.c
+Bug: when test nested shell to 6 level shell, and go to 7th shell, it will fail but also return no such file.
+Reason: the return value should be different from simple fail (-1), otherwise would be regard as no such file by the shell program.
+ 
+Contributer: Nachuan Wang
+Date: April 11 2021
+Files: sys_call.c
+Bug: after shell is excuted, the prompt cannot respond to any key press
+Reason: system call is set to be an interrupt gate, so before entering to actual fucntions we need to first restore the IF 
+        in EFLAGE register, otherwise all interrupt (like key press) will be suppressed.
+
+Contributer: Nachuan Wang
+Date: April 11 2021
+Files: sys_call.c
+Bug: read file "." does not fill the buffer with any character
+Reason: when initializing file operation jump table, we use a "switch", however, we hadn't realized that C will continue to 
+        excute remaining switch cases after finishing the first case. Consequently, the jump table is initialized in a wrong 
+        way. After adding "break" at each case the error is fixed.
+
+Contributer: Nachuan Wang
+Date: April 12 2021
+Files: sys_call.c
+Bug: after an exception is issued, "shell" does not print any information
+Reason: at the end of "excute" system call, just after code jumping from "halt", we use a "return success" to return, wh
+        ich will rewrite the return value in EAX. Therefore, we use a variable to store the value in EAX in assembly code and 
+        return it instead.

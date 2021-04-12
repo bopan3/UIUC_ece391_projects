@@ -567,6 +567,9 @@ int rtc_driver_edge_case_test(){
 	}
 }
 /* Checkpoint 3 tests */
+
+
+
 /* Checkpoint 4 tests */
 
 
@@ -589,4 +592,7 @@ void launch_tests(){
 	// TEST_OUTPUT("File System test 4", cp2_filesys_test_4());		// read large file
 //	TEST_OUTPUT("File System test 5", cp2_filesys_test_5());		// open, close, write / handle error condition
 	// TEST_OUTPUT("File System test 6", cp2_filesys_test_6());			// direct_read
+
+	/* Check point 3 */
+	/* Please just play the shell */
 }
