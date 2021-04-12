@@ -481,7 +481,7 @@ void exp_halt(){
         : "esp", "ebp", "eax"
     );
     
-    return SYS_CALL_FAIL;   /* if touch here, it must have something wrong */
+    return ;   /* if touch here, it must have something wrong */
 }
 
 
