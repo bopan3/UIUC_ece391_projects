@@ -25,7 +25,7 @@ void f_name() {                               \
     /* blue_screen(); */                      \
     printf("EXCEPTION #0x%x: %s\n", vect, msg); \
     /* while(1){} */                          \
-    halt(RETURN_FROM_EXP);                    \
+    exp_halt();                    \
     asm volatile("sti");    /* should never reach here */ \
     return;                                   \
 }                                             \

@@ -541,7 +541,7 @@ int32_t _parse_cmd_(const uint8_t* command, uint8_t* filename, uint8_t* args){
     }
     /* End the args */
     args[arg_len] = '\0';
-    printf("%s", args);
+    // printf("%s", args);
     return SUCCESS;
 }
 
