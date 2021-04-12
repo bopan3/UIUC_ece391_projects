@@ -465,14 +465,15 @@ int32_t _parse_cmd_(const uint8_t* command, uint8_t* filename, uint8_t* args){
         return SUCCESS;
     }
 
-    /* Otherwise, copy the args */
-    while(i < cmd_len){
+    /* Otherwise, copy the args and strip the end space */
+    while(i < cmd_len && command[i] != ' ' ){
         args[arg_len] = command[i];
         i++;
         arg_len++;
     }
     /* End the args */
     args[arg_len] = '\0';
+    printf("%s", args);
     return SUCCESS;
 }
 
