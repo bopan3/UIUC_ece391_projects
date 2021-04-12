@@ -11,6 +11,9 @@
 #include "types.h"
 #include "paging.h"
 
+// For small test only
+#include "test_assemble.h"
+
 int8_t task_array[MAX_PROC] = {0};
 int32_t pid = 0, new_pid = 0;
 
@@ -48,10 +51,13 @@ int32_t open(const uint8_t* fname){
             switch (dentry.f_type) {
                 case FILE_RTC:
                     cur_pcb->file_array[i].file_ops_ptr = &rtc_fop_t;
+                    break;
                 case FILE_DIREC:
                     cur_pcb->file_array[i].file_ops_ptr = &dir_fop_t;
+                    break;
                 case FILE_REG:
                     cur_pcb->file_array[i].file_ops_ptr = &reg_fop_t;
+                    break;
             }
             cur_pcb->file_array[i].idx_inode = dentry.idx_inode;
             cur_pcb->file_array[i].file_pos = 0;        // 0 as the file has not been read yet
@@ -301,9 +307,7 @@ int32_t execute(const uint8_t* command){
     // Position that halt() jumps to
     asm volatile (
         "return_from_halt:"
-        : /* No output */
-        : "r"(0) /* Dummy input, not used */
-        : "%eax"
+        : 
     );
 
     return SUCCESS; /* IRET in switch */
@@ -511,6 +515,8 @@ void _context_switch_(){
 //    _ASM_switch_((uint32_t)USER_DS, (uint32_t) USER_ESP, (uint32_t) USER_CS, cur_pcb->user_eip);
 //    _switch_(_0_SS, ESP, _0_CS, EIP);
     asm volatile (
+        "cli;"
+        "movw    %%ax, %%ds;"
         "pushl   %%eax;"
         "pushl   %%ebx;"
         "pushfl  ;"
