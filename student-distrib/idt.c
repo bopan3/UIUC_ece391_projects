@@ -7,6 +7,7 @@
 #include "idt.h"
 #include "x86_desc.h"
 #include "asm_linkage.h"
+#include "sys_calls.h"
 
 /* 
  * Jump frunction for each exception/interrupt/system call
@@ -19,12 +20,13 @@
 
 #define IDT_exp_entry(f_name, vect, msg)      \
 void f_name() {                               \
-    /* Suppress all interrupts */             \
+    /* Suppress all interrupts (just in case) */ \
     asm volatile("cli");                      \
-    blue_screen();                            \
+    /* blue_screen(); */                      \
     printf("EXCEPTION #0x%x: %s\n", vect, msg); \
-    while(1){}                                \
-    asm volatile("sti");                      \
+    /* while(1){} */                          \
+    halt(RETURN_FROM_EXP);                    \
+    asm volatile("sti");    /* should never reach here */ \
     return;                                   \
 }                                             \
 
