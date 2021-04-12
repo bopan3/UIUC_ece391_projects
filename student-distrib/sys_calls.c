@@ -11,9 +11,6 @@
 #include "types.h"
 #include "paging.h"
 
-// For small test only
-#include "test_assemble.h"
-
 int8_t task_array[MAX_PROC] = {0};
 int32_t pid = 0, new_pid = 0;
 
@@ -28,6 +25,9 @@ int32_t pid = 0, new_pid = 0;
  *   SIDE EFFECTS:
  */
 int32_t getargs (uint8_t* buf, int32_t nbytes){
+
+    sti();
+
     pcb* cur_pcb_ptr;
     if (buf == NULL) return SYS_CALL_FAIL;
 
@@ -45,6 +45,7 @@ int32_t getargs (uint8_t* buf, int32_t nbytes){
         strncpy((int8_t*)buf, (int8_t*)cur_pcb_ptr->args, nbytes);
         return SUCCESS;
     }
+
     return SYS_CALL_FAIL;
 }
 
@@ -57,6 +58,9 @@ int32_t getargs (uint8_t* buf, int32_t nbytes){
  *   SIDE EFFECTS:
  */
 int32_t open(const uint8_t* fname){
+
+    sti();
+
     int i;                          // Loop index
     dentry_t dentry;               // pointer to dentry
 
@@ -108,6 +112,9 @@ int32_t open(const uint8_t* fname){
  *   SIDE EFFECTS:
  */
 int32_t close(int32_t fd){
+
+    sti();
+
     // fd number should be between 0 and 8
     if(fd < INI_FILES || fd > N_FILES)
         return -1;
@@ -139,6 +146,9 @@ int32_t close(int32_t fd){
  *   SIDE EFFECTS: none
  */
 int32_t read(int32_t fd, void* buf, int32_t nbytes){
+
+    sti();
+
     // fd number should be between 0 and 8
     if(fd < 0 || fd > N_FILES)
         return -1;
@@ -171,6 +181,9 @@ int32_t read(int32_t fd, void* buf, int32_t nbytes){
  *   SIDE EFFECTS: none
  */
 int32_t write(int32_t fd, const void* buf, int32_t nbytes) {
+
+    sti();
+
     // fd number should be between 0 and 8
     if(fd < 0 || fd > N_FILES)
         return -1;
@@ -252,6 +265,9 @@ void fop_t_init() {
  *   SIDE EFFECTS:
  */
 int32_t halt(uint8_t status){
+
+    sti();
+
     int i;              /* loop index */
 
     /* Get pcb info */
@@ -313,6 +329,9 @@ int32_t halt(uint8_t status){
  *   SIDE EFFECTS:
  */
 int32_t execute(const uint8_t* command){
+
+    sti();
+
     uint8_t filename[FILENAME_LEN];     /* filename array */
     uint8_t args[TERM_LEN];             /* args array */
     // uint8_t eip_buf[USER_START_SIZE];   /* buffer to store the start address of program */
@@ -377,15 +396,24 @@ int32_t execute(const uint8_t* command){
  *   SIDE EFFECTS:
  */
 int32_t vidmap (uint8_t** screen_start){
+
+    sti();
+
     return SYS_CALL_FAIL;
 }
 
 /* Signal Support for extra credit, just fake placeholder now */
 int32_t set_handler (int32_t signum, void* handler_address){
+
+    sti();
+
     return SYS_CALL_FAIL;
 }
 
 int32_t sigreturn (void){
+
+    sti();
+
     return SYS_CALL_FAIL;
 }
 // =================== helper function ===============
