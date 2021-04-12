@@ -10,7 +10,6 @@
 static uint32_t n_dentry_b;
 static uint32_t n_inode_b;
 static uint32_t n_data_block_b;
-static uint32_t direct_read_count;
 
 /* Casting file_sys_addr to different type of pointers for convenience */
 static struct dentry_t* p_dentry;              // pointer to dentry array (start from 0)
@@ -48,7 +47,6 @@ void filesys_init() {
     p_dentry = ((dentry_t*)file_sys_addr) + 1;        // skip the firt segment of boot block
     p_inode = ((inode_block_t*)file_sys_addr) + 1;    // skip the boot block 
     p_data = ((data_block_t*)file_sys_addr) + n_inode_b + 1;      // skip the boot block and inode blocks
-    direct_read_count = 0;
 }
 
 /* 
@@ -338,11 +336,14 @@ int32_t direct_read(int32_t fd, void* buf, int32_t nbytes) {
         return -1;
     }
 
-    if (0 != read_dentry_by_index(direct_read_count, &temp)) {
+    // Find the pcb
+    pcb* cur_pcb = (pcb*)(_8MB_ - _8KB_*(pid+1));
+
+    if (0 != read_dentry_by_index(cur_pcb->file_array[fd].file_pos, &temp)) {
         return 0;
     }
     
-    direct_read_count += 1;
+    cur_pcb->file_array[fd].file_pos += 1;
 
     // Read file name
     strncpy((int8_t*)buf, (int8_t*)temp.f_name, 32);
