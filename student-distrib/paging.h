@@ -5,6 +5,8 @@
 #define PD_SIZE         1024            // 2^10 = 1024
 #define PT_SIZE         1024            // page table size, 4KB / 4B = 1024
 #define _4KB_           4096            // 4K Bytes to aline to   
+#define _4MB_           0x400000        // 4M Bytes to aline to   
+#define _4B_            0x4             // 4  Bytes to aline to  
 #define VIDEO           0xB8000         // from lib.c, addr of video memory
 #define _1BIT_          0x1             // mask to get 1 bit
 #define _9BIT_          0x1FF           // mask to get 9 bits
@@ -110,7 +112,9 @@ typedef struct __attribute__((packed)) PDE_desc {
 
 PDE page_dict[PD_SIZE] __attribute__((aligned (_4KB_)));    /* Page Dict */
 PTE page_table[PT_SIZE] __attribute__((aligned (_4KB_)));   /* Page Table for first chunk */
+PTE page_table_vedio_mem[PT_SIZE] __attribute__((aligned (_4KB_)));   /* Page Table for vedio memory */
 
 /* function prototype */
 void paging_init(void);
 extern void paging_set_user_mapping(int32_t pid);
+extern void paging_set_for_vedio_mem(int32_t virtual_addr_for_vedio);

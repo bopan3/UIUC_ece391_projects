@@ -135,3 +135,51 @@ void paging_set_user_mapping(int32_t pid){
 
     TLB_flush();
 }
+
+
+/* 
+ * paging_set_for_vedio_mem
+ *   DESCRIPTION: set the page dic and page table for 4KB user level vedio memory
+ *   INPUTS: virtual_addr_for_vedio - the start of virtual address for the vedio mem
+ *   OUTPUTS: none
+ *   RETURN VALUE:  
+ *   SIDE EFFECTS:  map "the start of virtual address for the vedio mem" to "0xB8000" (physical vedio memory)
+ */
+void paging_set_for_vedio_mem(int32_t virtual_addr_for_vedio){
+    int i;
+    int dict_idx = virtual_addr_for_vedio/_4MB_;
+    int table_idx = (virtual_addr_for_vedio << (10)) >> 22 ; // left shift 10 bits first and then right shift 22 bits to extract the second 10 bits in the virtual address
+    /* setting page dic entry*/
+        page_dict[dict_idx].P = 1;         /* make it present */
+        page_dict[dict_idx].RW = 1;        /* RW enable */
+        page_dict[dict_idx].US = 1;        /* for user code */
+        page_dict[dict_idx].PWT = 0;       /* always write back policy */
+        page_dict[dict_idx].PCD = 0;       /* disable cache only for video memory */
+        page_dict[dict_idx].A = 0;         /* set to 1 by processor */
+
+        page_dict[dict_idx].bit6 = 0;      /* for 4KB */
+        page_dict[dict_idx].PS = 0;        /* for 4KB */
+        page_dict[dict_idx].G = 0;         /* ignored for 4KB */
+        page_dict[dict_idx].Avail = 0;     /* not used */
+        
+        /* setting address */
+        page_dict[dict_idx].bit12 = (((int) page_table_vedio_mem) >> (ADDR_OFF)) & (_1BIT_);             /* Skip the 12 LSB */
+        page_dict[dict_idx].bit21_13 = (((int) page_table_vedio_mem) >> (ADDR_OFF + 1 )) & (_9BIT_);     /* also skip bit12 */
+        page_dict[dict_idx].bit31_22 = (((int) page_table_vedio_mem) >> (ADDR_OFF + 10 )) & (_10BIT_);   /* also skip bit21-12 */
+    /* setting page table entry*/
+    for (i = 0; i < PT_SIZE; i++){
+        page_table_vedio_mem[i].P = ( i == (table_idx));       /* only the Video 4KB page is present when initialized */
+        page_table_vedio_mem[i].RW = 1;                           /* Read/Write enable */                           
+        page_table_vedio_mem[i].US = 1;                           /* user */
+        page_table_vedio_mem[i].PWT = 0;
+        page_table_vedio_mem[i].PCD = 0;     /* disable cache only for video memory */
+
+        page_table_vedio_mem[i].A = 0;
+        page_table_vedio_mem[i].D = 0;                            /* Set by processor */
+        page_table_vedio_mem[i].PAT = 0;                          /* not used */
+        page_table_vedio_mem[i].G = 0;                            /* user */
+        page_table_vedio_mem[i].Avail = 0;                        /* not used */
+        page_table_vedio_mem[i].address = 0xB8;     /* Physical Address MSB 20bits */  // (physical vedio memory) is "0xB8000" 
+    }
+    TLB_flush();
+}

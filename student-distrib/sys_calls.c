@@ -269,6 +269,26 @@ void fop_t_init() {
     stdo_fop_t.close = terminal_close;
 }
 
+/* Checkpoint 3.4 task */
+/*
+ *   vidmap
+ *   DESCRIPTION: map the virtual space 0x8800000 to the physical vedio memory, and store 0x8800000 to  *screen_start in the userspace
+ *   INPUTS: screen_start - the pointer point to the pointer point to the start of vedio memory in user space
+ *   OUTPUTS:
+ *   RETURN VALUE: 0 if success, -1 if anything bad happened
+ *   SIDE EFFECTS: set up the page starting at virtual space 0x8800000
+ */
+int32_t vidmap (uint8_t** screen_start){
+    sti();
+    // check whether the address falls within the address range covered by the single user-level page
+    if (screen_start==NULL || (int) screen_start<USER_PAGE_BASE || (int) screen_start>=USER_PAGE_BASE+_4MB_-_4B_){   //also make sure the end of variable "screen_start" is not out of the user space
+         return SYS_CALL_FAIL;
+    }
+    paging_set_for_vedio_mem(VIRTUAL_ADDR_VEDIO_PAGE);
+    *screen_start= (uint8_t*) VIRTUAL_ADDR_VEDIO_PAGE;
+    return 0;
+}
+
 /*
  *   halt
  *   DESCRIPTION: halt a user program to return control back
@@ -391,19 +411,7 @@ int32_t execute(const uint8_t* command){
     return return_val;
 }
 
-/* Checkpoint 3.4 task */
-/*
- *   vidmap
- *   DESCRIPTION:
- *   INPUTS: screen_start -
- *   OUTPUTS:
- *   RETURN VALUE: 0 if success, -1 if anything bad happened
- *   SIDE EFFECTS:
- */
-int32_t vidmap (uint8_t** screen_start){
-    sti();
-    return SYS_CALL_FAIL;
-}
+
 
 /* Signal Support for extra credit, just fake placeholder now */
 int32_t set_handler (int32_t signum, void* handler_address){
