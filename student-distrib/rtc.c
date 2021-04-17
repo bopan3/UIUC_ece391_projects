@@ -152,6 +152,7 @@ int32_t rtc_close(int32_t fd) {
 int32_t rtc_read(int32_t fd, void* buf, int32_t nbytes) {
     cli();
     virtual_iqr_got=0;
+    current_count=MAX_FREQ;
     sti();
     while (virtual_iqr_got==0){};
     return 0;

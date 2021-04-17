@@ -130,3 +130,15 @@ Reason: in "open" function, we did not call specific type of open function for e
         program since most open just return 0 and do nothing. An exception is that rtc_open will initialize the frequency of 
         rtc, so if we do not initialize it at open time, calling read_rtc may cause the function to fall into infinit loops.
 
+Contributer: Bo Pan
+Date: April 17 2021
+Files: page.c
+Bug: page fault when running fish
+Reason: forget to set the DPL in page dictionary to 3
+
+Contributer: Bo Pan
+Date: April 17 2021
+Files: rtc.c
+Bug: in infinite while loop after the first frame of fish is added
+Reason: did not set the counter of virtualized rtc to MAX_FREQ when we start a new rtc_read. If we swich freqecent (using write), 
+this may cause our counter never reach 0.
