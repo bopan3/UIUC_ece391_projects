@@ -184,41 +184,6 @@ void paging_set_for_vedio_mem(int32_t virtual_addr_for_vedio){
     TLB_flush();
 }
 
-
-/* 
- * paging_set_user_mapping
- *   DESCRIPTION: for the use of execute system call, to set mapping from virtual to physical
- *   INPUTS: pid - index of task, indicate the address of user program chunks 
- *   OUTPUTS: none
- *   RETURN VALUE:  
- *   SIDE EFFECTS:  setting the physical address of virtual user program
- */
-void paging_set_user_mapping(int32_t pid){
-    /* first time setting mapping */
-    if(page_dict[USER_PROG_ADDR].P == 0){
-        page_dict[USER_PROG_ADDR].P = 1;         /* make it present */
-        page_dict[USER_PROG_ADDR].RW = 1;        /* RW enable */
-        page_dict[USER_PROG_ADDR].US = 1;        /* for user code */
-        page_dict[USER_PROG_ADDR].PWT = 0;       /* always write back policy */
-        page_dict[USER_PROG_ADDR].PCD = 1;       /* 1 for code and data */
-        page_dict[USER_PROG_ADDR].A = 0;         /* set to 1 by processor */
-
-        page_dict[USER_PROG_ADDR].bit6 = 0;      /* set to 0 as Dirty for 4MB */
-        page_dict[USER_PROG_ADDR].PS = 1;        /* for 4MB */
-        page_dict[USER_PROG_ADDR].G = 0;
-        page_dict[USER_PROG_ADDR].Avail = 0;     /* not used */
-        
-        /* setting address */
-        page_dict[USER_PROG_ADDR].bit12 = 0;     /* PAT not used */
-        page_dict[USER_PROG_ADDR].bit21_13 = 0;  /* reserved, must be 0 */
-        
-    }
-    page_dict[USER_PROG_ADDR].bit31_22 = pid+2;  /* start from 8MB */
-
-    TLB_flush();
-}
-
-
 /* 
  * paging_restore_for_vedio_mem
  *   DESCRIPTION: restore the page dic and page table for 4KB user level vedio memory

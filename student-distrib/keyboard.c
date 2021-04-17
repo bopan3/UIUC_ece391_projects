@@ -116,8 +116,15 @@ void keyboard_handler() {
     }
     if (scan_code < SCANCODE_SET_SIZE){
 
-        if (ctrl_flag & ('l' == scancode_to_ascii[scan_code][LOWER])) {
-            clear();
+        if (ctrl_flag) {
+            switch ((scancode_to_ascii[scan_code][LOWER])) {
+                case 'l':
+                    clear();
+                    break;
+                
+                default:
+                    break;
+            }
         } else {
             // Set ascii_code in respond to caps_flag and SHIFT_FLAG
             // Spacial case for numbers and -,= do not change when only caps_flag
