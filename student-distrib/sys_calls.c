@@ -327,6 +327,7 @@ int32_t halt(uint8_t status){
 
     /* Restore parent paging */
     paging_set_user_mapping(pid);
+    paging_restore_for_vedio_mem(VIRTUAL_ADDR_VEDIO_PAGE);
 
     /* Close any relevant FDs */
     /* close normal file */
