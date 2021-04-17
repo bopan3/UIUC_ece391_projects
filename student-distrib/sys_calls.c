@@ -101,6 +101,8 @@ int32_t open(const uint8_t* fname){
             cur_pcb->file_array[i].file_pos = 0;        // 0 as the file has not been read yet
             cur_pcb->file_array[i].flags = INUSE;
 
+            // call open for specific type
+            cur_pcb->file_array[i].file_ops_ptr->open(fname);
             return i;
         }
     }
