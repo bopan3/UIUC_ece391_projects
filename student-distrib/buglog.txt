@@ -118,3 +118,15 @@ Bug: after an exception is issued, "shell" does not print any information
 Reason: at the end of "excute" system call, just after code jumping from "halt", we use a "return success" to return, wh
         ich will rewrite the return value in EAX. Therefore, we use a variable to store the value in EAX in assembly code and 
         return it instead.
+
+==================================================
+===================== Checkpoint 4 ====================
+
+Contributer: Bo Pan
+Date: April 17 2021
+Files: sys_call.c
+Bug: when running "grep", the function did not stop
+Reason: in "open" function, we did not call specific type of open function for each file. Normally it has no effect on other 
+        program since most open just return 0 and do nothing. An exception is that rtc_open will initialize the frequency of 
+        rtc, so if we do not initialize it at open time, calling read_rtc may cause the function to fall into infinit loops.
+
