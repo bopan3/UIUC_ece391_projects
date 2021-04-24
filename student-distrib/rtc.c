@@ -39,7 +39,7 @@ void rtc_init(){
       //a read on RTC_REG_C to allow next irq
       rtc_byte_read(RTC_REG_C);
       rtc_set_real_freq_level(MAX_FREQ_LEVEL);
-      sti();
+      sti();            
 }
 
 /* 
@@ -52,7 +52,6 @@ void rtc_init(){
  */
 void rtc_handler(){
     int32_t cur_pid;
-    int32_t cur_fd;
     pcb* cur_pcb_ptr;
     cli();
     for (cur_pid=0;cur_pid<MAX_PROC;cur_pid++){
@@ -65,12 +64,12 @@ void rtc_handler(){
                 cur_pcb_ptr->virtual_iqr_got=1;
                 cur_pcb_ptr->current_count=MAX_FREQ;
             }
-            //a read on RTC_REG_C to allow next irq
-            rtc_byte_read(RTC_REG_C);
-            send_eoi(IRQ_NUM_RTC);
-            sti();            
         }  
     }
+    //a read on RTC_REG_C to allow next irq
+    rtc_byte_read(RTC_REG_C);
+    send_eoi(IRQ_NUM_RTC);
+    sti();            
 }
 
 /* 
