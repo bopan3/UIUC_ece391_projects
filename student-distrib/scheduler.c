@@ -13,11 +13,12 @@ void scheduler_init(){
     for (i = 0; i < MAX_TM; i++){
         tm_array[i].tm_pid = TM_UNUSED;
         tm_array[i].kb_buf[0] = '\0'; /* TODO: not sure */
+        tm_array[i].num_char = 0;
     }
 
-    tm_array[0].dis_addr = TERMINAL_1_ADDR;
-    tm_array[1].dis_addr = TERMINAL_2_ADDR;
-    tm_array[2].dis_addr = TERMINAL_3_ADDR;
+    tm_array[0].dis_addr = (uint32_t*)TERMINAL_1_ADDR;
+    tm_array[1].dis_addr = (uint32_t*)TERMINAL_2_ADDR;
+    tm_array[2].dis_addr = (uint32_t*)TERMINAL_3_ADDR;
 }
 
 void scheduler(){
@@ -51,7 +52,7 @@ void _schedule_switch_tm_(){
 
     /* default to create a shell for each terminal */
     if (tm_array[terminal_tick].tm_pid == TM_UNUSED){
-        execute("shell");
+        execute((uint8_t*)"shell");
     }
     else {
         /* restores next process's TSS */
@@ -69,8 +70,8 @@ void _schedule_switch_tm_(){
         TLB_flush();
 
         /* switch ESP & EBP */
-        asm volatile ("movl %0, %%ebp": : "=r"(cur_pcb->kernel_ebp));
-        asm volatile ("movl %0, %%esp": : "=r"(cur_pcb->kernel_esp));
+        asm volatile ("movl %0, %%ebp": : "r"(cur_pcb->kernel_ebp));
+        asm volatile ("movl %0, %%esp": : "r"(cur_pcb->kernel_esp));
     }
 
     return ;

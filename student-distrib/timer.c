@@ -33,7 +33,7 @@ void pit_init(){
 void pit_handler(){
     cli();
     send_eoi(PIT_IRQ);
-    schedule();
+    scheduler();
 
     return ;
 }
