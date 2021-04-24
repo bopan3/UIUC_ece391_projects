@@ -1,6 +1,5 @@
 #include "scheduler.h"
-#include "paging.h"
-#include "sys_calls.h"
+
 extern int32_t pid;             /* in sys_call.c */
 terminal_t tm_array[MAX_TM];
 int32_t terminal_tick = 0;      /* for the active running terminal, default the first terminal */
@@ -15,6 +14,10 @@ void scheduler_init(){
         tm_array[i].tm_pid = TM_UNUSED;
         tm_array[i].kb_buf[0] = '\0'; /* TODO: not sure */
     }
+
+    tm_array[0] = TERMINAL_1_ADDR;
+    tm_array[1] = TERMINAL_2_ADDR;
+    tm_array[2] = TERMINAL_3_ADDR;
 }
 
 void scheduler(){
@@ -60,8 +63,8 @@ void _schedule_switch_tm_(){
         page_dict[USER_PROG_ADDR].bit31_22 = pid + 2; /* start from 8MB */
 
         /* set video memory map */
-        page_table[VIDEO_REGION_START].address = VIDEO_REGION_START + (terminal_display != terminal_tick) * (terminal_tick + 1); /* set for kernel */
-        page_table_vedio_mem[VIDEO_REGION_START_U].address =  VIDEO_REGION_START + (terminal_display != terminal_tick) * (terminal_tick + 1); /* set for user */
+        page_table[VIDEO_REGION_START_K].address = VIDEO_REGION_START_K +  (terminal_display != terminal_tick) * (terminal_tick + 1); /* set for kernel */
+        page_table_vedio_mem[VIDEO_REGION_START_U].address =  VIDEO_REGION_START_K + (terminal_display != terminal_tick) * (terminal_tick + 1); /* set for user */
 
         TLB_flush();
 
@@ -85,24 +88,18 @@ void _schedule_switch_tm_(){
 void switch_visible_terminal(int new_tm_id){
     uint32_t* old_dis_addr = tm_array[terminal_tick].dis_addr;
     uint32_t* new_dis_addr = tm_array[new_tm_id].dis_addr;
-    uint32_t* VM_addr = (uint32_t*)(VIRTUAL_ADDR_VEDIO_PAGE);
+    uint32_t* VM_addr = (uint32_t*)(VIDEO);
     int32_t i;
 
     /* check if switch to the current terminal */
     if (new_tm_id == terminal_display) return ;
 
-    /* Save old terminal's screen to video page assigned for it */
+    /* Save old terminal's screen to video page assigned for it
+       restore new terminal's screen to video memory */
     for (i = 0; i < _4KB_; i++) {
-
+        old_dis_addr[i] = VM_addr[i];
+        VM_addr[i] = new_dis_addr[i];
     }
 
-    /* Restore new terminal's screen to video memory */
-
-    /* Set the new terminal's display page address to video memory page */
-
-    /* Switch execution to new terminal's user program (???) */
-
-    /* Switch the buffer information */
-
-
+    terminal_tick = new_tm_id;   
 }
