@@ -142,3 +142,11 @@ Files: rtc.c
 Bug: in infinite while loop after the first frame of fish is added
 Reason: did not set the counter of virtualized rtc to MAX_FREQ when we start a new rtc_read. If we swich freqecent (using write), 
 this may cause our counter never reach 0.
+
+==================================================
+===================== Checkpoint 5 ====================
+Contributer: Bo Pan
+Date: April 24 2021
+Files: rtc.c
+Bug: when we modify rtc.c to make rtc support schedule, we are stucked in the first frame of the fish
+Reason: we need to make sure at the end we still enable the rtc chip at the end of the loop
