@@ -7,7 +7,8 @@
 #define PROCESSOR_USED 1
 #define DEFAULT_PROC 0 
 #define TM_UNUSED -1
-
+#define VIDEO_REGION_START_K (VIDEO / _4KB_)
+#define VIDEO_REGION_START_U 0
 
 typedef struct terminal_t{
     int32_t tm_pid; /* trick the running program */

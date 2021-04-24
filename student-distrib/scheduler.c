@@ -1,4 +1,6 @@
 #include "scheduler.h"
+#include "paging.h"
+
 extern int32_t pid;             /* in sys_call.c */
 terminal_t tm_array[MAX_TM]; 
 int32_t terminal_tick = 0;      /* for the active running terminal, default the first terminal */
@@ -42,6 +44,8 @@ void scheduler(){
 
 /* helper function */
 void _schedule_switch_tm_(){
+    pcb* cur_pcb = get_pcb_ptr(pid);
+
     /* default to create a shell for each terminal */
     if (tm_array[terminal_tick].tm_pid == TM_UNUSED){
         execute("shell");
@@ -52,11 +56,18 @@ void _schedule_switch_tm_(){
         tss.esp0 = _8MB_ - (_8KB_ * pid) - 4;
 
         /* paging setting */
+        /* set user program address */
+        page_dict[USER_PROG_ADDR].bit31_22 = pid + 2; /* start from 8MB */ 
+        
+        /* set video memory map */
+        page_table[VIDEO_REGION_START].address = VIDEO_REGION_START +  (terminal_display != terminal_tick) * (terminal_tick + 1); /* set for kernel */
+        page_table_vedio_mem[VIDEO_REGION_START_U].address =  VIDEO_REGION_START + (terminal_display != terminal_tick) * (terminal_tick + 1); /* set for user */
 
+        TLB_flush();
 
         /* switch ESP & EBP */
-        asm volatile ("movl %0, %%ebp": : "=r"());
-        asm volatile ("movl %0, %%ebp": : "=r"());
+        asm volatile ("movl %0, %%ebp": : "=r"(cur_pcb->kernel_ebp));
+        asm volatile ("movl %0, %%esp": : "=r"(cur_pcb->kernel_esp));
     }
     
     return ;
