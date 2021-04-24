@@ -148,11 +148,12 @@ void paging_set_user_mapping(int32_t pid){
  * paging_set_for_vedio_mem
  *   DESCRIPTION: set the page dic and page table for 4KB user level vedio memory
  *   INPUTS: virtual_addr_for_vedio - the start of virtual address for the vedio mem
+ *           phys_addr_for_vedio   - the start of physical address for the vedio mem
  *   OUTPUTS: none
  *   RETURN VALUE:  
- *   SIDE EFFECTS:  map "the start of virtual address for the vedio mem" to "0xB8000" (physical vedio memory)
+ *   SIDE EFFECTS:  map "the start of virtual address for the vedio mem" to "the start of physical address for the vedio mem" (physical vedio memory)
  */
-void paging_set_for_vedio_mem(int32_t virtual_addr_for_vedio){
+void paging_set_for_vedio_mem(int32_t virtual_addr_for_vedio, int32_t phys_addr_for_vedio){
     int i;
     int dict_idx = virtual_addr_for_vedio/_4MB_;
     int table_idx = (virtual_addr_for_vedio << (10)) >> 22 ; // left shift 10 bits first and then right shift 22 bits to extract the second 10 bits in the virtual address
@@ -186,7 +187,7 @@ void paging_set_for_vedio_mem(int32_t virtual_addr_for_vedio){
         page_table_vedio_mem[i].PAT = 0;                          /* not used */
         page_table_vedio_mem[i].G = 0;                            /* user */
         page_table_vedio_mem[i].Avail = 0;                        /* not used */
-        page_table_vedio_mem[i].address = 0xB8;     /* Physical Address MSB 20bits */  // (physical vedio memory) is "0xB8000" 
+        page_table_vedio_mem[i].address = phys_addr_for_vedio>>12 ;     /* Physical Address MSB 20bits (so we need to right shift by 12) */  
     }
     TLB_flush();
 }
