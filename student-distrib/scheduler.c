@@ -56,7 +56,7 @@ void _schedule_switch_tm_(){
     }
     else {
         cur_pcb = get_pcb_ptr(pid);
-        
+
         /* restores next process's TSS */
         tss.ss0 = KERNEL_DS;
         tss.esp0 = _8MB_ - (_8KB_ * pid) - 4;

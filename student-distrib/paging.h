@@ -17,6 +17,8 @@
 #define ADDR_OFF        12              // skip 12 LSB to get address filed
 
 #define USER_PROG_ADDR 32               /* 128 MB / 4MB per entry */
+#define VIDEO_REGION_START_K (VIDEO / _4KB_)
+#define VIDEO_REGION_START_U 0
 
 /* Set the reg in hardware to enable page mode.  
  * Description: This macro takes a 32-bit address which points to 

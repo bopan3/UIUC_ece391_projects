@@ -1,7 +1,8 @@
 /* By F. J. */
 
 #include "paging.h"
-
+extern int32_t terminal_tick;
+extern int32_t terminal_display; 
 /* paging_init
  *  Description: Initialize the paging dict and paging table, also mapping the video memory
  *  Input:  none    
@@ -134,6 +135,10 @@ void paging_set_user_mapping(int32_t pid){
         
     }
     page_dict[USER_PROG_ADDR].bit31_22 = pid+2;  /* start from 8MB */
+
+    /* set video memory map */
+    page_table[VIDEO_REGION_START_K].address = VIDEO_REGION_START_K +  (terminal_display != terminal_tick) * (terminal_tick + 1); /* set for kernel */
+    page_table_vedio_mem[VIDEO_REGION_START_U].address =  VIDEO_REGION_START_K + (terminal_display != terminal_tick) * (terminal_tick + 1); /* set for user */
 
     TLB_flush();
 }
