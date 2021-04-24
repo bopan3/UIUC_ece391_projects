@@ -63,8 +63,8 @@ void _schedule_switch_tm_(){
         page_dict[USER_PROG_ADDR].bit31_22 = pid + 2; /* start from 8MB */
 
         /* set video memory map */
-        page_table[VIDEO_REGION_START].address = VIDEO_REGION_START +  (terminal_display != terminal_tick) * (terminal_tick + 1); /* set for kernel */
-        page_table_vedio_mem[VIDEO_REGION_START_U].address =  VIDEO_REGION_START + (terminal_display != terminal_tick) * (terminal_tick + 1); /* set for user */
+        page_table[VIDEO_REGION_START_K].address = VIDEO_REGION_START_K +  (terminal_display != terminal_tick) * (terminal_tick + 1); /* set for kernel */
+        page_table_vedio_mem[VIDEO_REGION_START_U].address =  VIDEO_REGION_START_K + (terminal_display != terminal_tick) * (terminal_tick + 1); /* set for user */
 
         TLB_flush();
 
