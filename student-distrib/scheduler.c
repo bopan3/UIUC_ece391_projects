@@ -1,4 +1,6 @@
 #include "scheduler.h"
+#include "paging.h"
+#include "sys_calls.h"
 extern int32_t pid;             /* in sys_call.c */
 terminal_t tm_array[MAX_TM]; 
 int32_t terminal_tick = 0;      /* for the active running terminal, default the first terminal */
@@ -72,15 +74,26 @@ void _schedule_switch_tm_(){
  *   SIDE EFFECTS: set memory and buffer state
  */
 void switch_visible_terminal(int new_tm_id){
+    uint32_t* old_dis_addr = tm_array[terminal_tick].dis_addr;
+    uint32_t* new_dis_addr = tm_array[new_tm_id].dis_addr;
+    uint32_t* VM_addr = (uint32_t*)(VIRTUAL_ADDR_VEDIO_PAGE);
+    int32_t i;
+
     /* check if switch to the current terminal */
     if (new_tm_id == terminal_display) return ;
 
     /* Save old terminal's screen to video page assigned for it */
+    for (i = 0; i < _4KB_; i++) {
+        
+    }
 
     /* Restore new terminal's screen to video memory */
 
     /* Set the new terminal's display page address to video memory page */
 
-    /* Switch execution to new terminal's user program */
+    /* Switch execution to new terminal's user program (???) */
+
+    /* Switch the buffer information */
+
 
 }
