@@ -160,9 +160,9 @@ void entry(unsigned long magic, unsigned long addr) {
 
     /* Init the file operations table pointer */
     fop_t_init();
-
-    paging_init();
     scheduler_init();
+    paging_init();
+    
 
     /* Enable interrupts */
     /* Do not enable the following until after you have set up your
