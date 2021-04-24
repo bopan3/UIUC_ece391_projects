@@ -63,12 +63,24 @@ void _schedule_switch_tm_(){
 }
 
 
-/* switch the displayed terminal by function key 
+/*
+ *  switch_visible_terminal
+ *   DESCRIPTION: switch the displayed terminal by function key 
+ *   INPUTS: new_tm_id - id of new terminal
+ *   OUTPUTS: none
+ *   RETURN VALUE: none
+ *   SIDE EFFECTS: set memory and buffer state
  */
 void switch_visible_terminal(int new_tm_id){
     /* check if switch to the current terminal */
     if (new_tm_id == terminal_display) return ;
 
-    /* switch to background terminal */
+    /* Save old terminal's screen to video page assigned for it */
+
+    /* Restore new terminal's screen to video memory */
+
+    /* Set the new terminal's display page address to video memory page */
+
+    /* Switch execution to new terminal's user program */
 
 }
