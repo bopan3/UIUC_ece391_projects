@@ -13,6 +13,7 @@
 typedef struct terminal_t{
     int32_t tm_pid; /* trick the running program */
     char kb_buf[LINE_BUF_SIZE];
+    int num_char = 0;
 
     /* For terminal display switch */
     uint32_t* dis_addr;      // address of video memory
@@ -20,3 +21,4 @@ typedef struct terminal_t{
 
 void scheduler_init();
 void scheduler();
+void switch_visible_terminal(int new_tm_id);

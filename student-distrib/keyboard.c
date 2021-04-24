@@ -2,6 +2,7 @@
 #include "lib.h"
 #include "i8259.h"
 #include "terminal.h"
+#include "scheduler.h"
 
 #define SCANCODE_SET_SIZE 58
 #define EMP 0x0
@@ -29,7 +30,9 @@
 #define ALT_RELEASE             0xB8
 #define CAPS_PRESS              0x3A
 
-
+#define F1                      0x3B
+#define F2                      0x3C
+#define F3                      0x3D
 
 /* KEY_FLAGS */
 static uint8_t l_shift_flag = OFF;
@@ -122,6 +125,21 @@ void keyboard_handler() {
                     clear();
                     break;
                 
+                default:
+                    break;
+            }
+        } else if (alt_flag) {
+            switch (scan_code) {
+                case F1:
+                    switch_visible_terminal(0);
+                    break;
+                case F2:
+                    switch_visible_terminal(1);
+                    break;
+                case F3:
+                    switch_visible_terminal(2);
+                    break;
+
                 default:
                     break;
             }

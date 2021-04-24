@@ -4,14 +4,23 @@
 //
 
 #include "terminal.h"
+#include "scheduler.h"
 #include "lib.h"
 
 #define ON          1
 #define OFF         0
 
 volatile uint8_t enter_flag = OFF;      /* Record the state of whether enter is pressed */
-static char line_buf[LINE_BUF_SIZE];    /* The line buffer */
-static int num_char = 0;                /* Record current number of chars in line buffer */
+//static char line_buf[LINE_BUF_SIZE];    /* The line buffer */
+//static int num_char = 0;                /* Record current number of chars in line buffer */
+
+/* Multi-Terminals */
+extern int32_t terminal_tick;
+extern int32_t terminal_display;
+extern terminal_t tm_array[];
+
+int * NUM_CHAR = & tm_array[terminal_display].num_char;
+char * LINE_BUF = tm_array[terminal_display].kb_buf;
 
 /*
 *	terminal_open
@@ -62,7 +71,8 @@ int32_t terminal_read(int32_t fd, void* buf, int32_t nbytes) {
     int8_t * temp_buf = (int8_t *)buf;
     // Copy the buffer content
     for (i = 0; (i < nbytes-1) && (i < LINE_BUF_SIZE); i++) {
-        temp_buf[i] = line_buf[i];
+//        temp_buf[i] = line_buf[i];
+        temp_buf[i] = LINE_BUF[i];
         if ('\n' == line_buf[i]){
             i++;
             break;
@@ -115,30 +125,35 @@ int32_t terminal_write(int32_t fd, const void* buf, int32_t nbytes) {
  */
 void line_buf_in(char curr) {
     // If the line buffer is already full, only change* when receiving line feed
-    if (num_char >= LINE_BUF_SIZE - 2) {        // minus 2 since the last two char of BUFFER must be '\n' and '\0'
+    if (*NUM_CHAR >= LINE_BUF_SIZE - 2) {        // minus 2 since the last two char of BUFFER must be '\n' and '\0'
         if (('\n' == curr) | ('\r' == curr)) {
-            line_buf[LINE_BUF_SIZE - 2] = '\n'; // minus 2 since the last two char of BUFFER must be '\n' and '\0'
+//            line_buf[LINE_BUF_SIZE - 2] = '\n'; // minus 2 since the last two char of BUFFER must be '\n' and '\0'
+            LINE_BUF[LINE_BUF_SIZE - 2] = '\n';
             enter_flag = ON;
-            num_char = 0;                       // reset buffer index to 0
+            *NUM_CHAR = 0;                       // reset buffer index to 0
             putc(curr);
         } else if (BCKSPACE == curr) {
-            line_buf[LINE_BUF_SIZE - 1] = '\0'; // minus 1 since the last char of BUFFER must be '\0'
-            num_char--;
+//            line_buf[LINE_BUF_SIZE - 1] = '\0'; // minus 1 since the last char of BUFFER must be '\0'
+            LINE_BUF[LINE_BUF_SIZE - 1] = '\0';
+            (*NUM_CHAR)--;
             putc(curr);
         }
     } else {
         if (('\n' == curr) | ('\r' == curr)) {
-            line_buf[num_char] = '\n';
+//            line_buf[NUM_CHAR] = '\n';
+            LINE_BUF[*NUM_CHAR] = '\n';
             enter_flag = ON;
-            num_char = 0;                       // reset buffer index to 0
+            *NUM_CHAR = 0;                       // reset buffer index to 0
             putc(curr);
         } else if (BCKSPACE == curr) {
-            if (num_char > 0 && num_char < LINE_BUF_SIZE) { // If there are contents in buffer, delete the last one
-                line_buf[--num_char] = '\0';
+            if (*NUM_CHAR > 0 && *NUM_CHAR < LINE_BUF_SIZE) { // If there are contents in buffer, delete the last one
+//                line_buf[--NUM_CHAR] = '\0';
+                LINE_BUF[--(*NUM_CHAR)] = '\0';
                 putc(curr);
             }
         } else {
-            line_buf[num_char++] = curr;
+//            line_buf[NUM_CHAR++] = curr;
+            LINE_BUF[(*NUM_CHAR)++] = curr;
             putc(curr);
         }
     }
@@ -157,7 +172,8 @@ void line_buf_clear() {
 
     // fill with '\0'
     for (i = 0; i < LINE_BUF_SIZE ; ++i) {
-        line_buf[i] = '\0';
+//        line_buf[i] = '\0';
+        LINE_BUF[i] = '\0';
     }
-    num_char = 0;
+    *NUM_CHAR = 0;
 }
