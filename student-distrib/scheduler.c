@@ -15,9 +15,9 @@ void scheduler_init(){
         tm_array[i].kb_buf[0] = '\0'; /* TODO: not sure */
     }
 
-    tm_array[0] = TERMINAL_1_ADDR;
-    tm_array[1] = TERMINAL_2_ADDR;
-    tm_array[2] = TERMINAL_3_ADDR;
+    tm_array[0].dis_addr = TERMINAL_1_ADDR;
+    tm_array[1].dis_addr = TERMINAL_2_ADDR;
+    tm_array[2].dis_addr = TERMINAL_3_ADDR;
 }
 
 void scheduler(){
