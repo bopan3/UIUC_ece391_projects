@@ -12,6 +12,7 @@
 #include "rtc.h"
 #include "paging.h"
 #include "file_sys.h"
+#include "timer.h"
 
 #define RUN_TESTS
 
@@ -155,6 +156,7 @@ void entry(unsigned long magic, unsigned long addr) {
     keyboard_init();
     rtc_init();
     filesys_init();
+    pit_init();
 
     /* Init the file operations table pointer */
     fop_t_init();

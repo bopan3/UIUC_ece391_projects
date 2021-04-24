@@ -1,4 +1,5 @@
 #include "timer.h"
+#include "scheduler.h"
 
 /* 
  * pic_init

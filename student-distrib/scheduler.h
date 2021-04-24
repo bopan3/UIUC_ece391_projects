@@ -14,3 +14,5 @@ typedef struct terminal_t{
     char kb_buf[LINE_BUF_SIZE];
 }terminal_t;
 
+void scheduler_init();
+void scheduler();
