@@ -13,7 +13,7 @@
 #include "paging.h"
 #include "file_sys.h"
 #include "timer.h"
-
+#include "scheduler.h"
 #define RUN_TESTS
 
 /* Macros. */
@@ -162,21 +162,23 @@ void entry(unsigned long magic, unsigned long addr) {
     fop_t_init();
 
     paging_init();
+    scheduler_init();
+
     /* Enable interrupts */
     /* Do not enable the following until after you have set up your
      * IDT correctly otherwise QEMU will triple fault and simple close
      * without showing you any output */
     printf("Enabling Interrupts\n");
     sti();
-
+    clear();
 
 #ifdef RUN_TESTS
     /* Run tests */
-    launch_tests();
+//    launch_tests();
 #endif
     /* Execute the first program ("shell") ... */
-    clear();
-    execute((uint8_t*)("shell"));
+//    clear();
+//    execute((uint8_t*)("shell"));
 
     /* Spin (nicely, so we don't chew up cycles) */
     asm volatile (".1: hlt; jmp .1;");

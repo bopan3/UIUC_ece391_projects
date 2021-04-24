@@ -7,6 +7,7 @@
 #include "x86_desc.h"
 #include "keyboard.h"
 #include "rtc.h"
+#include "timer.h"
 /* 
  * irq_handler
  *   DESCRIPTION: save registers and pass control to a interrupt handler specified by irq_vect
@@ -25,7 +26,8 @@ void irq_handler(int irq_vect) {
             printf("INTERRUPT #0x%x: NMI Interrupt\n", irq_vect);
             break;
         case IRQ_Timer_Chip:
-            printf("INTERRUPT #0x%x: Timer Chip\n", irq_vect);
+//            printf("INTERRUPT #0x%x: Timer Chip\n", irq_vect);
+            pit_handler();
             break;
         case IRQ_Keyboard:
             // printf("INTERRUPT #0x%x: Keyboard\n", irq_vect);
