@@ -85,7 +85,7 @@ void paging_init(void){
     /* Especially the Video Memory 4KB page */
     for (i = 0; i < PT_SIZE; i++){
 //        page_table[i].P = ((i*_4KB_) == (VIDEO));       /* only the Video 4KB page is present when initialized */
-        page_table[i].P = (i <= (VIDEO / _4KB_) + 3 && i >= ( VIDEO / _4KB_));
+        page_table[i].P = ((i <= (VIDEO / _4KB_) + 3) && (i >= ( VIDEO / _4KB_)));
         page_table[i].RW = 1;                           /* Read/Write enable */                           
         page_table[i].US = 0;                           /* kernel */
         page_table[i].PWT = 0;

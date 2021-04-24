@@ -12,7 +12,7 @@
 /* Global Section */
 int8_t task_array[MAX_PROC] = {0};  /* for hold PID */
 int32_t pid = 0, new_pid = 0;       /* pid cursor */
-extern terminal_t* tm_array;
+extern terminal_t tm_array[];
 extern int32_t terminal_tick;   
 
 /*

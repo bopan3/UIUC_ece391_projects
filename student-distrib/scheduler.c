@@ -2,7 +2,7 @@
 
 extern int32_t pid;             /* in sys_call.c */
 terminal_t tm_array[MAX_TM];
-int32_t terminal_tick = 0;      /* for the active running terminal, default the first terminal */
+int32_t terminal_tick = -1;      /* for the active running terminal, default the first terminal */
 int32_t terminal_display = 0;   /* for the displayed terminal, only change when function-key pressed */
 int32_t processor_id_act = DEFAULT_PROC;
 
@@ -30,7 +30,7 @@ void scheduler(){
     cur_pcb_ptr->kernel_esp = kernel_esp;
 
     /* switch terminal */
-    tm_array[terminal_tick].tm_pid = pid;
+    // tm_array[terminal_tick].tm_pid = pid;
 
     terminal_tick = (terminal_tick + 1) % MAX_TM;
     pid = tm_array[terminal_tick].tm_pid;
@@ -48,13 +48,15 @@ void scheduler(){
 
 /* helper function */
 void _schedule_switch_tm_(){
-    pcb* cur_pcb = get_pcb_ptr(pid);
+    pcb* cur_pcb;
 
     /* default to create a shell for each terminal */
     if (tm_array[terminal_tick].tm_pid == TM_UNUSED){
         execute((uint8_t*)"shell");
     }
     else {
+        cur_pcb = get_pcb_ptr(pid);
+        
         /* restores next process's TSS */
         tss.ss0 = KERNEL_DS;
         tss.esp0 = _8MB_ - (_8KB_ * pid) - 4;
