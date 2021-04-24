@@ -453,6 +453,8 @@ void exp_halt(){
     pcb* cur_pcb_ptr = get_pcb_ptr(pid);
     pcb* prev_pcb_ptr;
 
+    printf("===================================================A\n");
+
     /* intend to halt shell */
     if (cur_pcb_ptr->pid == cur_pcb_ptr->prev_pid){
         /* then go back to shell */

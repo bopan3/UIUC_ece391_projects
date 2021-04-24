@@ -49,6 +49,7 @@ void scheduler(){
 /* helper function */
 void _schedule_switch_tm_(){
     pcb* cur_pcb;
+    uint32_t  k_ebp, k_esp;
 
     /* default to create a shell for each terminal */
     if (tm_array[terminal_tick].tm_pid == TM_UNUSED){
@@ -72,9 +73,13 @@ void _schedule_switch_tm_(){
 
         TLB_flush();
 
+        k_ebp = cur_pcb->kernel_ebp;
+        k_esp = cur_pcb->kernel_esp;
+
         /* switch ESP & EBP */
-        asm volatile ("movl %0, %%ebp": : "r"(cur_pcb->kernel_ebp));
-        asm volatile ("movl %0, %%esp": : "r"(cur_pcb->kernel_esp));
+        asm volatile ("movl %0, %%ebp": : "r"(k_ebp): "memory");
+        asm volatile ("movl %0, %%esp": : "r"(k_esp): "memory");
+
     }
 
     return ;
