@@ -22,18 +22,18 @@ void scheduler_init(){
 }
 
 void scheduler(){
-    int32_t kernel_esp;
+    // int32_t kernel_esp;
 
     /* backup current pcb */
-    pcb* cur_pcb_ptr = get_pcb_ptr(pid);
-    asm volatile ( "movl %%esp, %0" : "=r"(kernel_esp) );
-    cur_pcb_ptr->kernel_esp = kernel_esp;
+    // pcb* cur_pcb_ptr = get_pcb_ptr(pid);
+    asm volatile ( "movl %%esp, %0" : "=r"(get_pcb_ptr(pid)->kernel_esp));
+    // cur_pcb_ptr->kernel_esp = kernel_esp;
 
     /* switch terminal */
     // tm_array[terminal_tick].tm_pid = pid;
 
     terminal_tick = (terminal_tick + 1) % MAX_TM;
-    pid = tm_array[terminal_tick].tm_pid;
+    // pid = tm_array[terminal_tick].tm_pid;
 
 
     /* switch terminal for task switch */
@@ -55,6 +55,7 @@ void _schedule_switch_tm_(){
         execute((uint8_t*)"shell");
     }
     else {
+        pid = tm_array[terminal_tick].tm_pid;
         cur_pcb = get_pcb_ptr(pid);
 
         /* restores next process's TSS */
