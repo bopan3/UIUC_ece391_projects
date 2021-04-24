@@ -8,11 +8,12 @@
 #include "rtc.h"
 #include "types.h"
 #include "paging.h"
-
+#include "scheduler.h"
 /* Global Section */
 int8_t task_array[MAX_PROC] = {0};  /* for hold PID */
 int32_t pid = 0, new_pid = 0;       /* pid cursor */
-
+extern terminal_t* tm_array;
+extern int32_t terminal_tick;   
 
 /*
  *   getargs
@@ -606,6 +607,7 @@ int32_t _mem_setting_(const uint8_t* filename, int32_t* eip){
         if (task_array[i] == 0){
             new_pid = i;
             task_array[i] = 1;
+            tm_array[terminal_tick].tm_pid = new_pid;
             break;
         }
     }

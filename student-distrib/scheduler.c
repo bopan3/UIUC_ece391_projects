@@ -1,8 +1,8 @@
 #include "scheduler.h"
-extern int32_t pid;         /* in sys_call.c */
+extern int32_t pid;             /* in sys_call.c */
 terminal_t tm_array[MAX_TM]; 
-int32_t terminal_tick = 0;  /* for the active running terminal, default the first terminal */
-int32_t terminal_display = 0; /* for the displayed terminal, only change when function-key pressed */
+int32_t terminal_tick = 0;      /* for the active running terminal, default the first terminal */
+int32_t terminal_display = 0;   /* for the displayed terminal, only change when function-key pressed */
 int32_t processor_id_act = DEFAULT_PROC;
 
 void scheduler_init(){
@@ -26,22 +26,49 @@ void scheduler(){
     /* switch terminal */
     tm_array[terminal_tick].tm_pid = pid;
 
-    terminal_tick = (terminal_tick + 1)%MAX_TM;
+    terminal_tick = (terminal_tick + 1) % MAX_TM;
     pid = tm_array[terminal_tick].tm_pid;
 
-    /*  */
+    
+    /* switch terminal for task switch */
+    _schedule_switch_tm_();
+    
+
+    
 
 
     return ;
 }
 
-
+/* helper function */
 void _schedule_switch_tm_(){
+    /* default to create a shell for each terminal */
     if (tm_array[terminal_tick].tm_pid == TM_UNUSED){
         execute("shell");
     }
-    tss.esp0 = ; /* TODO */
-    /* TODO: paging setting */
+    else {
+        /* restores next process's TSS */
+        tss.ss0 = KERNEL_DS;
+        tss.esp0 = _8MB_ - (_8KB_ * pid) - 4;
 
+        /* paging setting */
+
+
+        /* switch ESP & EBP */
+        asm volatile ("movl %0, %%ebp": : "=r"());
+        asm volatile ("movl %0, %%ebp": : "=r"());
+    }
+    
     return ;
+}
+
+
+/* switch the displayed terminal by function key 
+ */
+void switch_visible_terminal(int new_tm_id){
+    /* check if switch to the current terminal */
+    if (new_tm_id == terminal_display) return ;
+
+    /* switch to background terminal */
+
 }
