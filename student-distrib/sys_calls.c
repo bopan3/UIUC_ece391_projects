@@ -656,6 +656,12 @@ int32_t _PCB_setting_(const uint8_t* filename, const uint8_t* args, int32_t* eip
     /* Regs info */
     new_pcb_ptr->user_eip = *eip;
 
+    // rtc info setting
+    new_pcb_ptr->rtc_opened=0;
+    new_pcb_ptr->virtual_freq=0;  
+    new_pcb_ptr->current_count=MAX_FREQ;
+    new_pcb_ptr->virtual_iqr_got=0;        
+
     /* move the reg value to variable */
     asm volatile ( "movl %%ebp, %0" : "=r"(kernel_ebp) );
     asm volatile ( "movl %%esp, %0" : "=r"(kernel_esp) );
