@@ -77,8 +77,16 @@ void _schedule_switch_tm_(){
         k_esp = cur_pcb->kernel_esp;
 
         /* switch ESP & EBP */
-        asm volatile ("movl %0, %%ebp": : "r"(k_ebp): "memory");
-        asm volatile ("movl %0, %%esp": : "r"(k_esp): "memory");
+        // asm volatile ("movl %%ebx, %%ebp": : "b"(k_ebp));
+        // asm volatile ("movl %%ebx, %%esp": : "b"(k_esp));
+
+        asm volatile (
+            "movl %%eax, %%ebp;"
+            "movl %%ebx, %%esp;"
+            :   /* no outputs */
+            : "a"(k_ebp), "b"(k_esp)
+            : "ebp", "esp"
+        );
 
     }
 
