@@ -50,7 +50,7 @@ void clear(void) {
  */
 // https://wiki.osdev.org/Text_Mode_Cursor
 void update_cursor(void) {
-    uint16_t pos = tm_array[terminal_tick].y * NUM_COLS + tm_array[terminal_tick].x;
+    uint16_t pos = tm_array[terminal_display].y * NUM_COLS + tm_array[terminal_display].x;
 
     outb(0x0E, CURSOR_H);                       // 0x0E, 0x0F for line cursor
     outb((uint8_t) ((pos >> 8)), CURSOR_L);     // right shift 8 bits to get lower bits of cursor position

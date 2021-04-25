@@ -325,7 +325,8 @@ int32_t halt(uint8_t status){
     prev_pcb_ptr = get_pcb_ptr(cur_pcb_ptr->prev_pid);
     task_array[pid] = 0;        /* release the pid entry at task array */
     pid = prev_pcb_ptr->pid;    /* update pid */
-
+    tm_array[terminal_tick].tm_pid = pid; 
+    
     /* tss update */
     tss.ss0 = KERNEL_DS;
     tss.esp0 = _8MB_ - (_8KB_ * (pid)) - 4;
