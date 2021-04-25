@@ -71,9 +71,8 @@ int32_t terminal_read(int32_t fd, void* buf, int32_t nbytes) {
     int8_t * temp_buf = (int8_t *)buf;
     // Copy the buffer content
     for (i = 0; (i < nbytes-1) && (i < LINE_BUF_SIZE); i++) {
-//        temp_buf[i] = line_buf[i];
-        temp_buf[i] = LINE_BUF[i];
-        if ('\n' == LINE_BUF[i]){
+        temp_buf[i] = tm_array[terminal_display].kb_buf[i];
+        if ('\n' == tm_array[terminal_display].kb_buf[i]){
             i++;
             break;
         }
