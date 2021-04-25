@@ -315,7 +315,7 @@ int32_t halt(uint8_t status){
     pcb* prev_pcb_ptr;
 
     /* intend to halt shell */
-    if (cur_pcb_ptr->pid == cur_pcb_ptr->prev_pid){
+    if (cur_pcb_ptr->pid <= 2){
         /* then go back to shell */
         printf("[WARINING] FAIL TO HALT ROOT SHELL TASK\n");
         _context_switch_(); /* back control to shell */
