@@ -2,7 +2,7 @@
 
 extern int32_t pid;             /* in sys_call.c */
 terminal_t tm_array[MAX_TM];
-int32_t terminal_tick = -1;      /* for the active running terminal, default the first terminal */
+int32_t terminal_tick = 0;      /* for the active running terminal, default the first terminal */
 int32_t terminal_display = 0;   /* for the displayed terminal, only change when function-key pressed */
 int32_t processor_id_act = DEFAULT_PROC;
 
