@@ -19,6 +19,7 @@
 #define TEST_OUTPUT(name, result)	\
 	printf("[TEST %s] Result = %s\n", name, (result) ? "PASS" : "FAIL");
 
+int32_t test_PF;
 static inline void assertion_failure(){
 	/* Use exception #15 for assertions, otherwise
 	   reserved by Intel */
@@ -595,4 +596,13 @@ void launch_tests(){
 
 	/* Check point 3 */
 	/* Please just play the shell */
+	test_PF=* (int32_t*)(VIRTUAL_ADDR_VEDIO_PAGE);
+	//* (int32_t*)(VIRTUAL_ADDR_VEDIO_PAGE)=5;
+	printf("lalala");
+	while (1)
+	{
+		/* code */
+	}
+	
+
 }

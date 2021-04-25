@@ -288,9 +288,9 @@ int32_t vidmap (uint8_t** screen_start){
          return SYS_CALL_FAIL;
     }
     if ( pid == tm_array[terminal_tick].tm_pid) {paging_set_for_vedio_mem(VIRTUAL_ADDR_VEDIO_PAGE,VIDEO);}
-    else if (terminal_tick=0){paging_set_for_vedio_mem(VIRTUAL_ADDR_VEDIO_PAGE,TERMINAL_1_ADDR);}
-    else if (terminal_tick=1){paging_set_for_vedio_mem(VIRTUAL_ADDR_VEDIO_PAGE,TERMINAL_2_ADDR);}
-    else if (terminal_tick=2){paging_set_for_vedio_mem(VIRTUAL_ADDR_VEDIO_PAGE,TERMINAL_3_ADDR);}
+    else if (terminal_tick==0){paging_set_for_vedio_mem(VIRTUAL_ADDR_VEDIO_PAGE,TERMINAL_1_ADDR);}
+    else if (terminal_tick==1){paging_set_for_vedio_mem(VIRTUAL_ADDR_VEDIO_PAGE,TERMINAL_2_ADDR);}
+    else if (terminal_tick==2){paging_set_for_vedio_mem(VIRTUAL_ADDR_VEDIO_PAGE,TERMINAL_3_ADDR);}
     else{ return SYS_CALL_FAIL;}
     *screen_start= (uint8_t*) VIRTUAL_ADDR_VEDIO_PAGE;
     return 0;
