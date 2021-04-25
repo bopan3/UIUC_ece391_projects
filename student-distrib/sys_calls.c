@@ -417,6 +417,8 @@ int32_t execute(const uint8_t* command){
         : "=r"(return_val)
     );
 
+    printf("(Test) Return from excute()\n");
+
     return return_val;
 }
 
