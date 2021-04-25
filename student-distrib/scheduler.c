@@ -114,7 +114,7 @@ void _schedule_switch_tm_(){
  */
 void switch_visible_terminal(int new_tm_id){
     cli();
-    uint8_t* old_dis_addr = tm_array[terminal_tick].dis_addr;
+    uint8_t* old_dis_addr = tm_array[terminal_display].dis_addr;
     uint8_t* new_dis_addr = tm_array[new_tm_id].dis_addr;
     uint8_t* VM_addr = (uint8_t*)(VIDEO);                       /* physical displayed video memory base */
     int32_t i;                                                  /* loop index */

@@ -23,4 +23,6 @@ void line_buf_in(char curr);
 
 void line_buf_clear(void);
 
+void put_dis_ter(char curr);
+
 #endif //MP3_TERMINAL_H

@@ -43,6 +43,11 @@ static uint8_t alt_flag = OFF;
 
 #define SHIFT_FLAG              (l_shift_flag | r_shift_flag)
 
+/* Multi-Terminals */
+extern int32_t terminal_tick;
+extern int32_t terminal_display;
+extern terminal_t tm_array[];
+
 /*
 * The table used to map the scancode to ascii
 * The table is adapt from https://wiki.osdev.org/Keyboard
@@ -101,6 +106,7 @@ void keyboard_init() {
  */
 void keyboard_handler() {
     cli();
+
     uint8_t scan_code = inb(KEYBOARD_DATA_PORT);            // Store scan code from keyboard
     uint8_t ascii_code;                                     // Store the corresponding ascii_code
 
