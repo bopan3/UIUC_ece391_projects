@@ -34,6 +34,6 @@ void pit_handler(){
     cli();
     send_eoi(PIT_IRQ);
     scheduler();
-
+    sti();
     return ;
 }

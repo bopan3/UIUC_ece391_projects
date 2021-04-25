@@ -51,13 +51,15 @@ void scheduler(){
 /* helper function */
 void _schedule_switch_tm_(){
     pcb* cur_pcb;
-    uint32_t  k_ebp, k_esp;
+    pcb* old_pcb;
+    // uint32_t  k_ebp, k_esp;
 
     /* default to create a shell for each terminal */
     if (tm_array[terminal_tick].tm_pid == TM_UNUSED){
         execute((uint8_t*)"shell");
     }
     else {
+        old_pcb = get_pcb_ptr(pid);
         pid = tm_array[terminal_tick].tm_pid;
         cur_pcb = get_pcb_ptr(pid);
 
@@ -75,19 +77,25 @@ void _schedule_switch_tm_(){
 
         TLB_flush();
 
-        k_ebp = cur_pcb->kernel_ebp;
-        k_esp = cur_pcb->kernel_esp;
+        // k_ebp = cur_pcb->kernel_ebp;
+        // k_esp = cur_pcb->kernel_esp;
 
         /* switch ESP & EBP */
         // asm volatile ("movl %%ebx, %%ebp": : "b"(k_ebp));
         // asm volatile ("movl %%ebx, %%esp": : "b"(k_esp));
 
         asm volatile (
+            "movl %%ebp, %%eax;"
+            "movl %%esp, %%ebx;"
+            : "=a"(old_pcb->kernel_ebp), "=b"(old_pcb->kernel_esp)
+            : /* no inputs */
+        );
+
+        asm volatile (
             "movl %%eax, %%ebp;"
             "movl %%ebx, %%esp;"
             :   /* no outputs */
-            : "a"(k_ebp), "b"(k_esp)
-            : "ebp", "esp"
+            : "a"(cur_pcb->kernel_ebp), "b"(cur_pcb->kernel_esp)
         );
 
     }
