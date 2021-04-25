@@ -71,7 +71,7 @@ void excp_Page_Fault() {
     );     
     Error_code_PF=   *((int32_t*)ESP);          
     printf("EXCEPTION #0x%x: %s\n", EXCP_Page_Fault, "Page Fault");
-    printf("The address causing page fault: %x\n",Error_code_PF);
+    printf("The address causing page fault: %x\n",CR2);
     printf("Error_code_PF: %x\n", Error_code_PF);
 
     while(1){}                           
