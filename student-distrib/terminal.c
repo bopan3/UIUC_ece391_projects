@@ -130,11 +130,13 @@ void line_buf_in(char curr) {
             tm_array[terminal_display].kb_buf[LINE_BUF_SIZE - 2] = '\n';
             enter_flag = ON;
             tm_array[terminal_display].num_char = 0;                       // reset buffer index to 0
-            putc(curr);
+//            putc(curr);
+            put_dis_ter(curr);
         } else if (BCKSPACE == curr) {
             tm_array[terminal_display].kb_buf[LINE_BUF_SIZE - 1] = '\0';
             tm_array[terminal_display].num_char--;
-            putc(curr);
+//            putc(curr);
+            put_dis_ter(curr);
         }
     } else {
         if (('\n' == curr) | ('\r' == curr)) {
@@ -142,15 +144,18 @@ void line_buf_in(char curr) {
             tm_array[terminal_display].kb_buf[tm_array[terminal_display].num_char] = '\n';
             enter_flag = ON;
             tm_array[terminal_display].num_char = 0;                       // reset buffer index to 0
-            putc(curr);
+//            putc(curr);
+            put_dis_ter(curr);
         } else if (BCKSPACE == curr) {
             if (tm_array[terminal_display].num_char > 0 && tm_array[terminal_display].num_char < LINE_BUF_SIZE) { // If there are contents in buffer, delete the last one
                 tm_array[terminal_display].kb_buf[--tm_array[terminal_display].num_char] = '\0';
-                putc(curr);
+//                putc(curr);
+                put_dis_ter(curr);
             }
         } else {
             tm_array[terminal_display].kb_buf[tm_array[terminal_display].num_char++] = curr;
-            putc(curr);
+//            putc(curr);
+            put_dis_ter(curr);
         }
     }
 }
@@ -172,4 +177,19 @@ void line_buf_clear() {
         tm_array[terminal_display].kb_buf[i] = '\0';
     }
     tm_array[terminal_display].num_char = 0;
+}
+
+void put_dis_ter(char curr) {
+    int32_t term_buf;
+
+    page_table[VIDEO_REGION_START_K].address = VIDEO_REGION_START_K; /* set for kernel */
+    page_table_vedio_mem[VIDEO_REGION_START_U].address =  VIDEO_REGION_START_K; /* set for user */
+
+    term_buf = terminal_tick;
+    terminal_tick = terminal_display;
+    putc(curr);
+    terminal_tick = term_buf;
+
+    page_table[VIDEO_REGION_START_K].address = VIDEO_REGION_START_K +  (terminal_display != terminal_tick) * (terminal_tick + 1); /* set for kernel */
+    page_table_vedio_mem[VIDEO_REGION_START_U].address =  VIDEO_REGION_START_K + (terminal_display != terminal_tick) * (terminal_tick + 1); /* set for user */
 }
