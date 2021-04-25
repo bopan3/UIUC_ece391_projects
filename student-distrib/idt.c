@@ -11,6 +11,8 @@
 
 int32_t CR2;
 int32_t Error_code_PF;
+int32_t ESP;
+
 /* 
  * Jump frunction for each exception/interrupt/system call
  *   DESCRIPTION: pass number of exception/interrupt jump to the handler funtion
@@ -62,14 +64,15 @@ void excp_Page_Fault() {
 
     asm volatile(
         "movl %%cr2, %0;"
-        "movl (%%esp), %1;"
-        : "=r"(CR2), "=r"(Error_code_PF)
+        "movl %%esp, %1;"
+        : "=r"(CR2), "=r"(ESP)
         : 
         : "memory"
-    );                     
+    );     
+    Error_code_PF=   *((int32_t*)ESP);          
     printf("EXCEPTION #0x%x: %s\n", EXCP_Page_Fault, "Page Fault");
-    printf("The address causing page fault: %x\n", CR2);
-    //printf("Error_code_PF: %x\n", Error_code_PF);
+    printf("The address causing page fault: %x\n",Error_code_PF);
+    printf("Error_code_PF: %x\n", Error_code_PF);
 
     while(1){}                           
     exp_halt();                    
