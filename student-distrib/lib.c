@@ -2,6 +2,7 @@
  * vim:ts=4 noexpandtab */
 
 #include "lib.h"
+#include "scheduler.h"
 
 #define VIDEO       0xB8000
 #define NUM_COLS    80
@@ -16,10 +17,14 @@
 
 #define BCKSPACE        0x08    // keycode for backspace
 
-static int screen_x;
-static int screen_y;
-static int screen_color = NORMALSCREEN;     // Color combination of word and background
+/* Multi-Terminals */
+extern int32_t terminal_tick;
+extern int32_t terminal_display;
+extern terminal_t tm_array[];
+
 static char* video_mem = (char *)VIDEO;
+
+static int screen_color = NORMALSCREEN;     // Color combination of word and background
 
 /* void clear(void);
  * Inputs: void
@@ -32,8 +37,8 @@ void clear(void) {
         *(uint8_t *)(video_mem + (i << 1) + 1) = screen_color;
     }
     // reset coordinates
-    screen_x = 0;
-    screen_y = 0;
+    tm_array[terminal_tick].x = 0;
+    tm_array[terminal_tick].y = 0;
     // update cursor
     update_cursor();
 }
@@ -45,7 +50,7 @@ void clear(void) {
  */
 // https://wiki.osdev.org/Text_Mode_Cursor
 void update_cursor(void) {
-    uint16_t pos = screen_y * NUM_COLS + screen_x;
+    uint16_t pos = tm_array[terminal_tick].y * NUM_COLS + tm_array[terminal_tick].x;
 
     outb(0x0E, CURSOR_H);                       // 0x0E, 0x0F for line cursor
     outb((uint8_t) ((pos >> 8)), CURSOR_L);     // right shift 8 bits to get lower bits of cursor position
@@ -199,7 +204,7 @@ int32_t puts(int8_t* s) {
  *  Function: Output a character to the console */
 void putc(uint8_t c) {
     if(c == '\n' || c == '\r') {                // Check if meets line increment
-        if ((NUM_ROWS - 1) == screen_y) {       // Check if it reaches bottom of the screen
+        if ((NUM_ROWS - 1) == tm_array[terminal_tick].y) {       // Check if it reaches bottom of the screen
             // go through every line in the console
             int i,j;                            // loop index
             for (i = 0; i < NUM_ROWS; ++i) {
@@ -216,22 +221,22 @@ void putc(uint8_t c) {
                 }
             }
         } else
-            screen_y++;                         // Bottom not reached, just increment y
-        screen_x = 0;
+            tm_array[terminal_tick].y++;                         // Bottom not reached, just increment y
+        tm_array[terminal_tick].x = 0;
         update_cursor();
     } else if (BCKSPACE == c) {                 // Handle backspace
-        if ((0 == screen_x) & (0 == screen_y))
+        if ((0 == tm_array[terminal_tick].x) & (0 == tm_array[terminal_tick].y))
             return;
-        screen_x--;
-        if (-1 == screen_x) {
-            screen_x = NUM_COLS - 1;
-            screen_y--;
+        tm_array[terminal_tick].x--;
+        if (-1 == tm_array[terminal_tick].x) {
+            tm_array[terminal_tick].x = NUM_COLS - 1;
+            tm_array[terminal_tick].y--;
         }
-        *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1)) = ' ';
-        *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1) + 1) = screen_color;
+        *(uint8_t *)(video_mem + ((NUM_COLS * tm_array[terminal_tick].y + tm_array[terminal_tick].x) << 1)) = ' ';
+        *(uint8_t *)(video_mem + ((NUM_COLS * tm_array[terminal_tick].y + tm_array[terminal_tick].x) << 1) + 1) = screen_color;
         update_cursor();
-    } else if ((NUM_COLS - 1) == screen_x) {    // Reach end of the a line, new line
-        if ((NUM_ROWS - 1) == screen_y) {       // Check if it reaches bottom of the screen
+    } else if ((NUM_COLS - 1) == tm_array[terminal_tick].x) {    // Reach end of the a line, new line
+        if ((NUM_ROWS - 1) == tm_array[terminal_tick].y) {       // Check if it reaches bottom of the screen
             // go through every line in the console
             int i,j;                            // loop index
             for (i = 0; i < NUM_ROWS; ++i) {
@@ -250,22 +255,22 @@ void putc(uint8_t c) {
             // Display the most recent input c
             *(uint8_t *) (video_mem + ((NUM_COLS * (NUM_ROWS - 1) - 1) << 1)) = c;
             *(uint8_t *) (video_mem + ((NUM_COLS * (NUM_ROWS - 1) - 1) << 1) + 1) = screen_color;
-            screen_x = 0;                       // Set x back to beginning of a line
+            tm_array[terminal_tick].x = 0;                       // Set x back to beginning of a line
         } else {                                // Bottom not reached, just increment y and reset x
-            screen_y++;
-            screen_x = 0;
+            tm_array[terminal_tick].y++;
+            tm_array[terminal_tick].x = 0;
             // Display the most recent input c
-            *(uint8_t *) (video_mem + ((NUM_COLS * (screen_y) - 1) << 1)) = c;
-            *(uint8_t *) (video_mem + ((NUM_COLS * (screen_y) - 1) << 1) + 1) = screen_color;
+            *(uint8_t *) (video_mem + ((NUM_COLS * (tm_array[terminal_tick].y) - 1) << 1)) = c;
+            *(uint8_t *) (video_mem + ((NUM_COLS * (tm_array[terminal_tick].y) - 1) << 1) + 1) = screen_color;
         }
         update_cursor();
     } else {
         // Following is the part that does the actual displaying
-        *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1)) = c;
-        *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1) + 1) = screen_color;
-        screen_x++;
-        screen_x %= NUM_COLS;
-        screen_y = (screen_y + (screen_x / NUM_COLS)) % NUM_ROWS;
+        *(uint8_t *)(video_mem + ((NUM_COLS * tm_array[terminal_tick].y + tm_array[terminal_tick].x) << 1)) = c;
+        *(uint8_t *)(video_mem + ((NUM_COLS * tm_array[terminal_tick].y + tm_array[terminal_tick].x) << 1) + 1) = screen_color;
+        tm_array[terminal_tick].x++;
+        tm_array[terminal_tick].x %= NUM_COLS;
+        tm_array[terminal_tick].y = (tm_array[terminal_tick].y + (tm_array[terminal_tick].x / NUM_COLS)) % NUM_ROWS;
         update_cursor();
     }
 }

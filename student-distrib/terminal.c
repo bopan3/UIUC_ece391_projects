@@ -19,11 +19,8 @@ extern int32_t terminal_tick;
 extern int32_t terminal_display;
 extern terminal_t tm_array[];
 
-//int * NUM_CHAR = & tm_array[terminal_display].num_char;
-//char * LINE_BUF = tm_array[terminal_display].kb_buf;
-
-#define NUM_CHAR    tm_array[terminal_display].num_char
-#define LINE_BUF    tm_array[terminal_display].kb_buf
+#define NUM_CHAR    tm_array[terminal_tick].num_char
+#define LINE_BUF    tm_array[terminal_tick].kb_buf
 
 /*
 *	terminal_open
@@ -130,13 +127,11 @@ void line_buf_in(char curr) {
     // If the line buffer is already full, only change* when receiving line feed
     if (NUM_CHAR >= LINE_BUF_SIZE - 2) {        // minus 2 since the last two char of BUFFER must be '\n' and '\0'
         if (('\n' == curr) | ('\r' == curr)) {
-//            line_buf[LINE_BUF_SIZE - 2] = '\n'; // minus 2 since the last two char of BUFFER must be '\n' and '\0'
             LINE_BUF[LINE_BUF_SIZE - 2] = '\n';
             enter_flag = ON;
             NUM_CHAR = 0;                       // reset buffer index to 0
             putc(curr);
         } else if (BCKSPACE == curr) {
-//            line_buf[LINE_BUF_SIZE - 1] = '\0'; // minus 1 since the last char of BUFFER must be '\0'
             LINE_BUF[LINE_BUF_SIZE - 1] = '\0';
             NUM_CHAR--;
             putc(curr);
@@ -150,12 +145,10 @@ void line_buf_in(char curr) {
             putc(curr);
         } else if (BCKSPACE == curr) {
             if (NUM_CHAR > 0 && NUM_CHAR < LINE_BUF_SIZE) { // If there are contents in buffer, delete the last one
-//                line_buf[--NUM_CHAR] = '\0';
                 LINE_BUF[--NUM_CHAR] = '\0';
                 putc(curr);
             }
         } else {
-//            line_buf[NUM_CHAR++] = curr;
             LINE_BUF[NUM_CHAR++] = curr;
             putc(curr);
         }
