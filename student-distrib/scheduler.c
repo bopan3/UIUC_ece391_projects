@@ -29,6 +29,7 @@ void scheduler(){
     /* backup current pcb */
     // pcb* cur_pcb_ptr = get_pcb_ptr(pid);
     asm volatile ( "movl %%esp, %0" : "=r"(get_pcb_ptr(pid)->kernel_esp));
+
     // cur_pcb_ptr->kernel_esp = kernel_esp;
 
     /* switch terminal */
@@ -40,10 +41,6 @@ void scheduler(){
 
     /* switch terminal for task switch */
     _schedule_switch_tm_();
-
-
-
-
 
     return ;
 }
@@ -76,13 +73,6 @@ void _schedule_switch_tm_(){
         page_table_vedio_mem[VIDEO_REGION_START_U].address =  VIDEO_REGION_START_K + (terminal_display != terminal_tick) * (terminal_tick + 1); /* set for user */
 
         TLB_flush();
-
-        // k_ebp = cur_pcb->kernel_ebp;
-        // k_esp = cur_pcb->kernel_esp;
-
-        /* switch ESP & EBP */
-        // asm volatile ("movl %%ebx, %%ebp": : "b"(k_ebp));
-        // asm volatile ("movl %%ebx, %%esp": : "b"(k_esp));
 
         asm volatile (
             "movl %%ebp, %%eax;"
