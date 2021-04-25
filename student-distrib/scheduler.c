@@ -104,8 +104,10 @@ void _schedule_switch_tm_(){
  */
 void switch_visible_terminal(int new_tm_id){
     cli();
-    uint8_t* old_dis_addr = tm_array[terminal_display].dis_addr;
-    uint8_t* new_dis_addr = tm_array[new_tm_id].dis_addr;
+//    uint8_t* old_dis_addr = tm_array[terminal_display].dis_addr;
+//    uint8_t* new_dis_addr = tm_array[new_tm_id].dis_addr;
+//    uint8_t cur_scrren_buf[_4KB_];
+
     uint8_t* VM_addr = (uint8_t*)(VIDEO);                       /* physical displayed video memory base */
     int32_t i;                                                  /* loop index */
 
@@ -114,19 +116,25 @@ void switch_visible_terminal(int new_tm_id){
         sti();
         return ;
     }
+
+
     /* Save old terminal's screen to video page assigned for it
        restore new terminal's screen to video memory */
-    for (i = 0; i < _4KB_; i++) {
-        old_dis_addr[i] = VM_addr[i];
-        VM_addr[i] = new_dis_addr[i];
-    }
-    /* set video memory map */
-    terminal_display = new_tm_id;  
+//    for (i = 0; i < _4KB_; i++) {
+//        cur_scrren_buf[i] = VM_addr[i];         /* displayed screen memory to buf */
+//        VM_addr[i] = *(VM_addr + _4KB_ * (new_tm_id + 1));
+//        *(VM_addr + _4KB_ * (terminal_display + 1)) = cur_scrren_buf[i];
+//    }
+    memcpy(VM_addr + _4KB_ * (terminal_display+1), VM_addr, _4KB_);
+    terminal_display = new_tm_id;
+    memcpy(VM_addr, VM_addr + _4KB_ * (terminal_display+1), _4KB_);
 
+    /* set video memory map */
     page_table[VIDEO_REGION_START_K].address = VIDEO_REGION_START_K +  (terminal_display != terminal_tick) * (terminal_tick + 1); /* set for kernel */
     page_table_vedio_mem[VIDEO_REGION_START_U].address =  VIDEO_REGION_START_K + (terminal_display != terminal_tick) * (terminal_tick + 1); /* set for user */
     // printf("Switch to terminal %d", terminal_display);
-    
+
+    update_cursor();
      
     sti();
     return ;
