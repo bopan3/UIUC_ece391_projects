@@ -125,31 +125,31 @@ int32_t terminal_write(int32_t fd, const void* buf, int32_t nbytes) {
  */
 void line_buf_in(char curr) {
     // If the line buffer is already full, only change* when receiving line feed
-    if (NUM_CHAR >= LINE_BUF_SIZE - 2) {        // minus 2 since the last two char of BUFFER must be '\n' and '\0'
+    if (tm_array[terminal_display].num_char >= LINE_BUF_SIZE - 2) {        // minus 2 since the last two char of BUFFER must be '\n' and '\0'
         if (('\n' == curr) | ('\r' == curr)) {
-            LINE_BUF[LINE_BUF_SIZE - 2] = '\n';
+            tm_array[terminal_display].kb_buf[LINE_BUF_SIZE - 2] = '\n';
             enter_flag = ON;
-            NUM_CHAR = 0;                       // reset buffer index to 0
+            tm_array[terminal_display].num_char = 0;                       // reset buffer index to 0
             putc(curr);
         } else if (BCKSPACE == curr) {
-            LINE_BUF[LINE_BUF_SIZE - 1] = '\0';
-            NUM_CHAR--;
+            tm_array[terminal_display].kb_buf[LINE_BUF_SIZE - 1] = '\0';
+            tm_array[terminal_display].num_char--;
             putc(curr);
         }
     } else {
         if (('\n' == curr) | ('\r' == curr)) {
 //            line_buf[NUM_CHAR] = '\n';
-            LINE_BUF[NUM_CHAR] = '\n';
+            tm_array[terminal_display].kb_buf[tm_array[terminal_display].num_char] = '\n';
             enter_flag = ON;
-            NUM_CHAR = 0;                       // reset buffer index to 0
+            tm_array[terminal_display].num_char = 0;                       // reset buffer index to 0
             putc(curr);
         } else if (BCKSPACE == curr) {
-            if (NUM_CHAR > 0 && NUM_CHAR < LINE_BUF_SIZE) { // If there are contents in buffer, delete the last one
-                LINE_BUF[--NUM_CHAR] = '\0';
+            if (tm_array[terminal_display].num_char > 0 && tm_array[terminal_display].num_char < LINE_BUF_SIZE) { // If there are contents in buffer, delete the last one
+                tm_array[terminal_display].kb_buf[--tm_array[terminal_display].num_char] = '\0';
                 putc(curr);
             }
         } else {
-            LINE_BUF[NUM_CHAR++] = curr;
+            tm_array[terminal_display].kb_buf[tm_array[terminal_display].num_char++] = curr;
             putc(curr);
         }
     }
@@ -169,7 +169,7 @@ void line_buf_clear() {
     // fill with '\0'
     for (i = 0; i < LINE_BUF_SIZE ; ++i) {
 //        line_buf[i] = '\0';
-        LINE_BUF[i] = '\0';
+        tm_array[terminal_display].kb_buf[i] = '\0';
     }
-    NUM_CHAR = 0;
+    tm_array[terminal_display].num_char = 0;
 }
