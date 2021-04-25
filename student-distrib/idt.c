@@ -9,6 +9,10 @@
 #include "asm_linkage.h"
 #include "sys_calls.h"
 
+int32_t CR2;
+int32_t Error_code_PF;
+int32_t ESP;
+
 /* 
  * Jump frunction for each exception/interrupt/system call
  *   DESCRIPTION: pass number of exception/interrupt jump to the handler funtion
@@ -52,7 +56,29 @@ IDT_exp_entry(excp_Invalid_TSS, EXCP_Invalid_TSS, "Invalid TSS");
 IDT_exp_entry(excp_Segment_Not_Present, EXCP_Segment_Not_Present, "Segment Not Present");
 IDT_exp_entry(excp_Stack_Segment_Fault, EXCP_Stack_Segment_Fault, "Stack-Segment Fault");
 IDT_exp_entry(excp_General_Protection, EXCP_General_Protection, "General Protection");
-IDT_exp_entry(excp_Page_Fault, EXCP_Page_Fault, "Page Fault");
+//IDT_exp_entry(excp_Page_Fault, EXCP_Page_Fault, "Page Fault");
+void excp_Page_Fault() {                               
+    /* Suppress all interrupts (just in case) */ 
+    asm volatile("cli");                      
+    /* blue_screen(); */ 
+
+    asm volatile(
+        "movl %%cr2, %0;"
+        "movl %%esp, %1;"
+        : "=r"(CR2), "=r"(ESP)
+        : 
+        : "memory"
+    );     
+    Error_code_PF=   *((int32_t*)ESP);          
+    printf("EXCEPTION #0x%x: %s\n", EXCP_Page_Fault, "Page Fault");
+    printf("The address causing page fault: %x\n",CR2);
+    printf("Error_code_PF: %x\n", Error_code_PF);
+
+    while(1){}                           
+    exp_halt();                    
+    asm volatile("sti");    /* should never reach here */ 
+    return;                                   
+}  
 IDT_exp_entry(excp_FPU_Floating_Point, EXCP_FPU_Floating_Point, "x87 FPU Floating-Point Error");
 IDT_exp_entry(excp_Alignment_Check, EXCP_Alignment_Check, "Alignment Check");
 IDT_exp_entry(excp_Machine_Check, EXCP_Machine_Check, "Machine Check");

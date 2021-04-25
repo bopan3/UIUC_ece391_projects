@@ -170,12 +170,13 @@ void entry(unsigned long magic, unsigned long addr) {
      * without showing you any output */
     printf("Enabling Interrupts\n");
     clear();
+    launch_tests();//pb temp
     execute((uint8_t*) "shell");
     sti();
 
 #ifdef RUN_TESTS
     /* Run tests */
-//    launch_tests();
+    //launch_tests();
 #endif
     /* Execute the first program ("shell") ... */
 //    clear();
