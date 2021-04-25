@@ -117,18 +117,24 @@ void switch_visible_terminal(int new_tm_id){
         return ;
     }
 
-
+    page_table[VIDEO_REGION_START_K].address = VIDEO_REGION_START_K;
     /* Save old terminal's screen to video page assigned for it
        restore new terminal's screen to video memory */
-//    for (i = 0; i < _4KB_; i++) {
+   for (i = 0; i < _4KB_; i++) {
 //        cur_scrren_buf[i] = VM_addr[i];         /* displayed screen memory to buf */
-//        VM_addr[i] = *(VM_addr + _4KB_ * (new_tm_id + 1));
+       (VM_addr + _4KB_ * (terminal_display+ 1))[i] = VM_addr[i];
 //        *(VM_addr + _4KB_ * (terminal_display + 1)) = cur_scrren_buf[i];
-//    }
-    memcpy(VM_addr + _4KB_ * (terminal_display+1), VM_addr, _4KB_);
+   }
+   
+    // memcpy(VM_addr + _4KB_ * (terminal_display+1), VM_addr, _4KB_);
     terminal_display = new_tm_id;
-    memcpy(VM_addr, VM_addr + _4KB_ * (terminal_display+1), _4KB_);
+    // memcpy(VM_addr, VM_addr + _4KB_ * (new_tm_id+1), _4KB_);
 
+    for (i = 0; i < _4KB_; i++) {
+//        cur_scrren_buf[i] = VM_addr[i];         /* displayed screen memory to buf */
+       VM_addr[i] = (VM_addr + _4KB_ * (terminal_display+ 1))[i];
+//        *(VM_addr + _4KB_ * (terminal_display + 1)) = cur_scrren_buf[i];
+   }
     /* set video memory map */
     page_table[VIDEO_REGION_START_K].address = VIDEO_REGION_START_K +  (terminal_display != terminal_tick) * (terminal_tick + 1); /* set for kernel */
     page_table_vedio_mem[VIDEO_REGION_START_U].address =  VIDEO_REGION_START_K + (terminal_display != terminal_tick) * (terminal_tick + 1); /* set for user */
