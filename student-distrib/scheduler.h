@@ -23,7 +23,7 @@ typedef struct terminal_t{
     int y;
 
     /* For terminal display switch */
-    uint32_t* dis_addr;      // address of video memory
+    uint8_t* dis_addr;      // address of video memory
 }terminal_t;
 
 void scheduler_init();

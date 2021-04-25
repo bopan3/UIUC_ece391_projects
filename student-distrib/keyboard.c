@@ -124,7 +124,17 @@ void keyboard_handler() {
                 case 'l':
                     clear();
                     break;
-                
+                /* ============== only for local test ============== */
+                case '1':
+                    switch_visible_terminal(0);
+                    break;
+                case '2':
+                    switch_visible_terminal(1);
+                    break;
+                case '3':
+                    switch_visible_terminal(2);
+                    break;
+                /*==============  only for local test ============== */
                 default:
                     break;
             }
@@ -139,7 +149,6 @@ void keyboard_handler() {
                 case F3:
                     switch_visible_terminal(2);
                     break;
-
                 default:
                     break;
             }
