@@ -125,7 +125,7 @@ void switch_visible_terminal(int new_tm_id){
 
     page_table[VIDEO_REGION_START_K].address = VIDEO_REGION_START_K +  (terminal_display != terminal_tick) * (terminal_tick + 1); /* set for kernel */
     page_table_vedio_mem[VIDEO_REGION_START_U].address =  VIDEO_REGION_START_K + (terminal_display != terminal_tick) * (terminal_tick + 1); /* set for user */
-    printf("Switch to terminal %d", terminal_display);
+    // printf("Switch to terminal %d", terminal_display);
     
      
     sti();

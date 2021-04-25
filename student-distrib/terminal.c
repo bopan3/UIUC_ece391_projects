@@ -64,7 +64,7 @@ int32_t terminal_read(int32_t fd, void* buf, int32_t nbytes) {
         return -1;
 
     // While enter not pressed, wait for enter
-    while (OFF == enter_flag) {}
+    while (OFF == enter_flag || terminal_tick != terminal_display) {}
     cli();
 
     // Define a temp buffer for data transfer
