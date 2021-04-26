@@ -150,7 +150,9 @@ page_excpt_asmlink:
     // pushfl                                  
     /* Push argument */ 
     movl (%esp),%eax                    
-    pushl   %eax                           
+    pushl   %eax       
+    movl %cr2,%eax                    
+    pushl   %eax       
     jmp     excpt_for_PF                      
 
 
