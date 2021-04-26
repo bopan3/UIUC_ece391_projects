@@ -133,3 +133,46 @@ sys_iret:
 
     /* return from kernel to user */
     iret
+
+.globl page_excpt_asmlink                               
+page_excpt_asmlink:                                     
+    /* Save all register */                 
+    // pushw   %fs                             
+    // pushw   %es                             
+    // pushw   %ds                             
+    // pushl   %eax                            
+    // pushl   %ebp                            
+    // pushl   %edi                            
+    // pushl   %esi                            
+    // pushl   %edx                            
+    // pushl   %ecx                            
+    // pushl   %ebx                            
+    // pushfl                                  
+    /* Push argument */ 
+    movl (%esp),%eax                    
+    pushl   %eax       
+    movl %cr2,%eax                    
+    pushl   %eax       
+    jmp     excpt_for_PF                      
+
+
+/* Call the except for PF */
+excpt_for_PF:
+    /* Call the hander */
+    call    excp_Page_Fault_in_C
+    // @@ the code should never reach here @@
+    /* Restore all register */
+    // popl    %eax
+    // popfl
+    // popl    %ebx
+    // popl    %ecx
+    // popl    %edx
+    // popl    %esi
+    // popl    %edi
+    // popl    %ebp
+    // popl    %eax
+    // popw    %ds
+    // popw    %es
+    // popw    %fs
+    /* Return control */
+    iret
