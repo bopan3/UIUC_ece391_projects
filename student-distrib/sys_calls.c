@@ -417,6 +417,14 @@ int32_t execute(const uint8_t* command){
         : "=r"(return_val)
     );
 
+    cli();
+
+    // asm volatile (
+    //     "return_from_halt:"
+    //     "movl %%eax, %%eax;"
+    //     : "=a"(return_val)
+    // );
+
     printf("(Test) Return from excute()\n");
 
     return return_val;

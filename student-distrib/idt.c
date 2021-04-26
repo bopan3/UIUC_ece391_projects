@@ -59,17 +59,19 @@ void excp_Page_Fault_in_C(int32_t CR2, int32_t error_code) {
     /* Suppress all interrupts (just in case) */ 
     asm volatile("cli");                      
     /* blue_screen(); */ 
-       
+
+    printf("===============================================================================\n");   
     printf("EXCEPTION #0x%x: %s\n", EXCP_Page_Fault, "Page Fault");
     printf("The address causing page fault: %x\n",CR2);
     printf("Error_code_PF: %d\n", error_code);
-    if ((error_code & 1) == 0) /*check the 0 bit for P*/ {printf("The fault was caused by a non-present page\n");}
-    else{printf("The fault was caused when user try to access higher level page\n");}
-    if ((error_code & 2) == 0) /*check the 1 bit for W/R*/ {printf("The fault was caused by a read\n");}
-    else{printf("The fault was caused by a write\n");}
-    if ((error_code & 4) == 0) /*check the 2 bit for U/S*/ {printf("This happened when in kernal mode\n");}
-    else{printf("This happened when in user mode\n");}
-    if ((error_code & 8) == 1) /*check the 3 bit for RSVD*/ {printf("caused by reserved bit violation\n");}
+    if ((error_code & 1) == 0) /*check the 0 bit for P*/ {printf("- The fault was caused by a non-present page\n");}
+    else{printf("- The fault was caused when user try to access higher level page\n");}
+    if ((error_code & 2) == 0) /*check the 1 bit for W/R*/ {printf("- The fault was caused by a read\n");}
+    else{printf("- The fault was caused by a write\n");}
+    if ((error_code & 4) == 0) /*check the 2 bit for U/S*/ {printf("- This happened when in kernal mode\n");}
+    else{printf("- This happened when in user mode\n");}
+    if ((error_code & 8) == 1) /*check the 3 bit for RSVD*/ {printf("- caused by reserved bit violation\n");}
+    printf("===============================================================================\n");
     while(1){}                           
     exp_halt();                    
     asm volatile("sti");    /* should never reach here */ 
