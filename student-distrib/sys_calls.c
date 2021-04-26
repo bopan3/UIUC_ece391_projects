@@ -451,6 +451,10 @@ int32_t execute(const uint8_t* command){
     uint32_t  _0_CS = (uint32_t) USER_CS;
     uint32_t  EIP = cur_pcb->user_eip;
 
+    asm volatile ( "movl %%ebp, %0" : "=r"(cur_pcb->kernel_ebp) );
+    asm volatile ( "movl %%esp, %0" : "=r"(cur_pcb->kernel_esp) );
+    // new_pcb_ptr->kernel_ebp = kernel_ebp;
+    // new_pcb_ptr->kernel_esp = kernel_esp;
     /* asm setting */
     asm volatile (
         "cli;"
@@ -749,7 +753,7 @@ int32_t _mem_setting_(const uint8_t* filename, int32_t* eip){
  *   SIDE EFFECTS:  none
  */
 int32_t _PCB_setting_(const uint8_t* filename, const uint8_t* args, int32_t* eip){
-    int32_t kernel_ebp, kernel_esp; /* address value of two register */
+    // int32_t kernel_ebp, kernel_esp; /* address value of two register */
 
     /* Getting pcb base address */
     pcb* new_pcb_ptr = get_pcb_ptr(new_pid);
@@ -766,10 +770,10 @@ int32_t _PCB_setting_(const uint8_t* filename, const uint8_t* args, int32_t* eip
     new_pcb_ptr->user_eip = *eip;
 
     /* move the reg value to variable */
-    asm volatile ( "movl %%ebp, %0" : "=r"(kernel_ebp) );
-    asm volatile ( "movl %%esp, %0" : "=r"(kernel_esp) );
-    new_pcb_ptr->kernel_ebp = kernel_ebp;
-    new_pcb_ptr->kernel_esp = kernel_esp;
+    // asm volatile ( "movl %%ebp, %0" : "=r"(kernel_ebp) );
+    // asm volatile ( "movl %%esp, %0" : "=r"(kernel_esp) );
+    // new_pcb_ptr->kernel_ebp = kernel_ebp;
+    // new_pcb_ptr->kernel_esp = kernel_esp;
     // new_pcb_ptr->user_esp is always the same
 
     /* Finally, update global PID  */
