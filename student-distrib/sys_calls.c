@@ -306,7 +306,7 @@ int32_t vidmap (uint8_t** screen_start){
  */
 int32_t halt(uint8_t status){
 
-    sti();
+    // sti();
 
     int i;              /* loop index */
 
@@ -401,7 +401,7 @@ int32_t halt(uint8_t status){
  *   SIDE EFFECTS:
  */
 int32_t execute(const uint8_t* command){
-    sti();
+    // sti();
     uint8_t filename[FILENAME_LEN];     /* filename array */
     uint8_t args[TERM_LEN];             /* args array */
     int32_t return_val;                 /* for return value from halt */
