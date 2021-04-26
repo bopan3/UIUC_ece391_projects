@@ -318,7 +318,37 @@ int32_t halt(uint8_t status){
     if (cur_pcb_ptr->pid <= 2){
         /* then go back to shell */
         printf("[WARINING] FAIL TO HALT ROOT SHELL TASK\n");
-        _context_switch_(); /* back control to shell */
+        /*-------------------- Context switch micro --------------------*/
+        pcb* cur_pcb = get_pcb_ptr(pid);    /* PCB for current PID */
+
+        /* tss settings */
+        tss.ss0 = KERNEL_DS;
+        tss.esp0 = _8MB_ - (_8KB_ * pid) - 4;
+
+        /* value for asm setting */
+        uint32_t _0_SS = (uint32_t) USER_DS;
+        uint32_t  ESP = (uint32_t) USER_ESP;
+        uint32_t  _0_CS = (uint32_t) USER_CS;
+        uint32_t  EIP = cur_pcb->user_eip;
+
+        /* asm setting */
+        asm volatile (
+            "cli;"
+            "movw    %%ax, %%ds;"
+            "pushl   %%eax;"
+            "pushl   %%ebx;"
+            "pushfl  ;"
+            "popl    %%edi;"
+            "orl     $0x0200, %%edi;"
+            "pushl   %%edi;"
+            "pushl   %%ecx;"
+            "pushl   %%edx;"
+            "iret   ;"
+        :   /* no outputs */
+        : "a"(_0_SS), "b"(ESP), "c"(_0_CS), "d"(EIP)
+        :   "edi"
+        );
+        /*--------------------------------------------------------------*/
     }
 
     /*  Restore parent data */
@@ -408,7 +438,37 @@ int32_t execute(const uint8_t* command){
     if (SYS_CALL_FAIL == _PCB_setting_(filename, args, &eip)) return SYS_CALL_FAIL;
 
     /* context switch */
-    _context_switch_();
+    /*-------------------- Context switch micro --------------------*/
+    pcb* cur_pcb = get_pcb_ptr(pid);    /* PCB for current PID */
+
+    /* tss settings */
+    tss.ss0 = KERNEL_DS;
+    tss.esp0 = _8MB_ - (_8KB_ * pid) - 4;
+
+    /* value for asm setting */
+    uint32_t _0_SS = (uint32_t) USER_DS;
+    uint32_t  ESP = (uint32_t) USER_ESP;
+    uint32_t  _0_CS = (uint32_t) USER_CS;
+    uint32_t  EIP = cur_pcb->user_eip;
+
+    /* asm setting */
+    asm volatile (
+        "cli;"
+        "movw    %%ax, %%ds;"
+        "pushl   %%eax;"
+        "pushl   %%ebx;"
+        "pushfl  ;"
+        "popl    %%edi;"
+        "orl     $0x0200, %%edi;"
+        "pushl   %%edi;"
+        "pushl   %%ecx;"
+        "pushl   %%edx;"
+        "iret   ;"
+    :   /* no outputs */
+    : "a"(_0_SS), "b"(ESP), "c"(_0_CS), "d"(EIP)
+    :   "edi"
+    );
+    /*--------------------------------------------------------------*/
 
     // Position that halt() jumps to
     asm volatile (
@@ -470,7 +530,37 @@ void exp_halt(){
     if (cur_pcb_ptr->pid == cur_pcb_ptr->prev_pid){
         /* then go back to shell */
         printf("[WARINING] FAIL TO HALT ROOT SHELL TASK\n");
-        _context_switch_(); /* back control to shell */
+        /*-------------------- Context switch micro --------------------*/
+        pcb* cur_pcb = get_pcb_ptr(pid);    /* PCB for current PID */
+
+        /* tss settings */
+        tss.ss0 = KERNEL_DS;
+        tss.esp0 = _8MB_ - (_8KB_ * pid) - 4;
+
+        /* value for asm setting */
+        uint32_t _0_SS = (uint32_t) USER_DS;
+        uint32_t  ESP = (uint32_t) USER_ESP;
+        uint32_t  _0_CS = (uint32_t) USER_CS;
+        uint32_t  EIP = cur_pcb->user_eip;
+
+        /* asm setting */
+        asm volatile (
+            "cli;"
+            "movw    %%ax, %%ds;"
+            "pushl   %%eax;"
+            "pushl   %%ebx;"
+            "pushfl  ;"
+            "popl    %%edi;"
+            "orl     $0x0200, %%edi;"
+            "pushl   %%edi;"
+            "pushl   %%ecx;"
+            "pushl   %%edx;"
+            "iret   ;"
+        :   /* no outputs */
+        : "a"(_0_SS), "b"(ESP), "c"(_0_CS), "d"(EIP)
+        :   "edi"
+        );
+        /*--------------------------------------------------------------*/
     }
 
     /*  Restore parent data */
@@ -722,46 +812,46 @@ void _fd_init_(pcb* pcb_addr){
 
 }
 
-/*
- *  _context_switch_
- *   DESCRIPTION: helper function to do context switch stuff, including asm settings
- *   INPUTS: 
- *   OUTPUTS: 
- *   RETURN VALUE: 
- *   SIDE EFFECTS:  switch context from kernel to user
- */
-void _context_switch_(){
-    pcb* cur_pcb = get_pcb_ptr(pid);    /* PCB for current PID */
+// /*
+//  *  _context_switch_
+//  *   DESCRIPTION: helper function to do context switch stuff, including asm settings
+//  *   INPUTS: 
+//  *   OUTPUTS: 
+//  *   RETURN VALUE: 
+//  *   SIDE EFFECTS:  switch context from kernel to user
+//  */
+// void _context_switch_(){
+//     pcb* cur_pcb = get_pcb_ptr(pid);    /* PCB for current PID */
     
-    /* tss settings */
-    tss.ss0 = KERNEL_DS;
-    tss.esp0 = _8MB_ - (_8KB_ * pid) - 4;
+//     /* tss settings */
+//     tss.ss0 = KERNEL_DS;
+//     tss.esp0 = _8MB_ - (_8KB_ * pid) - 4;
 
-    /* value for asm setting */
-    uint32_t _0_SS = (uint32_t) USER_DS;
-    uint32_t  ESP = (uint32_t) USER_ESP;
-    uint32_t  _0_CS = (uint32_t) USER_CS;
-    uint32_t  EIP = cur_pcb->user_eip;
+//     /* value for asm setting */
+//     uint32_t _0_SS = (uint32_t) USER_DS;
+//     uint32_t  ESP = (uint32_t) USER_ESP;
+//     uint32_t  _0_CS = (uint32_t) USER_CS;
+//     uint32_t  EIP = cur_pcb->user_eip;
 
-    /* asm setting */
-    asm volatile (
-        "cli;"
-        "movw    %%ax, %%ds;"
-        "pushl   %%eax;"
-        "pushl   %%ebx;"
-        "pushfl  ;"
-        "popl    %%edi;"
-        "orl     $0x0200, %%edi;"
-        "pushl   %%edi;"
-        "pushl   %%ecx;"
-        "pushl   %%edx;"
-        "iret   ;"
-    :   /* no outputs */
-    : "a"(_0_SS), "b"(ESP), "c"(_0_CS), "d"(EIP)
-    :   "edi"
-    );
+//     /* asm setting */
+//     asm volatile (
+//         "cli;"
+//         "movw    %%ax, %%ds;"
+//         "pushl   %%eax;"
+//         "pushl   %%ebx;"
+//         "pushfl  ;"
+//         "popl    %%edi;"
+//         "orl     $0x0200, %%edi;"
+//         "pushl   %%edi;"
+//         "pushl   %%ecx;"
+//         "pushl   %%edx;"
+//         "iret   ;"
+//     :   /* no outputs */
+//     : "a"(_0_SS), "b"(ESP), "c"(_0_CS), "d"(EIP)
+//     :   "edi"
+//     );
 
-}
+// }
 
 
 /*
