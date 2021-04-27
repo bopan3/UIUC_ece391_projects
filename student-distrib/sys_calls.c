@@ -331,6 +331,9 @@ int32_t halt(uint8_t status){
         uint32_t  _0_CS = (uint32_t) USER_CS;
         uint32_t  EIP = cur_pcb->user_eip;
 
+        asm volatile ( "movl %%ebp, %0" : "=r"(cur_pcb->kernel_ebp) );
+        asm volatile ( "movl %%esp, %0" : "=r"(cur_pcb->kernel_esp) );
+
         /* asm setting */
         asm volatile (
             "cli;"
@@ -546,6 +549,9 @@ void exp_halt(){
         uint32_t  ESP = (uint32_t) USER_ESP;
         uint32_t  _0_CS = (uint32_t) USER_CS;
         uint32_t  EIP = cur_pcb->user_eip;
+
+        asm volatile ( "movl %%ebp, %0" : "=r"(cur_pcb->kernel_ebp) );
+        asm volatile ( "movl %%esp, %0" : "=r"(cur_pcb->kernel_esp) );
 
         /* asm setting */
         asm volatile (
