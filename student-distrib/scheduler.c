@@ -37,8 +37,8 @@ void scheduler(){
         : "=a"(k_ebp), "=b"(k_esp)
         : /* no inputs */
     );
-    old_pcb->kernel_ebp = k_ebp;
-    old_pcb->kernel_esp = k_esp;
+    old_pcb->kernel_ebp_sch = k_ebp;
+    old_pcb->kernel_esp_sch = k_esp;
 
     /* switch terminal */
     terminal_tick = (terminal_tick + 1) % MAX_TM;
@@ -65,8 +65,8 @@ void scheduler(){
         page_table_vedio_mem[VIDEO_REGION_START_U].address =  VIDEO_REGION_START_K + (terminal_display != terminal_tick) * (terminal_tick + 1); /* set for user */
 
         TLB_flush();
-        k_ebp = cur_pcb->kernel_ebp;
-        k_esp = cur_pcb->kernel_esp;
+        k_ebp = cur_pcb->kernel_ebp_sch;
+        k_esp = cur_pcb->kernel_esp_sch;
 
         /* restore next task pcb */
         asm volatile (

@@ -332,8 +332,8 @@ int32_t halt(uint8_t status){
         uint32_t  _0_CS = (uint32_t) USER_CS;
         uint32_t  EIP = cur_pcb->user_eip;
 
-        asm volatile ( "movl %%ebp, %0" : "=r"(cur_pcb->kernel_ebp) );
-        asm volatile ( "movl %%esp, %0" : "=r"(cur_pcb->kernel_esp) );
+        asm volatile ( "movl %%ebp, %0" : "=r"(cur_pcb->kernel_ebp_exc) );
+        asm volatile ( "movl %%esp, %0" : "=r"(cur_pcb->kernel_esp_exc) );
 
         /* asm setting */
         asm volatile (
@@ -381,8 +381,8 @@ int32_t halt(uint8_t status){
     cur_pcb_ptr->file_array[1].flags = UNUSE;   /* stdo */
 
     /* Jump to execute return */
-    k_ebp = cur_pcb_ptr->kernel_ebp;
-    k_esp = cur_pcb_ptr->kernel_esp;
+    k_ebp = cur_pcb_ptr->kernel_ebp_exc;
+    k_esp = cur_pcb_ptr->kernel_esp_exc;
 
     asm volatile(
         "xorl %%eax, %%eax;"
@@ -460,8 +460,8 @@ int32_t execute(const uint8_t* command){
     
     asm volatile ( "movl %%ebp, %0" : "=r"(k_ebp) );
     asm volatile ( "movl %%esp, %0" : "=r"(k_esp) );
-    cur_pcb->kernel_ebp = k_ebp;
-    cur_pcb->kernel_esp = k_esp;
+    cur_pcb->kernel_ebp_exc = k_ebp;
+    cur_pcb->kernel_esp_exc = k_esp;
     
 
     /* asm setting */
@@ -489,10 +489,6 @@ int32_t execute(const uint8_t* command){
         "movl %%eax, %0;"
         : "=r"(return_val)
     );
-
-    
-
-    printf("(Test) Return from excute()\n");
 
     return return_val;
 }
@@ -551,8 +547,8 @@ void exp_halt(){
         uint32_t  _0_CS = (uint32_t) USER_CS;
         uint32_t  EIP = cur_pcb->user_eip;
 
-        asm volatile ( "movl %%ebp, %0" : "=r"(cur_pcb->kernel_ebp) );
-        asm volatile ( "movl %%esp, %0" : "=r"(cur_pcb->kernel_esp) );
+        asm volatile ( "movl %%ebp, %0" : "=r"(cur_pcb->kernel_ebp_exc) );
+        asm volatile ( "movl %%esp, %0" : "=r"(cur_pcb->kernel_esp_exc) );
 
         /* asm setting */
         asm volatile (
@@ -598,8 +594,8 @@ void exp_halt(){
     cur_pcb_ptr->file_array[1].flags = UNUSE;   /* stdo */
 
     /* Jump to execute return */
-    k_esp = cur_pcb_ptr->kernel_esp;
-    k_ebp = cur_pcb_ptr->kernel_ebp;
+    k_esp = cur_pcb_ptr->kernel_esp_exc;
+    k_ebp = cur_pcb_ptr->kernel_ebp_exc;
     asm volatile(
         "xorl %%eax, %%eax;"
         "movl %0, %%eax;"
@@ -781,8 +777,8 @@ int32_t _PCB_setting_(const uint8_t* filename, const uint8_t* args, int32_t* eip
     /* move the reg value to variable */
     // asm volatile ( "movl %%ebp, %0" : "=r"(kernel_ebp) );
     // asm volatile ( "movl %%esp, %0" : "=r"(kernel_esp) );
-    // new_pcb_ptr->kernel_ebp = kernel_ebp;
-    // new_pcb_ptr->kernel_esp = kernel_esp;
+    // new_pcb_ptr->kernel_ebp_exc = kernel_ebp;
+    // new_pcb_ptr->kernel_esp_exc = kernel_esp;
     // new_pcb_ptr->user_esp is always the same
 
     /* Finally, update global PID  */
