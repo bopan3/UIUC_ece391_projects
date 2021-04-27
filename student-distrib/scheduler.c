@@ -1,6 +1,7 @@
 #include "scheduler.h"
 
 extern int32_t pid;             /* in sys_call.c */
+int32_t running_terminal = 1; 
 terminal_t tm_array[MAX_TM];
 int32_t terminal_tick = 0;      /* for the active running terminal, default the first terminal */
 int32_t terminal_display = 0;   /* for the displayed terminal, only change when function-key pressed */
@@ -24,38 +25,17 @@ void scheduler_init(){
 }
 
 void scheduler(){
-    // int32_t kernel_esp;
-
-    /* backup current pcb */
-    // pcb* cur_pcb_ptr = get_pcb_ptr(pid);
-    asm volatile ( "movl %%esp, %0" : "=r"(get_pcb_ptr(pid)->kernel_esp));
-
-    // cur_pcb_ptr->kernel_esp = kernel_esp;
-
-    /* switch terminal */
-    // tm_array[terminal_tick].tm_pid = pid;
-
-    terminal_tick = (terminal_tick + 1) % MAX_TM;
-    // pid = tm_array[terminal_tick].tm_pid;
-
-
-    /* switch terminal for task switch */
-    _schedule_switch_tm_();
-
-    return ;
-}
-
-/* helper function */
-void _schedule_switch_tm_(){
     pcb* cur_pcb;
     pcb* old_pcb;
-    // uint32_t  k_ebp, k_esp;
+
+    /* switch terminal */
+    terminal_tick = (terminal_tick + 1) % MAX_TM;
 
     /* default to create a shell for each terminal */
     if (tm_array[terminal_tick].tm_pid == TM_UNUSED){
+        running_terminal ++;
         execute((uint8_t*)"shell");
-    }
-    else {
+    } else {
         old_pcb = get_pcb_ptr(pid);
         pid = tm_array[terminal_tick].tm_pid;
         cur_pcb = get_pcb_ptr(pid);
@@ -74,6 +54,7 @@ void _schedule_switch_tm_(){
 
         TLB_flush();
 
+        /* backup current pcb */
         asm volatile (
             "movl %%ebp, %%eax;"
             "movl %%esp, %%ebx;"
@@ -81,11 +62,13 @@ void _schedule_switch_tm_(){
             : /* no inputs */
         );
 
+        /* restore next task pcb */
         asm volatile (
             "movl %%eax, %%ebp;"
             "movl %%ebx, %%esp;"
             :   /* no outputs */
             : "a"(cur_pcb->kernel_ebp), "b"(cur_pcb->kernel_esp)
+            : "ebp", "esp"
         );
 
     }
@@ -103,17 +86,11 @@ void _schedule_switch_tm_(){
  *   SIDE EFFECTS: set memory and buffer state
  */
 void switch_visible_terminal(int new_tm_id){
-    cli();
-//    uint8_t* old_dis_addr = tm_array[terminal_display].dis_addr;
-//    uint8_t* new_dis_addr = tm_array[new_tm_id].dis_addr;
-//    uint8_t cur_scrren_buf[_4KB_];
-
     uint8_t* VM_addr = (uint8_t*)(VIDEO);                       /* physical displayed video memory base */
     int32_t i;                                                  /* loop index */
 
     /* check if switch to the current terminal */
     if (new_tm_id == terminal_display) {
-        sti();
         return ;
     }
 
@@ -121,19 +98,13 @@ void switch_visible_terminal(int new_tm_id){
     /* Save old terminal's screen to video page assigned for it
        restore new terminal's screen to video memory */
    for (i = 0; i < _4KB_; i++) {
-//        cur_scrren_buf[i] = VM_addr[i];         /* displayed screen memory to buf */
        (VM_addr + _4KB_ * (terminal_display+ 1))[i] = VM_addr[i];
-//        *(VM_addr + _4KB_ * (terminal_display + 1)) = cur_scrren_buf[i];
    }
    
-    // memcpy(VM_addr + _4KB_ * (terminal_display+1), VM_addr, _4KB_);
     terminal_display = new_tm_id;
-    // memcpy(VM_addr, VM_addr + _4KB_ * (new_tm_id+1), _4KB_);
 
     for (i = 0; i < _4KB_; i++) {
-//        cur_scrren_buf[i] = VM_addr[i];         /* displayed screen memory to buf */
        VM_addr[i] = (VM_addr + _4KB_ * (terminal_display+ 1))[i];
-//        *(VM_addr + _4KB_ * (terminal_display + 1)) = cur_scrren_buf[i];
    }
     /* set video memory map */
     page_table[VIDEO_REGION_START_K].address = VIDEO_REGION_START_K +  (terminal_display != terminal_tick) * (terminal_tick + 1); /* set for kernel */
@@ -142,6 +113,5 @@ void switch_visible_terminal(int new_tm_id){
 
     update_cursor();
      
-    sti();
     return ;
 }

@@ -33,7 +33,9 @@ void pit_init(){
 void pit_handler(){
     cli();
     send_eoi(PIT_IRQ);
-    scheduler();
+    if (ENABLE_SCHE){
+        scheduler();
+    }
     sti();
     return ;
 }

@@ -14,7 +14,7 @@ int8_t task_array[MAX_PROC] = {0};  /* for hold PID */
 int32_t pid = 0, new_pid = 0;       /* pid cursor */
 extern terminal_t tm_array[];
 extern int32_t terminal_tick;   
-
+extern int32_t running_terminal;
 /*
  *   getargs
  *   DESCRIPTION: copy program args from kernel to user
@@ -315,7 +315,7 @@ int32_t halt(uint8_t status){
     pcb* prev_pcb_ptr;
 
     /* intend to halt shell */
-    if (cur_pcb_ptr->pid <= 2){
+    if (cur_pcb_ptr->pid < running_terminal){
         /* then go back to shell */
         printf("[WARINING] FAIL TO HALT ROOT SHELL TASK\n");
         /*-------------------- Context switch micro --------------------*/
@@ -531,7 +531,7 @@ void exp_halt(){
     printf("===================================================A\n");
 
     /* intend to halt shell */
-    if (cur_pcb_ptr->pid == cur_pcb_ptr->prev_pid){
+    if (cur_pcb_ptr->pid < running_terminal){
         /* then go back to shell */
         printf("[WARINING] FAIL TO HALT ROOT SHELL TASK\n");
         /*-------------------- Context switch micro --------------------*/

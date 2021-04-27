@@ -15,6 +15,7 @@
 #define TERMINAL_2_ADDR (VIDEO + 2 * _4KB_)
 #define TERMINAL_3_ADDR (VIDEO + 3 * _4KB_)
 
+#define ENABLE_SCHE 1
 typedef struct terminal_t{
     int32_t tm_pid; /* trick the running program */
     char kb_buf[LINE_BUF_SIZE];
@@ -29,4 +30,3 @@ typedef struct terminal_t{
 void scheduler_init();
 void scheduler();
 void switch_visible_terminal(int new_tm_id);
-void _schedule_switch_tm_();
