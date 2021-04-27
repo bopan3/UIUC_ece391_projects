@@ -313,6 +313,7 @@ int32_t halt(uint8_t status){
     /* Get pcb info */
     pcb* cur_pcb_ptr = get_pcb_ptr(pid);
     pcb* prev_pcb_ptr;
+    int32_t k_ebp, k_esp;
 
     /* intend to halt shell */
     if (cur_pcb_ptr->pid < running_terminal){
@@ -377,6 +378,8 @@ int32_t halt(uint8_t status){
     cur_pcb_ptr->file_array[1].flags = UNUSE;   /* stdo */
 
     /* Jump to execute return */
+    k_ebp = cur_pcb_ptr->kernel_ebp;
+    k_esp = cur_pcb_ptr->kernel_esp;
 
     asm volatile(
         "xorl %%eax, %%eax;"
@@ -385,7 +388,7 @@ int32_t halt(uint8_t status){
         "movl %2, %%esp;"
         "jmp return_from_halt;"
         : /* No output */
-        : "r"(status), "r"(cur_pcb_ptr->kernel_ebp), "r"(cur_pcb_ptr->kernel_esp)
+        : "r"(status), "r"(k_ebp), "r"(k_esp)
         : "esp", "ebp", "eax"
     );
 
@@ -406,7 +409,7 @@ int32_t execute(const uint8_t* command){
     uint8_t args[TERM_LEN];             /* args array */
     int32_t return_val;                 /* for return value from halt */
     int32_t eip;                        /* to get user program start address */
-
+    int32_t k_ebp, k_esp;               
 
     /* Sanity check */
     if (command == NULL) {
@@ -451,10 +454,13 @@ int32_t execute(const uint8_t* command){
     uint32_t  _0_CS = (uint32_t) USER_CS;
     uint32_t  EIP = cur_pcb->user_eip;
 
-    asm volatile ( "movl %%ebp, %0" : "=r"(cur_pcb->kernel_ebp) );
-    asm volatile ( "movl %%esp, %0" : "=r"(cur_pcb->kernel_esp) );
-    // new_pcb_ptr->kernel_ebp = kernel_ebp;
-    // new_pcb_ptr->kernel_esp = kernel_esp;
+    
+    asm volatile ( "movl %%ebp, %0" : "=r"(k_ebp) );
+    asm volatile ( "movl %%esp, %0" : "=r"(k_esp) );
+    cur_pcb->kernel_ebp = k_ebp;
+    cur_pcb->kernel_esp = k_esp;
+    
+
     /* asm setting */
     asm volatile (
         "cli;"
@@ -481,13 +487,7 @@ int32_t execute(const uint8_t* command){
         : "=r"(return_val)
     );
 
-    // cli();
-
-    // asm volatile (
-    //     "return_from_halt:"
-    //     "movl %%eax, %%eax;"
-    //     : "=a"(return_val)
-    // );
+    
 
     printf("(Test) Return from excute()\n");
 
@@ -523,6 +523,7 @@ void exp_halt(){
     // sti();
 
     int i;              /* loop index */
+    int32_t k_ebp, k_esp;
 
     /* Get pcb info */
     pcb* cur_pcb_ptr = get_pcb_ptr(pid);
@@ -591,6 +592,8 @@ void exp_halt(){
     cur_pcb_ptr->file_array[1].flags = UNUSE;   /* stdo */
 
     /* Jump to execute return */
+    k_esp = cur_pcb_ptr->kernel_esp;
+    k_ebp = cur_pcb_ptr->kernel_ebp;
     asm volatile(
         "xorl %%eax, %%eax;"
         "movl %0, %%eax;"
@@ -598,7 +601,7 @@ void exp_halt(){
         "movl %2, %%esp;"
         "jmp return_from_halt;"
         : /* No output */
-        : "r"(256), "r"(cur_pcb_ptr->kernel_ebp), "r"(cur_pcb_ptr->kernel_esp)
+        : "r"(256), "r"(k_ebp), "r"(k_esp)
         : "esp", "ebp", "eax"
     );
 
@@ -816,46 +819,7 @@ void _fd_init_(pcb* pcb_addr){
 
 }
 
-// /*
-//  *  _context_switch_
-//  *   DESCRIPTION: helper function to do context switch stuff, including asm settings
-//  *   INPUTS: 
-//  *   OUTPUTS: 
-//  *   RETURN VALUE: 
-//  *   SIDE EFFECTS:  switch context from kernel to user
-//  */
-// void _context_switch_(){
-//     pcb* cur_pcb = get_pcb_ptr(pid);    /* PCB for current PID */
-    
-//     /* tss settings */
-//     tss.ss0 = KERNEL_DS;
-//     tss.esp0 = _8MB_ - (_8KB_ * pid) - 4;
 
-//     /* value for asm setting */
-//     uint32_t _0_SS = (uint32_t) USER_DS;
-//     uint32_t  ESP = (uint32_t) USER_ESP;
-//     uint32_t  _0_CS = (uint32_t) USER_CS;
-//     uint32_t  EIP = cur_pcb->user_eip;
-
-//     /* asm setting */
-//     asm volatile (
-//         "cli;"
-//         "movw    %%ax, %%ds;"
-//         "pushl   %%eax;"
-//         "pushl   %%ebx;"
-//         "pushfl  ;"
-//         "popl    %%edi;"
-//         "orl     $0x0200, %%edi;"
-//         "pushl   %%edi;"
-//         "pushl   %%ecx;"
-//         "pushl   %%edx;"
-//         "iret   ;"
-//     :   /* no outputs */
-//     : "a"(_0_SS), "b"(ESP), "c"(_0_CS), "d"(EIP)
-//     :   "edi"
-//     );
-
-// }
 
 
 /*
