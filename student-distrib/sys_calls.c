@@ -520,7 +520,7 @@ int32_t sigreturn (void){
  */
 void exp_halt(){
 
-    sti();
+    // sti();
 
     int i;              /* loop index */
 
