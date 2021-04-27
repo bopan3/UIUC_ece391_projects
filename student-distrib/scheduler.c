@@ -27,6 +27,15 @@ void scheduler_init(){
 void scheduler(){
     pcb* cur_pcb;
     pcb* old_pcb;
+    old_pcb = get_pcb_ptr(pid);
+
+     /* backup current pcb */
+    asm volatile (
+        "movl %%ebp, %%eax;"
+        "movl %%esp, %%ebx;"
+        : "=a"(old_pcb->kernel_ebp), "=b"(old_pcb->kernel_esp)
+        : /* no inputs */
+    );
 
     /* switch terminal */
     terminal_tick = (terminal_tick + 1) % MAX_TM;
@@ -36,7 +45,7 @@ void scheduler(){
         running_terminal ++;
         execute((uint8_t*)"shell");
     } else {
-        old_pcb = get_pcb_ptr(pid);
+        
         pid = tm_array[terminal_tick].tm_pid;
         cur_pcb = get_pcb_ptr(pid);
 
@@ -53,14 +62,6 @@ void scheduler(){
         page_table_vedio_mem[VIDEO_REGION_START_U].address =  VIDEO_REGION_START_K + (terminal_display != terminal_tick) * (terminal_tick + 1); /* set for user */
 
         TLB_flush();
-
-        /* backup current pcb */
-        asm volatile (
-            "movl %%ebp, %%eax;"
-            "movl %%esp, %%ebx;"
-            : "=a"(old_pcb->kernel_ebp), "=b"(old_pcb->kernel_esp)
-            : /* no inputs */
-        );
 
         /* restore next task pcb */
         asm volatile (
