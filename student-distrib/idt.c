@@ -72,7 +72,7 @@ void excp_Page_Fault_in_C(int32_t CR2, int32_t error_code) {
     else{printf("- This happened when in user mode\n");}
     if ((error_code & 8) == 1) /*check the 3 bit for RSVD*/ {printf("- caused by reserved bit violation\n");}
     printf("===============================================================================\n");
-    while(1){}                           
+    // while(1){}                           
     exp_halt();                    
     asm volatile("sti");    /* should never reach here */ 
     return;                                   

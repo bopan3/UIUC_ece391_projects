@@ -19,9 +19,9 @@ void scheduler_init(){
         tm_array[i].y = 0; 
     }
 
-    tm_array[0].dis_addr = (uint8_t*)TERMINAL_1_ADDR;
-    tm_array[1].dis_addr = (uint8_t*)TERMINAL_2_ADDR;
-    tm_array[2].dis_addr = (uint8_t*)TERMINAL_3_ADDR;
+    // tm_array[0].dis_addr = (uint8_t*)TERMINAL_1_ADDR;
+    // tm_array[1].dis_addr = (uint8_t*)TERMINAL_2_ADDR;
+    // tm_array[2].dis_addr = (uint8_t*)TERMINAL_3_ADDR;
 }
 
 void scheduler(){

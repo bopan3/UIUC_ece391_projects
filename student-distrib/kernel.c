@@ -172,7 +172,6 @@ void entry(unsigned long magic, unsigned long addr) {
     clear();
     //launch_tests();//pb temp
     execute((uint8_t*) "shell");
-    sti();
 
 #ifdef RUN_TESTS
     /* Run tests */
