@@ -1,10 +1,11 @@
 #include "scheduler.h"
 
+extern uint8_t enter_flag;
 extern int32_t pid;             /* in sys_call.c */
 int32_t running_terminal = 1; 
 terminal_t tm_array[MAX_TM];
-int32_t terminal_tick = 0;      /* for the active running terminal, default the first terminal */
-int32_t terminal_display = 0;   /* for the displayed terminal, only change when function-key pressed */
+volatile int32_t terminal_tick = 0;      /* for the active running terminal, default the first terminal */
+volatile int32_t terminal_display = 0;   /* for the displayed terminal, only change when function-key pressed */
 int32_t processor_id_act = DEFAULT_PROC;
 
 void scheduler_init(){
@@ -95,6 +96,7 @@ void switch_visible_terminal(int new_tm_id){
     uint8_t* VM_addr = (uint8_t*)(VIDEO);                       /* physical displayed video memory base */
     int32_t i;                                                  /* loop index */
 
+    enter_flag = 0;             // 0 for OFF
     /* check if switch to the current terminal */
     if (new_tm_id == terminal_display) {
         return ;

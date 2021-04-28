@@ -53,6 +53,7 @@ void clear(void) {
 
     page_table[VIDEO_REGION_START_K].address = VIDEO_REGION_START_K; /* set for kernel */
 //    page_table_vedio_mem[VIDEO_REGION_START_U].address =  VIDEO_REGION_START_K; /* set for user */
+    TLB_flush();
 
     for (i = 0; i < NUM_ROWS * NUM_COLS; i++) {
         *(uint8_t *)(video_mem + (i << 1)) = ' ';
@@ -61,6 +62,7 @@ void clear(void) {
 
     page_table[VIDEO_REGION_START_K].address = VIDEO_REGION_START_K +  (terminal_display != terminal_tick) * (terminal_tick + 1); /* set for kernel */
     page_table_vedio_mem[VIDEO_REGION_START_U].address =  VIDEO_REGION_START_K + (terminal_display != terminal_tick) * (terminal_tick + 1); /* set for user */
+    TLB_flush();
 
     // reset coordinates
     tm_array[terminal_display].x = 0;
