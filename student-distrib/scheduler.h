@@ -22,11 +22,9 @@ typedef struct terminal_t{
     int num_char;
     int x;
     int y;
+} terminal_t;
 
-    /* For terminal display switch */
-    // uint8_t* dis_addr;      // address of video memory
-}terminal_t;
-
+/* prototype */
 void scheduler_init();
 void scheduler();
 void switch_visible_terminal(int new_tm_id);
