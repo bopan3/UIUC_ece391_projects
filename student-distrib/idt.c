@@ -55,7 +55,7 @@ IDT_exp_entry(excp_Segment_Not_Present, EXCP_Segment_Not_Present, "Segment Not P
 IDT_exp_entry(excp_Stack_Segment_Fault, EXCP_Stack_Segment_Fault, "Stack-Segment Fault");
 IDT_exp_entry(excp_General_Protection, EXCP_General_Protection, "General Protection");
 //IDT_exp_entry(excp_Page_Fault, EXCP_Page_Fault, "Page Fault");
-void excp_Page_Fault_in_C(int32_t CR2, int32_t error_code) {                               
+void excp_Page_Fault_in_C(int32_t CR2, int32_t error_code, int32_t return_eip) {                               
     /* Suppress all interrupts (just in case) */ 
     asm volatile("cli");                      
     /* blue_screen(); */ 
@@ -64,6 +64,8 @@ void excp_Page_Fault_in_C(int32_t CR2, int32_t error_code) {
     printf("EXCEPTION #0x%x: %s\n", EXCP_Page_Fault, "Page Fault");
     printf("The address causing page fault: %x\n",CR2);
     printf("Error_code_PF: %d\n", error_code);
+    printf("EIP: %d\n", return_eip);
+
     if ((error_code & 1) == 0) /*check the 0 bit for P*/ {printf("- The fault was caused by a non-present page\n");}
     else{printf("- The fault was caused when user try to access higher level page\n");}
     if ((error_code & 2) == 0) /*check the 1 bit for W/R*/ {printf("- The fault was caused by a read\n");}
@@ -72,7 +74,7 @@ void excp_Page_Fault_in_C(int32_t CR2, int32_t error_code) {
     else{printf("- This happened when in user mode\n");}
     if ((error_code & 8) == 1) /*check the 3 bit for RSVD*/ {printf("- caused by reserved bit violation\n");}
     printf("===============================================================================\n");
-    // while(1){}                           
+    while(1){}                          
     exp_halt();                    
     asm volatile("sti");    /* should never reach here */ 
     return;                                   

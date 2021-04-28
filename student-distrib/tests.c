@@ -597,12 +597,12 @@ void launch_tests(){
 	/* Check point 3 */
 	/* Please just play the shell */
 	//test_PF=* (int32_t*)(VIRTUAL_ADDR_VEDIO_PAGE);
-	// * (int32_t*)(VIRTUAL_ADDR_VEDIO_PAGE)=5;
-	// printf("lalala");
-	// while (1)
-	// {
-	// 	/* code */
-	// }
+	 * (int32_t*)(VIRTUAL_ADDR_VEDIO_PAGE)=5;
+	printf("lalala");
+	 while (1)
+	{
+		/* code */
+	}
 	
 
 }
