@@ -201,14 +201,14 @@ void paging_set_for_vedio_mem(int32_t virtual_addr_for_vedio, int32_t phys_addr_
  *   SIDE EFFECTS:  unmap "the start of virtual address for the vedio mem" to "0xB8000" (physical vedio memory)
  */
 void paging_restore_for_vedio_mem(int32_t virtual_addr_for_vedio){
-    int i;
-    int dict_idx = virtual_addr_for_vedio/_4MB_;
-    // int table_idx = (virtual_addr_for_vedio << (10)) >> 22 ; // left shift 10 bits first and then right shift 22 bits to extract the second 10 bits in the virtual address
-    /* setting page dic entry*/
-        page_dict[dict_idx].P = 0;         /* make it not present */        
-    /* setting page table entry*/
-    for (i = 0; i < PT_SIZE; i++){
-        page_table_vedio_mem[i].P = 0;       /* make all not present */ 
-    }
-    TLB_flush();
+    // int i;
+    // int dict_idx = virtual_addr_for_vedio/_4MB_;
+    // // int table_idx = (virtual_addr_for_vedio << (10)) >> 22 ; // left shift 10 bits first and then right shift 22 bits to extract the second 10 bits in the virtual address
+    // /* setting page dic entry*/
+    //     page_dict[dict_idx].P = 0;         /* make it not present */        
+    // /* setting page table entry*/
+    // for (i = 0; i < PT_SIZE; i++){
+    //     page_table_vedio_mem[i].P = 0;       /* make all not present */ 
+    // }
+    // TLB_flush();
 }
