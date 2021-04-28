@@ -39,10 +39,6 @@ void rtc_init(){
       //a read on RTC_REG_C to allow next irq
       rtc_byte_read(RTC_REG_C);
       rtc_set_real_freq_level(MAX_FREQ_LEVEL);
-<<<<<<< HEAD
-=======
-      sti();            
->>>>>>> master
 }
 
 /* 
