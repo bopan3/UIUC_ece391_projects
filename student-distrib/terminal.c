@@ -180,19 +180,34 @@ void line_buf_clear() {
     tm_array[terminal_display].num_char = 0;
 }
 
+/*
+ *   put_dis_ter
+ *   DESCRIPTION: put the current character to displayed terminal
+ *   INPUTS: curr - current character to be displayed
+ *   OUTPUTS: none
+ *   RETURN VALUE: none
+ *   SIDE EFFECTS: put the current character to displayed terminal
+ */
 void put_dis_ter(char curr) {
     cli();
     int32_t term_buf;
 
+    // change page mapping to physical video memory
     page_table[VIDEO_REGION_START_K].address = VIDEO_REGION_START_K; /* set for kernel */
     page_table_vedio_mem[VIDEO_REGION_START_U].address =  VIDEO_REGION_START_K; /* set for user */
     TLB_flush();
 
+    // back up original active terminal number
     term_buf = terminal_tick;
     terminal_tick = terminal_display;
+
+    // do the actual display
     putc(curr);
+
+    // restore original active terminal number
     terminal_tick = term_buf;
 
+    // change back the page mapping
     page_table[VIDEO_REGION_START_K].address = VIDEO_REGION_START_K +  (terminal_display != terminal_tick) * (terminal_tick + 1); /* set for kernel */
     page_table_vedio_mem[VIDEO_REGION_START_U].address =  VIDEO_REGION_START_K + (terminal_display != terminal_tick) * (terminal_tick + 1); /* set for user */
     TLB_flush();
