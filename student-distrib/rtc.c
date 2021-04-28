@@ -10,16 +10,14 @@
 #define BIT_6 0x40
 #define MAX_FREQ_LEVEL 10  // the maximun frequency is 2^10
 #define MIN_FREQ_LEVEL 1   // the minimun frequency is 2^1
-#define MAX_FREQ 1024 
 #define MIN_FREQ 2
 #define NULL 0
 
+extern int32_t pid;
+extern int8_t task_array[MAX_PROC];
 static void rtc_byte_write(int8_t rtc_register, int8_t rtc_data);
 static int8_t rtc_byte_read(int8_t rtc_register);
 static void rtc_set_real_freq_level(int8_t freq_level);
-int virtual_freq;           // later for a field in the fd
-volatile int current_count; // when the current count reach zero, we indicate a virtual irq  （later for file position field of fd）
-volatile int virtual_iqr_got; // later for a field in the fd
 
 // all register handling codes for RTC are adapt from https://wiki.osdev.org/RTC
 /* 
@@ -41,6 +39,10 @@ void rtc_init(){
       //a read on RTC_REG_C to allow next irq
       rtc_byte_read(RTC_REG_C);
       rtc_set_real_freq_level(MAX_FREQ_LEVEL);
+<<<<<<< HEAD
+=======
+      sti();            
+>>>>>>> master
 }
 
 /* 
@@ -52,17 +54,25 @@ void rtc_init(){
  *   SIDE EFFECTS:  call test_interrupts() to refresh the screen
  */
 void rtc_handler(){
+    int32_t cur_pid;
+    pcb* cur_pcb_ptr;
     cli();
-    //test_interrupts();
-    current_count=current_count-virtual_freq;
-    if (current_count==0){
-        virtual_iqr_got=1;
-        current_count=MAX_FREQ;
+    for (cur_pid=0;cur_pid<MAX_PROC;cur_pid++){
+        //check if the process for this pid is on
+        if (task_array[cur_pid]==0){continue;}
+        cur_pcb_ptr = get_pcb_ptr(cur_pid);
+        if (cur_pcb_ptr->rtc_opened==1){
+            cur_pcb_ptr->current_count=cur_pcb_ptr->current_count-cur_pcb_ptr->virtual_freq;
+            if (cur_pcb_ptr->current_count==0){
+                cur_pcb_ptr->virtual_iqr_got=1;
+                cur_pcb_ptr->current_count=MAX_FREQ;
+            }
+        }  
     }
     //a read on RTC_REG_C to allow next irq
     rtc_byte_read(RTC_REG_C);
     send_eoi(IRQ_NUM_RTC);
-    sti();
+    sti();            
 }
 
 /* 
@@ -117,9 +127,13 @@ void rtc_set_real_freq_level(int8_t freq_level){
  *   SIDE EFFECTS: 
  */
 int32_t rtc_open(const uint8_t* filename) {
-    virtual_freq=2; // 2HZ is the defualt frequency
-    current_count=MAX_FREQ;
-    virtual_iqr_got=0;
+    pcb* cur_pcb_ptr;
+    cur_pcb_ptr = get_pcb_ptr(pid);
+
+    cur_pcb_ptr->virtual_freq=2; // 2HZ is the defualt frequency
+    cur_pcb_ptr->current_count=MAX_FREQ;
+    cur_pcb_ptr->virtual_iqr_got=0;
+    cur_pcb_ptr->rtc_opened=1;
     return 0;
 }
 
@@ -132,9 +146,12 @@ int32_t rtc_open(const uint8_t* filename) {
  *   SIDE EFFECTS: 
  */
 int32_t rtc_close(int32_t fd) {
-    virtual_freq=0; // change the freq to 0 to indicate the rtc is not opened
-    current_count=MAX_FREQ;
-    virtual_iqr_got=0;
+    pcb* cur_pcb_ptr;
+    cur_pcb_ptr = get_pcb_ptr(pid);
+    cur_pcb_ptr->virtual_freq=0; // change the freq to 0 to indicate the rtc is not opened
+    cur_pcb_ptr->current_count=MAX_FREQ;
+    cur_pcb_ptr->virtual_iqr_got=0;
+    cur_pcb_ptr->rtc_opened=0;
     return 0;
 }
 
@@ -149,11 +166,13 @@ int32_t rtc_close(int32_t fd) {
  *   SIDE EFFECTS:
  */
 int32_t rtc_read(int32_t fd, void* buf, int32_t nbytes) {
+    pcb* cur_pcb_ptr;
     cli();
-    virtual_iqr_got=0;
-    current_count=MAX_FREQ;
+    cur_pcb_ptr = get_pcb_ptr(pid);
+    cur_pcb_ptr->virtual_iqr_got=0;
+    cur_pcb_ptr->current_count=MAX_FREQ;
     sti();
-    while (virtual_iqr_got==0){};
+    while (cur_pcb_ptr->virtual_iqr_got==0){};
     return 0;
 }
 
@@ -168,8 +187,10 @@ int32_t rtc_read(int32_t fd, void* buf, int32_t nbytes) {
  *   SIDE EFFECTS: change the virtual irq freq
  */
 int32_t rtc_write(int32_t fd, const void* buf, int32_t nbytes) {
+    pcb* cur_pcb_ptr;
     int try_freq; // the freqency we try to change to 
     try_freq=   *((int*) buf);
+    cur_pcb_ptr = get_pcb_ptr(pid);
     // check NULL pointer and wrong nbytes
     if (buf==NULL || (nbytes != sizeof(int32_t)) ){
         return -1;
@@ -181,7 +202,7 @@ int32_t rtc_write(int32_t fd, const void* buf, int32_t nbytes) {
     }
 
     cli();
-    virtual_freq=try_freq;
+    cur_pcb_ptr->virtual_freq=try_freq;
     sti();
     return 0;
 }

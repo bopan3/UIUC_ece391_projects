@@ -1,6 +1,7 @@
 #ifndef RTC_H
 #define RTC_H
 #include "types.h"
+#include "sys_calls.h"
 extern void rtc_init();
 extern void rtc_handler();
 extern int32_t rtc_read(int32_t fd, void* buf, int32_t nbytes);

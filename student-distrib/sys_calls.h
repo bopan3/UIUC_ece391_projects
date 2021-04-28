@@ -25,6 +25,8 @@
 #define USER_ESP (USER_PAGE_BASE + 0x400000 - 4) /* 128 MB for start user + 4 MB for page size - 4 entry */
 #define EXE_LIMIT 1
 #define VIRTUAL_ADDR_VEDIO_PAGE 0x8800000
+#define MAX_FREQ 1024 
+
 /* File operation tables */
 // typedef struct file_ops_t {
 //     /* TODO */
@@ -59,10 +61,17 @@ typedef struct pcb {
 
     // uint32_t user_esp;
     uint32_t user_eip;
+
     uint32_t kernel_esp_sch;
     uint32_t kernel_ebp_sch;
     uint32_t kernel_esp_exc;
     uint32_t kernel_ebp_exc;
+
+    // fileds for rtc
+    int rtc_opened; //indicate whether the rtc file is opened in this process
+    int virtual_freq;          
+    volatile int current_count; // when the current count reach zero, we indicate a virtual irq  （later for file position field of fd）
+    volatile int virtual_iqr_got; // gotten a virtual iqr
 } pcb;
 
 fop_t rtc_fop_t;
