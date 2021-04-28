@@ -21,6 +21,7 @@ void irq_handler(int irq_vect) {
     // asm volatile("sti");
 
     /* For CP1, just print the message */
+    cli();
     switch (irq_vect) {
         case IRQ_NMI_Interrupt:
             printf("INTERRUPT #0x%x: NMI Interrupt\n", irq_vect);
@@ -55,6 +56,7 @@ void irq_handler(int irq_vect) {
             printf("INTERRUPT #0x%x: not defined\n", irq_vect);
             break;
     }
+    sti();
     return;
 }
 

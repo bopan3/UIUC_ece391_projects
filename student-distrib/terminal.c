@@ -6,6 +6,7 @@
 #include "terminal.h"
 #include "scheduler.h"
 #include "lib.h"
+#include "paging.h"
 
 #define ON          1
 #define OFF         0
@@ -123,6 +124,7 @@ int32_t terminal_write(int32_t fd, const void* buf, int32_t nbytes) {
  *   SIDE EFFECTS: change the line input buffer and char index
  */
 void line_buf_in(char curr) {
+    cli();
     // If the line buffer is already full, only change* when receiving line feed
     if (tm_array[terminal_display].num_char >= LINE_BUF_SIZE - 2) {        // minus 2 since the last two char of BUFFER must be '\n' and '\0'
         if (('\n' == curr) | ('\r' == curr)) {
@@ -179,10 +181,12 @@ void line_buf_clear() {
 }
 
 void put_dis_ter(char curr) {
+    cli();
     int32_t term_buf;
 
     page_table[VIDEO_REGION_START_K].address = VIDEO_REGION_START_K; /* set for kernel */
     page_table_vedio_mem[VIDEO_REGION_START_U].address =  VIDEO_REGION_START_K; /* set for user */
+    TLB_flush();
 
     term_buf = terminal_tick;
     terminal_tick = terminal_display;
@@ -191,4 +195,5 @@ void put_dis_ter(char curr) {
 
     page_table[VIDEO_REGION_START_K].address = VIDEO_REGION_START_K +  (terminal_display != terminal_tick) * (terminal_tick + 1); /* set for kernel */
     page_table_vedio_mem[VIDEO_REGION_START_U].address =  VIDEO_REGION_START_K + (terminal_display != terminal_tick) * (terminal_tick + 1); /* set for user */
+    TLB_flush();
 }

@@ -123,8 +123,8 @@ void keyboard_handler() {
         sti();
         return;
     }
-    if (scan_code < SCANCODE_SET_SIZE){
 
+    if (scan_code < SCANCODE_SET_SIZE){
         if (ctrl_flag) {
             switch ((scancode_to_ascii[scan_code][LOWER])) {
                 case 'l':
@@ -178,9 +178,10 @@ void keyboard_handler() {
 //            putc(ascii_code);
             line_buf_in(ascii_code);
         }
-        send_eoi(IRQ_NUM_KEYBOARD);
-        sti();
     }
+    send_eoi(IRQ_NUM_KEYBOARD);
+    sti();
+    return;
 }
 
 /*

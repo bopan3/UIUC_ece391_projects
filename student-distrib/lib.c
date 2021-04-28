@@ -3,6 +3,7 @@
 
 #include "lib.h"
 #include "scheduler.h"
+#include "paging.h"
 
 #define VIDEO       0xB8000
 #define NUM_COLS    80
@@ -30,15 +31,40 @@ static int screen_color = NORMALSCREEN;     // Color combination of word and bac
  * Inputs: void
  * Return Value: none
  * Function: Clears video memory */
+//void clear(void) {
+//    int32_t i;
+//    for (i = 0; i < NUM_ROWS * NUM_COLS; i++) {
+//        *(uint8_t *)(video_mem + (i << 1)) = ' ';
+//        *(uint8_t *)(video_mem + (i << 1) + 1) = screen_color;
+//    }
+//    // reset coordinates
+//    tm_array[terminal_tick].x = 0;
+//    tm_array[terminal_tick].y = 0;
+//    // update cursor
+//    update_cursor();
+//}
+
+/* void clear_dis(void);
+ * Inputs: void
+ * Return Value: none
+ * Function: Clears video memory */
 void clear(void) {
     int32_t i;
+
+    page_table[VIDEO_REGION_START_K].address = VIDEO_REGION_START_K; /* set for kernel */
+//    page_table_vedio_mem[VIDEO_REGION_START_U].address =  VIDEO_REGION_START_K; /* set for user */
+
     for (i = 0; i < NUM_ROWS * NUM_COLS; i++) {
         *(uint8_t *)(video_mem + (i << 1)) = ' ';
         *(uint8_t *)(video_mem + (i << 1) + 1) = screen_color;
     }
+
+    page_table[VIDEO_REGION_START_K].address = VIDEO_REGION_START_K +  (terminal_display != terminal_tick) * (terminal_tick + 1); /* set for kernel */
+    page_table_vedio_mem[VIDEO_REGION_START_U].address =  VIDEO_REGION_START_K + (terminal_display != terminal_tick) * (terminal_tick + 1); /* set for user */
+
     // reset coordinates
-    tm_array[terminal_tick].x = 0;
-    tm_array[terminal_tick].y = 0;
+    tm_array[terminal_display].x = 0;
+    tm_array[terminal_display].y = 0;
     // update cursor
     update_cursor();
 }
@@ -203,6 +229,7 @@ int32_t puts(int8_t* s) {
  * Return Value: void
  *  Function: Output a character to the console */
 void putc(uint8_t c) {
+    cli();
     if(c == '\n' || c == '\r') {                // Check if meets line increment
         if ((NUM_ROWS - 1) == tm_array[terminal_tick].y) {       // Check if it reaches bottom of the screen
             // go through every line in the console

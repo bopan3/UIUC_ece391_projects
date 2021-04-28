@@ -103,6 +103,8 @@ void switch_visible_terminal(int new_tm_id){
     page_table[VIDEO_REGION_START_K].address = VIDEO_REGION_START_K;
     /* Save old terminal's screen to video page assigned for it
        restore new terminal's screen to video memory */
+    TLB_flush();
+
    for (i = 0; i < _4KB_; i++) {
        (VM_addr + _4KB_ * (terminal_display+ 1))[i] = VM_addr[i];
    }
@@ -116,6 +118,7 @@ void switch_visible_terminal(int new_tm_id){
     page_table[VIDEO_REGION_START_K].address = VIDEO_REGION_START_K +  (terminal_display != terminal_tick) * (terminal_tick + 1); /* set for kernel */
     page_table_vedio_mem[VIDEO_REGION_START_U].address =  VIDEO_REGION_START_K + (terminal_display != terminal_tick) * (terminal_tick + 1); /* set for user */
     // printf("Switch to terminal %d", terminal_display);
+    TLB_flush();
 
     update_cursor();
      

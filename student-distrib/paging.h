@@ -115,9 +115,9 @@ typedef struct __attribute__((packed)) PDE_desc {
 } PDE;
 
 
-PDE page_dict[PD_SIZE] __attribute__((aligned (_4KB_)));    /* Page Dict */
-PTE page_table[PT_SIZE] __attribute__((aligned (_4KB_)));   /* Page Table for first chunk */
-PTE page_table_vedio_mem[PT_SIZE] __attribute__((aligned (_4KB_)));   /* Page Table for vedio memory */
+volatile PDE page_dict[PD_SIZE] __attribute__((aligned (_4KB_)));    /* Page Dict */
+volatile PTE page_table[PT_SIZE] __attribute__((aligned (_4KB_)));   /* Page Table for first chunk */
+volatile PTE page_table_vedio_mem[PT_SIZE] __attribute__((aligned (_4KB_)));   /* Page Table for vedio memory */
 
 /* function prototype */
 void paging_init(void);
