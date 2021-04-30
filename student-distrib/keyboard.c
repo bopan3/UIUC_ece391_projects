@@ -117,6 +117,27 @@ void keyboard_handler() {
         return;
     }
 
+    /* Handle the terminal switch function */
+    if (alt_flag) {
+        // printf("Scan Code:%x\n", scan_code);
+        switch (scan_code) {
+            case F1:
+                switch_visible_terminal(0);
+                break;
+            case F2:
+                switch_visible_terminal(1);
+                break;
+            case F3:
+                switch_visible_terminal(2);
+                break;
+            default:
+                break;
+        }
+        send_eoi(IRQ_NUM_KEYBOARD);
+        sti();
+        return;
+    } 
+
     // make sure inside legit range
     if ((scan_code >= SCANCODE_SET_SIZE) || (scan_code < 0x02)){    // < 0x02 since the first two are empty
         send_eoi(IRQ_NUM_KEYBOARD);
@@ -144,21 +165,25 @@ void keyboard_handler() {
                 default:
                     break;
             }
-        } else if (alt_flag) {
-            switch (scan_code) {
-                case F1:
-                    switch_visible_terminal(0);
-                    break;
-                case F2:
-                    switch_visible_terminal(1);
-                    break;
-                case F3:
-                    switch_visible_terminal(2);
-                    break;
-                default:
-                    break;
-            }
-        } else {
+        } 
+        // else if (alt_flag) {
+        //     printf("Scan Code:%x\n", scan_code);
+        //     switch (scan_code) {
+                
+        //         case F1:
+        //             switch_visible_terminal(0);
+        //             break;
+        //         case F2:
+        //             switch_visible_terminal(1);
+        //             break;
+        //         case F3:
+        //             switch_visible_terminal(2);
+        //             break;
+        //         default:
+        //             break;
+        //     }
+        // } 
+        else {
             // Set ascii_code in respond to caps_flag and SHIFT_FLAG
             // Spacial case for numbers and -,= do not change when only caps_flag
             // <= 0x0D for 1-9 and -,= , 0x1A for [, 0x1B for ], 0x27 for ;, 0x28 for ', 0x29 for `, 0x2B for \, 0x33 for ,, 0x34 for ., 0x35 for /
@@ -178,7 +203,7 @@ void keyboard_handler() {
 //            putc(ascii_code);
             line_buf_in(ascii_code);
         }
-    }
+    } 
     send_eoi(IRQ_NUM_KEYBOARD);
     sti();
     return;
