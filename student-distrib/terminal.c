@@ -128,11 +128,13 @@ void line_buf_in(char curr) {
     // If the line buffer is already full, only change* when receiving line feed
     if (tm_array[terminal_display].num_char >= LINE_BUF_SIZE - 2) {        // minus 2 since the last two char of BUFFER must be '\n' and '\0'
         if (('\n' == curr) | ('\r' == curr)) {
-            tm_array[terminal_display].kb_buf[LINE_BUF_SIZE - 2] = '\n';
-            enter_flag = ON;
-            tm_array[terminal_display].num_char = 0;                       // reset buffer index to 0
-//            putc(curr);
-            put_dis_ter(curr);
+            if (OFF == enter_flag) {
+                tm_array[terminal_display].kb_buf[LINE_BUF_SIZE - 2] = '\n';
+                enter_flag = ON;
+                tm_array[terminal_display].num_char = 0;                       // reset buffer index to 0
+    //            putc(curr);
+                put_dis_ter(curr);
+            }
         } else if (BCKSPACE == curr) {
             tm_array[terminal_display].kb_buf[LINE_BUF_SIZE - 1] = '\0';
             tm_array[terminal_display].num_char--;
@@ -142,11 +144,13 @@ void line_buf_in(char curr) {
     } else {
         if (('\n' == curr) | ('\r' == curr)) {
 //            line_buf[NUM_CHAR] = '\n';
-            tm_array[terminal_display].kb_buf[tm_array[terminal_display].num_char] = '\n';
-            enter_flag = ON;
-            tm_array[terminal_display].num_char = 0;                       // reset buffer index to 0
-//            putc(curr);
-            put_dis_ter(curr);
+            if (OFF == enter_flag) {
+                tm_array[terminal_display].kb_buf[tm_array[terminal_display].num_char] = '\n';
+                enter_flag = ON;
+                tm_array[terminal_display].num_char = 0;                       // reset buffer index to 0
+    //            putc(curr);
+                put_dis_ter(curr);
+            }
         } else if (BCKSPACE == curr) {
             if (tm_array[terminal_display].num_char > 0 && tm_array[terminal_display].num_char < LINE_BUF_SIZE) { // If there are contents in buffer, delete the last one
                 tm_array[terminal_display].kb_buf[--tm_array[terminal_display].num_char] = '\0';
