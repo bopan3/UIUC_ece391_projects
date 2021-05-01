@@ -14,6 +14,7 @@
 #include "file_sys.h"
 #include "timer.h"
 #include "scheduler.h"
+#include "ModeX.h"
 #define RUN_TESTS
 
 /* Macros. */
@@ -153,6 +154,7 @@ void entry(unsigned long magic, unsigned long addr) {
 
     /* Initialize devices, memory, filesystem, enable device interrupts on the
      * PIC, any other initialization stuff... */
+    switch_to_modeX();
     keyboard_init();
     rtc_init();
     filesys_init();

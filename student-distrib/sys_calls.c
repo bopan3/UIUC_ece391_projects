@@ -742,7 +742,7 @@ int32_t _mem_setting_(const uint8_t* filename, int32_t* eip){
     Loading_address = (uint8_t*)0x8048000; /* fixed address, according to Appendix C */
     read_data(den.idx_inode, 0, Loading_address, get_file_size(den.idx_inode));
 
-    *eip = *(int32_t*)(Loading_address+24);
+    *eip = *(int32_t*)(Loading_address+24); // 24 is the offset address of the first instruction
     return SUCCESS;
 
 }
