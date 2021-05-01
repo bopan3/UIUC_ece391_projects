@@ -1,4 +1,5 @@
 #include "ModeX.h"
+#include "text.h"
 
 #define SCROLL_SIZE             (SCROLL_X_WIDTH * SCROLL_Y_DIM)
 #define SCREEN_SIZE             (SCROLL_SIZE * 4 + 1)
@@ -6,6 +7,7 @@
 #define BUILD_BASE_INIT         ((BUILD_BUF_SIZE - SCREEN_SIZE) / 2)
 
 /* Mode X and general VGA parameters */
+#define MODEX_STR_ADDR          0xA0000
 #define VID_MEM_SIZE            131072
 #define MODE_X_MEM_SIZE         65536
 #define NUM_SEQUENCER_REGS      5
@@ -20,11 +22,22 @@ static void set_CRTC_registers(unsigned short table[NUM_CRTC_REGS]);
 static void set_attr_registers(unsigned char table[NUM_ATTR_REGS * 2]);
 static void set_graphics_registers(unsigned short table[NUM_GRAPHICS_REGS]);
 static void fill_palette();
-//static void write_font_data();
-//static void set_text_mode_3(int clear_scr);
-//static void copy_image(unsigned char* img, unsigned short scr_addr);
-//static void copy_status_bar(unsigned char* img, unsigned short scr_addr);
+static void write_font_data();
+// static void copy_image(unsigned char* img, unsigned short scr_addr);
+// static void copy_status_bar(unsigned char* img, unsigned short scr_addr);
 
+
+#define MEM_FENCE_WIDTH 256
+#define MEM_FENCE_MAGIC 0xF3
+
+// static unsigned char build[BUILD_BUF_SIZE + 2 * MEM_FENCE_WIDTH];
+// static int img3_off;                /* offset of upper left pixel   */
+// static unsigned char* img3;         /* pointer to upper left pixel  */
+// static int show_x, show_y;          /* logical view coordinates     */
+
+//                                     /* displayed video memory variables */
+static unsigned char* mem_image;    /* pointer to start of video memory */
+// static unsigned short target_img;   /* offset of displayed screen image */
 
 /*
  * macro used to target a specific video plane or planes when writing
@@ -120,32 +133,40 @@ static unsigned short mode_X_graphics[NUM_GRAPHICS_REGS] = {
     0xFF08
 };
 
-// /* VGA register settings for text mode 3 (color text) */
-// static unsigned short text_seq[NUM_SEQUENCER_REGS] = {
-//     0x0100, 0x2001, 0x0302, 0x0003, 0x0204
-// };
-// static unsigned short text_CRTC[NUM_CRTC_REGS] = {
-//     0x5F00, 0x4F01, 0x5002, 0x8203, 0x5504, 0x8105, 0xBF06, 0x1F07,
-//     0x0008, 0x4F09, 0x0D0A, 0x0E0B, 0x000C, 0x000D, 0x000E, 0x000F,
-//     0x9C10, 0x8E11, 0x8F12, 0x2813, 0x1F14, 0x9615, 0xB916, 0xA317,
-//     0xFF18
-// };
-// static unsigned char text_attr[NUM_ATTR_REGS * 2] = {
-//     0x00, 0x00, 0x01, 0x01, 0x02, 0x02, 0x03, 0x03,
-//     0x04, 0x04, 0x05, 0x05, 0x06, 0x06, 0x07, 0x07,
-//     0x08, 0x08, 0x09, 0x09, 0x0A, 0x0A, 0x0B, 0x0B,
-//     0x0C, 0x0C, 0x0D, 0x0D, 0x0E, 0x0E, 0x0F, 0x0F,
-//     0x10, 0x0C, 0x11, 0x00, 0x12, 0x0F, 0x13, 0x08,
-//     0x14, 0x00, 0x15, 0x00
-// };
-// static unsigned short text_graphics[NUM_GRAPHICS_REGS] = {
-//     0x0000, 0x0001, 0x0002, 0x0003, 0x0004, 0x1005, 0x0E06, 0x0007,
-//     0xFF08
-// };
+/* VGA register settings for text mode 3 (color text) */
+static unsigned short text_seq[NUM_SEQUENCER_REGS] = {
+    0x0100, 0x2001, 0x0302, 0x0003, 0x0204
+};
+static unsigned short text_CRTC[NUM_CRTC_REGS] = {
+    0x5F00, 0x4F01, 0x5002, 0x8203, 0x5504, 0x8105, 0xBF06, 0x1F07,
+    0x0008, 0x4F09, 0x0D0A, 0x0E0B, 0x000C, 0x000D, 0x000E, 0x000F,
+    0x9C10, 0x8E11, 0x8F12, 0x2813, 0x1F14, 0x9615, 0xB916, 0xA317,
+    0xFF18
+};
+static unsigned char text_attr[NUM_ATTR_REGS * 2] = {
+    0x00, 0x00, 0x01, 0x01, 0x02, 0x02, 0x03, 0x03,
+    0x04, 0x04, 0x05, 0x05, 0x06, 0x06, 0x07, 0x07,
+    0x08, 0x08, 0x09, 0x09, 0x0A, 0x0A, 0x0B, 0x0B,
+    0x0C, 0x0C, 0x0D, 0x0D, 0x0E, 0x0E, 0x0F, 0x0F,
+    0x10, 0x0C, 0x11, 0x00, 0x12, 0x0F, 0x13, 0x08,
+    0x14, 0x00, 0x15, 0x00
+};
+static unsigned short text_graphics[NUM_GRAPHICS_REGS] = {
+    0x0000, 0x0001, 0x0002, 0x0003, 0x0004, 0x1005, 0x0E06, 0x0007,
+    0xFF08
+};
 
 
-
+/*
+ * switch_to_modeX
+ *   DESCRIPTION: Puts the VGA into mode X.
+ *   INPUTS: none
+ *   OUTPUTS: none
+ *   RETURN VALUE: 0 on success, -1 on failure
+ *   SIDE EFFECTS: clears (or preset) video memory
+ */
 extern int32_t switch_to_modeX(){
+    mem_image= (unsigned char*) MODEX_STR_ADDR;
     VGA_blank(1);                               /* blank the screen      */
     set_seq_regs_and_reset(mode_X_seq, 0x63);   /* sequencer registers   */
     set_CRTC_registers(mode_X_CRTC);            /* CRT control registers */
@@ -365,9 +386,79 @@ static void fill_palette() {
  *   SIDE EFFECTS: fills all 256kB of VGA video memory with zeroes
  */
 void clear_screens() {
-    // /* Write to all four planes at once. */
-    // SET_WRITE_MASK(0x0F00);
+    /* Write to all four planes at once. */
+    SET_WRITE_MASK(0x0F00);
 
-    // /* Set 64kB to zero (times four planes = 256kB). */
-    // memset(mem_image, 0, MODE_X_MEM_SIZE);
+    /* Set 64kB to zero (times four planes = 256kB). */
+    memset(mem_image, 5, MODE_X_MEM_SIZE);
+}
+
+
+
+/*
+ * write_font_data
+ *   DESCRIPTION: Copy font data into VGA memory, changing and restoring
+ *                VGA register values in order to do so.
+ *   INPUTS: none
+ *   OUTPUTS: none
+ *   RETURN VALUE: none
+ *   SIDE EFFECTS: leaves VGA registers in final text mode state
+ */
+static void write_font_data() {
+    int i;                /* loop index over characters                   */
+    int j;                /* loop index over font bytes within characters */
+    unsigned char* fonts; /* pointer into video memory                    */
+
+    /* Prepare VGA to write font data into video memory. */
+    OUTW(0x3C4, 0x0402);
+    OUTW(0x3C4, 0x0704);
+    OUTW(0x3CE, 0x0005);
+    OUTW(0x3CE, 0x0406);
+    OUTW(0x3CE, 0x0204);
+
+    /* Copy font data from array into video memory. */
+    for (i = 0, fonts = mem_image; i < 256; i++) {
+        for (j = 0; j < 16; j++)
+            fonts[j] = font_data[i][j];
+        fonts += 32; /* skip 16 bytes between characters */
+    }
+
+    /* Prepare VGA for text mode. */
+    OUTW(0x3C4, 0x0302);
+    OUTW(0x3C4, 0x0304);
+    OUTW(0x3CE, 0x1005);
+    OUTW(0x3CE, 0x0E06);
+    OUTW(0x3CE, 0x0004);
+}
+
+/*
+ * set_text_mode_3
+ *   DESCRIPTION: Put VGA into text mode 3 (color text).
+ *   INPUTS: clear_scr -- if non-zero, clear screens; otherwise, do not
+ *   OUTPUTS: none
+ *   RETURN VALUE: none
+ *   SIDE EFFECTS: may clear screens; writes font data to video memory
+ */
+extern void set_text_mode_3(int clear_scr) {
+    unsigned long* txt_scr;     /* pointer to text screens in video memory */
+    int i;                      /* loop over text screen words             */
+
+    VGA_blank(1);                               /* blank the screen        */
+    /*
+     * The value here had been changed to 0x63, but seems to work
+     * fine in QEMU (and VirtualPC, where I got it) with the 0x04
+     * bit set (VGA_MIS_DCLK_28322_720).
+     */
+    set_seq_regs_and_reset(text_seq, 0x67);     /* sequencer registers     */
+    set_CRTC_registers(text_CRTC);              /* CRT control registers   */
+    set_attr_registers(text_attr);              /* attribute registers     */
+    set_graphics_registers(text_graphics);      /* graphics registers      */
+    fill_palette();                             /* palette colors          */
+    if (clear_scr) {                            /* clear screens if needed */
+        txt_scr = (unsigned long*)(mem_image + 0x18000);
+        for (i = 0; i < 8192; i++)
+            *txt_scr++ = 0x07200720;
+    }
+    write_font_data();                          /* copy fonts to video mem */
+    VGA_blank(0);                               /* unblank the screen      */
 }

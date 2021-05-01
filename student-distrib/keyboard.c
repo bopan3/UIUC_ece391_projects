@@ -3,6 +3,7 @@
 #include "i8259.h"
 #include "terminal.h"
 #include "scheduler.h"
+#include "ModeX.h"
 
 #define SCANCODE_SET_SIZE 58
 #define EMP 0x0
@@ -161,6 +162,12 @@ void keyboard_handler() {
                 case '3':
                     switch_visible_terminal(2);
                     break;
+                case '4':
+                    switch_to_modeX();
+                    break; 
+                case '5':
+                    set_text_mode_3(0);
+                    break;                             
                 /*==============  only for local test ============== */
                 default:
                     break;

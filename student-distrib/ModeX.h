@@ -23,9 +23,13 @@
 #define SCROLL_X_WIDTH  (IMAGE_X_DIM / 4)          /* addresses (bytes)     */
 #define NUM_NONTRANS_COLOR      64      //number of non-tranparent colors in the palette
 
-extern int32_t switch_to_modeX();
+
 
 
 /* clear the video memory in mode X */
 extern void clear_screens();
+/* Puts the VGA into mode X. [clears (or preset) video memory] */
+extern int32_t switch_to_modeX();
+/* Put VGA into text mode 3 (color text).  [may clear screens; writes font data to video memory] */
+extern void set_text_mode_3(int clear_scr);
 #endif
