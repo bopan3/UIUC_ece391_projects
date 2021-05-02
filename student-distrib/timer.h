@@ -40,10 +40,11 @@ Bits         Usage
 */
 #define MODE_CTL_WORD  0x36
 #define FRE_DIVD 1193180 /* from doc, in hz */
-#define EXP_TIME    15   /* ms */
+#define EXP_TIME    20   /* ms */
 #define FRE_DIVS (FRE_DIVD / 1000 * EXP_TIME)
 #define PIT_IRQ 0x00
 
 
 void pit_init();
 void pit_handler();
+void timer_wait(int ticks);

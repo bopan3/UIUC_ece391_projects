@@ -9,6 +9,7 @@
 #include "types.h"
 #include "paging.h"
 #include "scheduler.h"
+#include "dev/sound.h"
 /* Global Section */
 int8_t task_array[MAX_PROC] = {0};  /* for hold PID */
 int32_t pid = 0, new_pid = 0;       /* pid cursor */
@@ -318,6 +319,10 @@ int32_t halt(uint8_t status){
     /* intend to halt shell */
     if (cur_pcb_ptr->pid < running_terminal){
         /* then go back to shell */
+        sti();
+        WARNING_PCS();
+        cli();
+
         printf("[WARINING] FAIL TO HALT ROOT SHELL TASK\n");
         /*-------------------- Context switch micro --------------------*/
         pcb* cur_pcb = get_pcb_ptr(pid);    /* PCB for current PID */
@@ -730,6 +735,10 @@ int32_t _mem_setting_(const uint8_t* filename, int32_t* eip){
 
     /* Check if new process request beyond ability */
     if (i == MAX_PROC) {
+        sti();
+        // WARNING_PCS();
+        little_star();
+        cli();
         printf("[WARINING] REACH MAXIMUM NESTED TASK #%d, FAIL TO EXECUTE NEW\n", MAX_PROC);
         return EXE_LIMIT;
     }

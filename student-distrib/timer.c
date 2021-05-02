@@ -1,6 +1,6 @@
 #include "timer.h"
 #include "scheduler.h"
-
+volatile int time_tick;
 /* 
  * pic_init
  *   DESCRIPTION: initialize the pit as timer chip for multi-task scheduler system
@@ -20,6 +20,7 @@ void pit_init(){
     /* enable INT */
     enable_irq((uint32_t) PIT_IRQ);
 
+    time_tick = 0;
     return ;
 }
 
@@ -32,6 +33,8 @@ void pit_init(){
  *   SIDE EFFECTS:  initialize the pit, which will raise highest INT to PIC at period within 10ms - 50ms
  */
 void pit_handler(){
+    time_tick++;
+
     cli();
     send_eoi(PIT_IRQ);
     if (ENABLE_SCHE){
@@ -39,4 +42,19 @@ void pit_handler(){
     }
     sti();
     return ;
+}
+
+/* wait for desired ticks */
+/* 
+ * timer_wait
+ *   DESCRIPTION: wait for desired ticks
+ *   INPUTS: to-wait ticks 
+ *   OUTPUTS: none
+ *   RETURN VALUE: none
+ *   SIDE EFFECTS:  wait for desired ticks
+ */
+void timer_wait(int ticks){
+    int eticks = time_tick + ticks;
+
+    while(eticks > time_tick){} // wait
 }

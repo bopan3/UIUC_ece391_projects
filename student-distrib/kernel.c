@@ -14,6 +14,7 @@
 #include "file_sys.h"
 #include "timer.h"
 #include "scheduler.h"
+#include "./dev/sound.h"
 #define RUN_TESTS
 
 /* Macros. */
@@ -170,6 +171,7 @@ void entry(unsigned long magic, unsigned long addr) {
      * without showing you any output */
     // printf("Enabling Interrupts\n");
     clear();
+    // beep(500, 50);
     execute((uint8_t*) "shell");
 
 #ifdef RUN_TESTS
