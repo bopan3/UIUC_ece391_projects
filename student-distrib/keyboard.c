@@ -4,6 +4,7 @@
 #include "terminal.h"
 #include "scheduler.h"
 #include "ModeX.h"
+#include "desktop.h"
 
 #define SCANCODE_SET_SIZE 58
 #define EMP 0x0
@@ -162,10 +163,10 @@ void keyboard_handler() {
                     switch_visible_terminal(2);
                     break;
                 case '4':
-                    switch_to_modeX();
+                    desktop_open(NULL);
                     break; 
                 case '5':
-                    set_text_mode_3(0);
+                    desktop_close(NULL);
                     break;                             
                 /*==============  only for local test ============== */
                 default:

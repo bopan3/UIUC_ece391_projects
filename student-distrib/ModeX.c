@@ -190,8 +190,7 @@ extern int32_t switch_to_modeX(){
     fill_palette();                             /* palette colors        */
     clear_screens();                            /* zero video memory     */
     VGA_blank(0);                               /* unblank the screen    */
-    
-    disable_irq(PIT_IRQ);        
+          
     /* Return success. */
     return 0;
 }
@@ -485,5 +484,4 @@ extern void set_text_mode_3(int clear_scr) {
     // }
     write_font_data();                          /* copy fonts to video mem */
     VGA_blank(0);                               /* unblank the screen      */
-    enable_irq(PIT_IRQ);
 }
