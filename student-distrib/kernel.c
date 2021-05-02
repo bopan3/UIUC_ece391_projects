@@ -14,6 +14,7 @@
 #include "file_sys.h"
 #include "timer.h"
 #include "scheduler.h"
+#include "mouse.h"
 #define RUN_TESTS
 
 /* Macros. */
@@ -154,6 +155,7 @@ void entry(unsigned long magic, unsigned long addr) {
     /* Initialize devices, memory, filesystem, enable device interrupts on the
      * PIC, any other initialization stuff... */
     keyboard_init();
+    mouse_init();
     rtc_init();
     filesys_init();
     pit_init();

@@ -8,6 +8,8 @@
 #include "keyboard.h"
 #include "rtc.h"
 #include "timer.h"
+#include "mouse.h"
+
 /* 
  * irq_handler
  *   DESCRIPTION: save registers and pass control to a interrupt handler specified by irq_vect
@@ -19,6 +21,8 @@
 void irq_handler(int irq_vect) {
     /* Enable interrupt */
     // asm volatile("sti");
+
+    // printf("(Test) IRQ #: %d\n", irq_vect);
 
     /* For CP1, just print the message */
     cli();
