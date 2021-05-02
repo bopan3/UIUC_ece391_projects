@@ -118,6 +118,8 @@ typedef struct __attribute__((packed)) PDE_desc {
 volatile PDE page_dict[PD_SIZE] __attribute__((aligned (_4KB_)));    /* Page Dict */
 volatile PTE page_table[PT_SIZE] __attribute__((aligned (_4KB_)));   /* Page Table for first chunk */
 volatile PTE page_table_vedio_mem[PT_SIZE] __attribute__((aligned (_4KB_)));   /* Page Table for vedio memory */
+volatile PTE page_table_temp_vmem[PT_SIZE] __attribute__((aligned (_4KB_)));   /* Page Table for temp vedio memory for modeX to store 0x8B000... */
+
 
 /* function prototype */
 void paging_init(void);

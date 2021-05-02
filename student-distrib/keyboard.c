@@ -7,7 +7,6 @@
 
 #define SCANCODE_SET_SIZE 58
 #define EMP 0x0
-#define IRQ_NUM_KEYBOARD 0x01
 #define KEYBOARD_DATA_PORT 0x60
 
 #define ON      1

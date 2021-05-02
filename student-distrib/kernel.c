@@ -155,8 +155,8 @@ void entry(unsigned long magic, unsigned long addr) {
     /* Initialize devices, memory, filesystem, enable device interrupts on the
      * PIC, any other initialization stuff... */
     keyboard_init();
-    sti();//pb temp
-    while(1);//pb temp
+    // sti();//pb temp
+    // while(1);//pb temp
     rtc_init();
     filesys_init();
     pit_init();

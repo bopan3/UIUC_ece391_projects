@@ -1,5 +1,10 @@
 #include "ModeX.h"
 #include "text.h"
+#include "paging.h"
+#include "i8259.h"
+#include "timer.h"
+#include "keyboard.h"
+
 
 #define SCROLL_SIZE             (SCROLL_X_WIDTH * SCROLL_Y_DIM)
 #define SCREEN_SIZE             (SCROLL_SIZE * 4 + 1)
@@ -8,6 +13,7 @@
 
 /* Mode X and general VGA parameters */
 #define MODEX_STR_ADDR          0xA0000
+#define TEMP_STOR_FOR_MODEX     0x9000000
 #define VID_MEM_SIZE            131072
 #define MODE_X_MEM_SIZE         65536
 #define NUM_SEQUENCER_REGS      5
@@ -37,6 +43,9 @@ static void write_font_data();
 
 //                                     /* displayed video memory variables */
 static unsigned char* mem_image;    /* pointer to start of video memory */
+static unsigned char* mem_temp_v;    /* pointer to start (0x900000) of temp video memory for text screen when in modeX */
+
+
 // static unsigned short target_img;   /* offset of displayed screen image */
 
 /*
@@ -166,6 +175,12 @@ static unsigned short text_graphics[NUM_GRAPHICS_REGS] = {
  *   SIDE EFFECTS: clears (or preset) video memory
  */
 extern int32_t switch_to_modeX(){
+    int32_t i;
+    uint8_t* VM_addr = (uint8_t*)(VIDEO);  
+    mem_temp_v= (unsigned char*) TEMP_STOR_FOR_MODEX; //i.e. 0x900000
+    /* copy 0xB8000--0xB8000+4KB*4 to 0x900000--0x900000+4KB*4 for storage of text screens */
+    for (i = 0; i < _4KB_*4; i++) {mem_temp_v[i] = (VM_addr)[i];}
+    /* set the start of mem_image of ModeX */
     mem_image= (unsigned char*) MODEX_STR_ADDR;
     VGA_blank(1);                               /* blank the screen      */
     set_seq_regs_and_reset(mode_X_seq, 0x63);   /* sequencer registers   */
@@ -175,6 +190,8 @@ extern int32_t switch_to_modeX(){
     fill_palette();                             /* palette colors        */
     clear_screens();                            /* zero video memory     */
     VGA_blank(0);                               /* unblank the screen    */
+    
+    disable_irq(PIT_IRQ);        
     /* Return success. */
     return 0;
 }
@@ -442,6 +459,9 @@ static void write_font_data() {
 extern void set_text_mode_3(int clear_scr) {
     unsigned long* txt_scr;     /* pointer to text screens in video memory */
     int i;                      /* loop over text screen words             */
+    int32_t j;
+    uint8_t* VM_addr = (uint8_t*)(VIDEO);  
+    mem_temp_v= (unsigned char*) TEMP_STOR_FOR_MODEX; //i.e. 0x900000
 
     VGA_blank(1);                               /* blank the screen        */
     /*
@@ -454,11 +474,16 @@ extern void set_text_mode_3(int clear_scr) {
     set_attr_registers(text_attr);              /* attribute registers     */
     set_graphics_registers(text_graphics);      /* graphics registers      */
     fill_palette();                             /* palette colors          */
-    if (clear_scr) {                            /* clear screens if needed */
-        txt_scr = (unsigned long*)(mem_image + 0x18000);
-        for (i = 0; i < 8192; i++)
-            *txt_scr++ = 0x07200720;
-    }
+
+    /* restore 0xB8000--0xB8000+4KB*4 from 0x900000--0x900000+4KB*4 for restorage of text screens */
+    for (j = 0; j < _4KB_*4; j++) {VM_addr[j] = (mem_temp_v)[j];}
+
+    // if (clear_scr) {                            /* clear screens if needed */
+    //     txt_scr = (unsigned long*)(mem_image + 0x18000);
+    //     for (i = 0; i < 8192; i++)
+    //         *txt_scr++ = 0x07200720;
+    // }
     write_font_data();                          /* copy fonts to video mem */
     VGA_blank(0);                               /* unblank the screen      */
+    enable_irq(PIT_IRQ);
 }

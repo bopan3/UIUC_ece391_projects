@@ -59,6 +59,27 @@ void paging_init(void){
 
                     break ;
 
+                case 36: /* 144-148 MB */
+                    /* to 4KB piece for temp storage of (0xB8000 to 0xB8000+4kB*4)*/
+                    page_dict[i].P = 1;         /* make it present */
+                    page_dict[i].RW = 1;        /* RW enable */
+                    page_dict[i].US = 0;        /* for kernel */
+                    page_dict[i].PWT = 0;       /* always write back policy */
+                    page_dict[i].PCD = 1;       /* 1 for code and data */
+                    page_dict[i].A = 0;         /* set to 1 by processor */
+
+                    page_dict[i].bit6 = 0;      /* for 4KB */
+                    page_dict[i].PS = 0;        /* for 4KB */
+                    page_dict[i].G = 0;         /* ignored for 4KB */
+                    page_dict[i].Avail = 0;     /* not used */
+                    
+                    /* setting address */
+                    page_dict[i].bit12 = (((int) page_table_temp_vmem) >> (ADDR_OFF)) & (_1BIT_);             /* Skip the 12 LSB */
+                    page_dict[i].bit21_13 = (((int) page_table_temp_vmem) >> (ADDR_OFF + 1 )) & (_9BIT_);     /* also skip bit12 */
+                    page_dict[i].bit31_22 = (((int) page_table_temp_vmem) >> (ADDR_OFF + 10 )) & (_10BIT_);   /* also skip bit21-12 */
+
+                    break ;
+
 
                 default: /* handle all rest PDE */
                     page_dict[i].P = 0;         /* make it not present */
@@ -81,17 +102,18 @@ void paging_init(void){
                     page_dict[i].bit31_22 = 0;  /* Physical Memory don't care */
             }
     }
+
     
     /* Initialize the page table for 0-4 MB */
     /* Especially the Video Memory 4KB page */
     for (i = 0; i < PT_SIZE; i++){
 //        page_table[i].P = ((i*_4KB_) == (VIDEO));       /* only the Video 4KB page is present when initialized */
-        page_table[i].P = ((i <= (VIDEO / _4KB_) + 3) && (i >= ( VIDEO / _4KB_)));
+        page_table[i].P = (i!=0);// open all address except for the page including the NULL address //((i <= (VIDEO / _4KB_) + 3) && (i >= ( VIDEO / _4KB_)));
         page_table[i].RW = 1;                           /* Read/Write enable */                           
         page_table[i].US = 0;                           /* kernel */
         page_table[i].PWT = 0;
 //        page_table[i].PCD = ((i*_4KB_) != (VIDEO));     /* disable cache only for video memory */
-        page_table[i].PCD = 1 - (i <= (VIDEO / _4KB_) + 3 && i >= ( VIDEO / _4KB_));
+        page_table[i].PCD = 1;//set all as vedio for convenience //1 - (i <= (VIDEO / _4KB_) + 3 && i >= ( VIDEO / _4KB_));
 
         page_table[i].A = 0;
         page_table[i].D = 0;                            /* Set by processor */
@@ -101,6 +123,22 @@ void paging_init(void){
         page_table[i].address = i;                      /* Physical Address MSB 20bits */
     }
 
+    /* Initialize the page table for 144-148 MB */
+    /* 0x900000...*/
+    for (i = 0; i < PT_SIZE; i++){
+        page_table_temp_vmem[i].P = 1;
+        page_table_temp_vmem[i].RW = 1;                           /* Read/Write enable */                           
+        page_table_temp_vmem[i].US = 0;                           /* kernel */
+        page_table_temp_vmem[i].PWT = 0; 
+        page_table_temp_vmem[i].PCD = 1 ; /* disable cache only for video memory */
+
+        page_table_temp_vmem[i].A = 0;
+        page_table_temp_vmem[i].D = 0;                            /* Set by processor */
+        page_table_temp_vmem[i].PAT = 0;                          /* not used */
+        page_table_temp_vmem[i].G = 1;                            /* kernel */
+        page_table_temp_vmem[i].Avail = 0;                        /* not used */
+        page_table_temp_vmem[i].address = i;                      /* Physical Address MSB 20bits */
+    }
     /* Enable paging mode in hardware */
     enable_paging_hw(page_dict);
     
@@ -162,7 +200,7 @@ void paging_set_for_vedio_mem(int32_t virtual_addr_for_vedio, int32_t phys_addr_
         page_dict[dict_idx].RW = 1;        /* RW enable */
         page_dict[dict_idx].US = 1;        /* for user code */
         page_dict[dict_idx].PWT = 0;       /* always write back policy */
-        page_dict[dict_idx].PCD = 0;       /* disable cache only for video memory */
+        page_dict[dict_idx].PCD = 1;       /* disable cache only for video memory */
         page_dict[dict_idx].A = 0;         /* set to 1 by processor */
 
         page_dict[dict_idx].bit6 = 0;      /* for 4KB */
@@ -180,7 +218,7 @@ void paging_set_for_vedio_mem(int32_t virtual_addr_for_vedio, int32_t phys_addr_
         page_table_vedio_mem[i].RW = 1;                           /* Read/Write enable */                           
         page_table_vedio_mem[i].US = 1;                           /* user */
         page_table_vedio_mem[i].PWT = 0;
-        page_table_vedio_mem[i].PCD = 0;     /* disable cache only for video memory */
+        page_table_vedio_mem[i].PCD = 1;     /* disable cache only for video memory */
 
         page_table_vedio_mem[i].A = 0;
         page_table_vedio_mem[i].D = 0;                            /* Set by processor */
