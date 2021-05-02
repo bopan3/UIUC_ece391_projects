@@ -14,8 +14,9 @@ void pit_init(){
     outb(MODE_CTL_WORD, MODE_REG);
 
     /* Set INT Frequency */
-    outw(FRE_DIVS, CH0_D_PORT);
-
+    // outw(FRE_DIVS, CH0_D_PORT);
+    outb(FRE_DIVS & 0xFF, CH0_D_PORT);
+    outb((FRE_DIVS & 0xFF)>>8, CH0_D_PORT);
     /* enable INT */
     enable_irq((uint32_t) PIT_IRQ);
 
