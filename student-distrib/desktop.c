@@ -175,7 +175,7 @@ int32_t desktop_close(int32_t fd) {
  */
 int make_desktop(int x_dim, int y_dim) {
  
-    int x, y;
+    //int x, y;
 
     /* Check the requested size, and save in local state if it is valid. */
     if (x_dim < MAZE_MIN_X_DIM || x_dim > MAZE_MAX_X_DIM ||

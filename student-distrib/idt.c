@@ -59,7 +59,7 @@ void excp_Page_Fault_in_C(int32_t CR2, int32_t error_code, int32_t return_eip) {
     /* Suppress all interrupts (just in case) */ 
     asm volatile("cli");                      
     /* blue_screen(); */ 
-    set_text_mode_3(0);
+    //set_text_mode_3(0);
     printf("===============================================================================\n");   
     printf("EXCEPTION #0x%x: %s\n", EXCP_Page_Fault, "Page Fault");
     printf("The address causing page fault: %x\n",CR2);
