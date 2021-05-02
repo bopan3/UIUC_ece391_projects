@@ -10,6 +10,9 @@
 #include "timer.h"
 #include "mouse.h"
 
+extern mouse_x_move;
+extern mouse_y_move;
+
 /* 
  * irq_handler
  *   DESCRIPTION: save registers and pass control to a interrupt handler specified by irq_vect
@@ -22,7 +25,8 @@ void irq_handler(int irq_vect) {
     /* Enable interrupt */
     // asm volatile("sti");
 
-    // printf("(Test) IRQ #: %d\n", irq_vect);
+    // printf("(Test) IRQ #: %x\n", irq_vect);
+    
 
     /* For CP1, just print the message */
     cli();
@@ -51,7 +55,8 @@ void irq_handler(int irq_vect) {
             printf("INTERRUPT #0x%x: Eth0\n", irq_vect);
             break;
         case IRQ_PS2_Mouse:
-            printf("INTERRUPT #0x%x: PS/2 Mouse\n", irq_vect);
+            printf("(Test) (x, y): (%d, %d)\n", mouse_x_move, mouse_y_move);
+            mouse_irq_handler();
             break;
         case IRQ_Ide0:
             printf("INTERRUPT #0x%x: Ide0\n", irq_vect);

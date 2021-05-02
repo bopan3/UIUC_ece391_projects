@@ -108,10 +108,8 @@ void rtc_set_real_freq_level(int8_t freq_level){
       int8_t prev;
       int8_t rate = 16-freq_level;              // 16 is the total num of rate levels(15) +1     The default value of rate is 0110, or 6.
       rate &= 0x0F;			    // rate must be above 2 and not over 15
-      cli();
       prev=rtc_byte_read(RTC_REG_A);
       rtc_byte_write(RTC_REG_A, (prev & 0xF0) | rate); //0xF0 clear the previous rate 
-      sti();
 }
 
 /* 

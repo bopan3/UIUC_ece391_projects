@@ -61,7 +61,7 @@ void mouse_init() {
     write_port(0xF3);
     read_port();
     wait_out();
-    outb(100, KETBOARD_PORT_NUM);
+    outb(200, KETBOARD_PORT_NUM);
 
     /* Set i8259 */
     enable_irq(MOUSE_IRQ_NUM);
@@ -77,40 +77,53 @@ void mouse_init() {
  *  Side Effect: write data to globle variables 
  */
 void mouse_irq_handler() {
-    mouse_package mouse_in[1];
+    uint8_t temp;
+    mouse_package mouse_in;
 
-    sti();
     send_eoi(MOUSE_IRQ_NUM);
+    // sti();
 
     /* Read data */
-    mouse_in[0] = read_port();
+    temp = read_port();
+    mouse_in.left_btn = temp & 0x01;
+    mouse_in.right_btn = (temp & 0x02) >> 1;
+    mouse_in.mid_btn = (temp & 0x04) >> 2;  
+    mouse_in.always_1 = (temp & 0x08) >> 3; 
+    mouse_in.x_sign = (temp & 0x10) >> 4;   
+    mouse_in.y_sign = (temp & 0x20) >> 5;   
+    mouse_in.x_overflow = (temp & 0x40) >> 6;
+    mouse_in.y_overflow = (temp & 0x80) >> 7;
+    printf("(%d, %d, %d)", mouse_in.always_1, mouse_in.x_overflow, mouse_in.y_overflow);
 
     /* Sanity check */
-    if ((!mouse_in->always_1) || mouse_in->x_overflow || mouse_in->y_overflow)
+    if ((!mouse_in.always_1) || mouse_in.x_overflow || mouse_in.y_overflow)
         return;
     
     mouse_x_move = read_port();
     mouse_y_move = read_port();
 
     /* Sign extention */
-    if (mouse_in->x_sign) {
+    if (mouse_in.x_sign)
         mouse_x_move |= SIGN_MASK;
-    if (mouse_in->y_sign) {
+    if (mouse_in.y_sign)
         mouse_y_move |= SIGN_MASK;
     
+    
     /* Update other parameters */
-    mouse_x_coor += mouse_x_move;
-    mouse_y_coor += mouse_y_move;
-    if (mouse_x_coor < 0)
-        mouse_x_coor = 0;
-    if (mouse_y_coor < 0)
-        mouse_y_coor = 0;
-    if (mouse_x_coor >= /* TODO */)
-        mouse_x_coor = /* TODO */ - 1;
-    if (mouse_y_coor >= /* TODO */)
-        mouse_y_coor = /* TODO */ - 1;
+    // mouse_x_coor += mouse_x_move;
+    // mouse_y_coor += mouse_y_move;
+    // if (mouse_x_coor < 0)
+    //     mouse_x_coor = 0;
+    // if (mouse_y_coor < 0)
+    //     mouse_y_coor = 0;
+    // if (mouse_x_coor >= /* TODO */)
+    //     mouse_x_coor = /* TODO */ - 1;
+    // if (mouse_y_coor >= /* TODO */)
+    //     mouse_y_coor = /* TODO */ - 1;
 
-    /* Update press state */
+    // /* Update press state */
+
+    // send_eoi(MOUSE_IRQ_NUM);
 
 }
 
@@ -124,7 +137,7 @@ void mouse_irq_handler() {
  */
 void wait_in() {
     int32_t wait_time = VERY_LONG_TIME;
-    while (wait_time--) {
+    while (1) {
         if (!(inb(MOUSE_PORT_NUM) & WAIT_IN_MASK));
             break;
     }
@@ -140,7 +153,7 @@ void wait_in() {
  */
 void wait_out() {
     int32_t wait_time = VERY_LONG_TIME;
-    while (wait_time--) {
+    while (1) {
         if (!(inb(MOUSE_PORT_NUM) & WAIT_OUT_MASK));
             break;
     }
