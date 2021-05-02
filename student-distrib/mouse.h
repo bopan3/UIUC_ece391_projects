@@ -14,8 +14,6 @@
 
 #define SIGN_MASK           0xFFFFFF00
 
-#define 
-
 /* Structure of mouse's data package */
 typedef struct mouse_package {
     uint8_t left_btn    : 1;

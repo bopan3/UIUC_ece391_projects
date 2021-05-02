@@ -99,7 +99,18 @@ void mouse_irq_handler() {
         mouse_y_move |= SIGN_MASK;
     
     /* Update other parameters */
-    mouse_x_coor;
+    mouse_x_coor += mouse_x_move;
+    mouse_y_coor += mouse_y_move;
+    if (mouse_x_coor < 0)
+        mouse_x_coor = 0;
+    if (mouse_y_coor < 0)
+        mouse_y_coor = 0;
+    if (mouse_x_coor >= /* TODO */)
+        mouse_x_coor = /* TODO */ - 1;
+    if (mouse_y_coor >= /* TODO */)
+        mouse_y_coor = /* TODO */ - 1;
+
+    /* Update press state */
 
 }
 
