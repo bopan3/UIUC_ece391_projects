@@ -5,6 +5,16 @@
 #include "timer.h"
 #include "keyboard.h"
 #include "desktop.h"
+#include "blocks.h"
+
+// variables borrowed from mazegame.c
+typedef struct {
+    /* dynamic values within a level -- you may want to add more... */
+    unsigned int map_x, map_y;   /* current upper left display pixel */
+} game_info_t;
+
+static game_info_t game_info;
+
 /*
  * The maze array contains a one byte bit vector (maze_bit_t) for each
  * location in a maze.  The left and right boundaries of the maze are unified,
@@ -40,9 +50,20 @@ static int maze_y_dim;          /* vertical dimension of maze   */
 *	effects: none
 */
 int32_t desktop_open(const uint8_t* filename) {
+    int32_t i;
     switch_to_modeX();
     //stop schedule
     disable_irq(PIT_IRQ);        
+
+    /* Initialize dynamic values. */
+    game_info.map_x = game_info.map_y = SHOW_MIN;
+    // make the maze (desktop)
+    make_desktop(MAZE_MIN_X_DIM, MAZE_MIN_Y_DIM);
+
+    /* Set logical view and draw initial screen. */
+    set_view_window(game_info.map_x, game_info.map_y);
+    for (i = 0; i < SCROLL_Y_DIM; i++)
+        (void)draw_horiz_line (i);
     return 0;
 }
 
@@ -70,63 +91,63 @@ int32_t desktop_close(int32_t fd) {
  *   RETURN VALUE:  -- number of bytes read from the buffer
  *   SIDE EFFECTS: Send end-of-interrupt signal for the specified IRQ
  */
-int32_t desktop_read(int32_t fd, void* buf, int32_t nbytes) {
-    // int i;                          // Loop index
+// int32_t desktop_read(int32_t fd, void* buf, int32_t nbytes) {
+//     // int i;                          // Loop index
 
-    // // check NULL pointer and wrong nbytes
-    // if (buf == NULL)
-    //     return -1;
+//     // // check NULL pointer and wrong nbytes
+//     // if (buf == NULL)
+//     //     return -1;
 
-    // // While enter not pressed, wait for enter
-    // while (OFF == enter_flag || desktop_tick != desktop_display) {}
-    // cli();
+//     // // While enter not pressed, wait for enter
+//     // while (OFF == enter_flag || desktop_tick != desktop_display) {}
+//     // cli();
 
-    // // Define a temp buffer for data transfer
-    // int8_t * temp_buf = (int8_t *)buf;
-    // // Copy the buffer content
-    // for (i = 0; (i < nbytes-1) && (i < LINE_BUF_SIZE); i++) {
-    //     temp_buf[i] = tm_array[desktop_display].kb_buf[i];
-    //     if ('\n' == tm_array[desktop_display].kb_buf[i]){
-    //         i++;
-    //         break;
-    //     }
-    // }
+//     // // Define a temp buffer for data transfer
+//     // int8_t * temp_buf = (int8_t *)buf;
+//     // // Copy the buffer content
+//     // for (i = 0; (i < nbytes-1) && (i < LINE_BUF_SIZE); i++) {
+//     //     temp_buf[i] = tm_array[desktop_display].kb_buf[i];
+//     //     if ('\n' == tm_array[desktop_display].kb_buf[i]){
+//     //         i++;
+//     //         break;
+//     //     }
+//     // }
 
-    // // Clear the buffer
-    // line_buf_clear();
-    // enter_flag = OFF;
+//     // // Clear the buffer
+//     // line_buf_clear();
+//     // enter_flag = OFF;
 
-    // sti();
-    // return i;
-}
+//     // sti();
+//     // return i;
+// }
 
-/*
- *   desktop_write -- system call
- *   DESCRIPTION: write the data in given buffer to the desktop console
- *   INPUTS: fd -- not used
- *           buf -- the buffer to be output
- *           nbytes -- the max size of the output buffer
- *   OUTPUTS: none
- *   RETURN VALUE:  -- number of bytes read from the buffer
- *   SIDE EFFECTS: Send end-of-interrupt signal for the specified IRQ
- */
-int32_t desktop_write(int32_t fd, const void* buf, int32_t nbytes) {
-    // int i;                          // Loop index
-    // uint8_t curr;
+// /*
+//  *   desktop_write -- system call
+//  *   DESCRIPTION: write the data in given buffer to the desktop console
+//  *   INPUTS: fd -- not used
+//  *           buf -- the buffer to be output
+//  *           nbytes -- the max size of the output buffer
+//  *   OUTPUTS: none
+//  *   RETURN VALUE:  -- number of bytes read from the buffer
+//  *   SIDE EFFECTS: Send end-of-interrupt signal for the specified IRQ
+//  */
+// int32_t desktop_write(int32_t fd, const void* buf, int32_t nbytes) {
+//     // int i;                          // Loop index
+//     // uint8_t curr;
 
-    // // check NULL pointer and wrong nbytes
-    // if (buf == NULL)
-    //     return -1;
+//     // // check NULL pointer and wrong nbytes
+//     // if (buf == NULL)
+//     //     return -1;
 
-    // cli();
-    // for(i = 0; i < nbytes; ++i) {
-    //     curr = ((char*) buf)[i];
-    //     if(curr != '\0')            // Skip null
-    //         putc(curr);             // Print other characters
-    // }
-    // sti();
-    return 0;
-}
+//     // cli();
+//     // for(i = 0; i < nbytes; ++i) {
+//     //     curr = ((char*) buf)[i];
+//     //     if(curr != '\0')            // Skip null
+//     //         putc(curr);             // Print other characters
+//     // }
+//     // sti();
+//     return 0;
+// }
 
 
 
@@ -149,10 +170,9 @@ int32_t desktop_write(int32_t fd, const void* buf, int32_t nbytes) {
  *              (MAZE_MAX_X_DIM,MAZE_MAX_Y_DIM))
  *   SIDE EFFECTS: leaves MAZE_REACH markers on marked portion of maze
  */
-int make_desktop(int x_dim, int y_dim, int start_fruits) {
+int make_desktop(int x_dim, int y_dim) {
  
-    int x, y, i;
-    unsigned char* cur;
+    int x, y;
 
     /* Check the requested size, and save in local state if it is valid. */
     if (x_dim < MAZE_MIN_X_DIM || x_dim > MAZE_MAX_X_DIM ||
@@ -173,4 +193,107 @@ int make_desktop(int x_dim, int y_dim, int start_fruits) {
     }
 
     return 0;
+}
+
+/* 
+ * find_block
+ *   DESCRIPTION: Find the appropriate image to be used for a given maze
+ *                lattice point.
+ *   INPUTS: (x,y) -- the maze lattice point
+ *   OUTPUTS: none
+ *   RETURN VALUE: a pointer to an image of a BLOCK_X_DIM x BLOCK_Y_DIM
+ *                 block of data with one byte per pixel laid out as a
+ *                 C array of dimension [BLOCK_Y_DIM][BLOCK_X_DIM]
+ *   SIDE EFFECTS: none
+ */
+static unsigned char* find_block(int x, int y) {
+    /* Show empty space. */
+    if ((maze[MAZE_INDEX(x, y)] & MAZE_WALL) == 0) { return (unsigned char*)blocks[BLOCK_EMPTY];}
+    else{ return (unsigned char*) blocks[BLOCK_SHADOW];}
+}
+
+
+/* 
+ * fill_horiz_buffer
+ *   DESCRIPTION: Given the (x,y) map pixel coordinate of the leftmost 
+ *                pixel of a line to be drawn on the screen, this routine 
+ *                produces an image of the line.  Each pixel on the line
+ *                is represented as a single byte in the image.
+ *   INPUTS: (x,y) -- leftmost pixel of line to be drawn 
+ *   OUTPUTS: buf -- buffer holding image data for the line
+ *   RETURN VALUE: none
+ *   SIDE EFFECTS: none
+ */
+void fill_horiz_buffer(int x, int y, unsigned char buf[SCROLL_X_DIM]) {
+    int map_x, map_y;     /* maze lattice point of the first block on line */
+    int sub_x, sub_y;     /* sub-block address                             */
+    int idx;              /* loop index over pixels in the line            */ 
+    unsigned char* block; /* pointer to current maze block image           */
+
+    /* Find the maze lattice point and the pixel address within that block. */
+    map_x = x / BLOCK_X_DIM;
+    map_y = y / BLOCK_Y_DIM;
+    sub_x = x - map_x * BLOCK_X_DIM;
+    sub_y = y - map_y * BLOCK_Y_DIM;
+
+    /* Loop over pixels in line. */
+    for (idx = 0; idx < SCROLL_X_DIM; ) {
+
+        /* Find address of block to be drawn. */
+        block = find_block(map_x++, map_y) + sub_y * BLOCK_X_DIM + sub_x;
+
+        /* Write block colors from one line into buffer. */
+        for (; idx < SCROLL_X_DIM && sub_x < BLOCK_X_DIM; idx++, sub_x++)
+            buf[idx] = *block++;
+
+        /* 
+         * All subsequent blocks are copied starting from the left side 
+         * of the block. 
+         */
+        sub_x = 0;
+    }
+}
+
+/* 
+ * fill_vert_buffer
+ *   DESCRIPTION: Given the (x,y) map pixel coordinate of the top pixel of 
+ *                a vertical line to be drawn on the screen, this routine 
+ *                produces an image of the line.  Each pixel on the line
+ *                is represented as a single byte in the image.
+ *   INPUTS: (x,y) -- top pixel of line to be drawn 
+ *   OUTPUTS: buf -- buffer holding image data for the line
+ *   RETURN VALUE: none
+ *   SIDE EFFECTS: none
+ */
+void fill_vert_buffer(int x, int y, unsigned char buf[SCROLL_Y_DIM]) {
+    int map_x, map_y;     /* maze lattice point of the first block on line */
+    int sub_x, sub_y;     /* sub-block address                             */
+    int idx;              /* loop index over pixels in the line            */ 
+    unsigned char* block; /* pointer to current maze block image           */
+
+    /* Find the maze lattice point and the pixel address within that block. */
+    map_x = x / BLOCK_X_DIM;
+    map_y = y / BLOCK_Y_DIM;
+    sub_x = x - map_x * BLOCK_X_DIM;
+    sub_y = y - map_y * BLOCK_Y_DIM;
+
+    /* Loop over pixels in line. */
+    for (idx = 0; idx < SCROLL_Y_DIM; ) {
+
+        /* Find address of block to be drawn. */
+        block = find_block(map_x, map_y++) + sub_y * BLOCK_X_DIM + sub_x;
+
+        /* Write block colors from one line into buffer. */
+        for (; idx < SCROLL_Y_DIM && sub_y < BLOCK_Y_DIM; 
+                idx++, sub_y++, block += BLOCK_X_DIM)
+            buf[idx] = *block;
+
+        /* 
+         * All subsequent blocks are copied starting from the top
+         * of the block. 
+         */
+        sub_y = 0;
+    }
+
+    return;
 }

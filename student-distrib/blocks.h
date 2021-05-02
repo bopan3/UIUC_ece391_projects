@@ -122,3 +122,4 @@ enum {
 extern unsigned char blocks[NUM_BLOCKS][BLOCK_Y_DIM][BLOCK_X_DIM];
 
 #endif /* BLOCKS_H */
+

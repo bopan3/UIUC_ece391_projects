@@ -4,6 +4,9 @@
 #include "i8259.h"
 #include "timer.h"
 #include "keyboard.h"
+#include "desktop.h"
+#include "blocks.h"
+
 
 
 #define SCROLL_SIZE             (SCROLL_X_WIDTH * SCROLL_Y_DIM)
@@ -29,21 +32,24 @@ static void set_attr_registers(unsigned char table[NUM_ATTR_REGS * 2]);
 static void set_graphics_registers(unsigned short table[NUM_GRAPHICS_REGS]);
 static void fill_palette();
 static void write_font_data();
-// static void copy_image(unsigned char* img, unsigned short scr_addr);
+static void copy_image(unsigned char* img, unsigned short scr_addr);
 // static void copy_status_bar(unsigned char* img, unsigned short scr_addr);
 
 
-#define MEM_FENCE_WIDTH 256
+#define MEM_FENCE_WIDTH 0 // we do not need mem-fence for mp3
 #define MEM_FENCE_MAGIC 0xF3
 
-// static unsigned char build[BUILD_BUF_SIZE + 2 * MEM_FENCE_WIDTH];
-// static int img3_off;                /* offset of upper left pixel   */
-// static unsigned char* img3;         /* pointer to upper left pixel  */
-// static int show_x, show_y;          /* logical view coordinates     */
+static unsigned char build[BUILD_BUF_SIZE + 2 * MEM_FENCE_WIDTH];
+static int img3_off;                /* offset of upper left pixel   */
+static unsigned char* img3;         /* pointer to upper left pixel  */
+static int show_x, show_y;          /* logical view coordinates     */
 
-//                                     /* displayed video memory variables */
+                                    /* displayed video memory variables */
 static unsigned char* mem_image;    /* pointer to start of video memory */
-static unsigned char* mem_temp_v;    /* pointer to start (0x900000) of temp video memory for text screen when in modeX */
+static unsigned short target_img;   /* offset of displayed screen image */
+
+/* pointer to start (0x900000) of temp video memory for text screen when in modeX */
+static unsigned char* mem_temp_v;    
 
 
 // static unsigned short target_img;   /* offset of displayed screen image */
@@ -477,11 +483,356 @@ extern void set_text_mode_3(int clear_scr) {
     /* restore 0xB8000--0xB8000+4KB*4 from 0x900000--0x900000+4KB*4 for restorage of text screens */
     for (j = 0; j < _4KB_*4; j++) {VM_addr[j] = (mem_temp_v)[j];}
 
-    // if (clear_scr) {                            /* clear screens if needed */
-    //     txt_scr = (unsigned long*)(mem_image + 0x18000);
-    //     for (i = 0; i < 8192; i++)
-    //         *txt_scr++ = 0x07200720;
-    // }
+    if (clear_scr) {                            /* clear screens if needed */
+        txt_scr = (unsigned long*)(mem_image + 0x18000);
+        for (i = 0; i < 8192; i++)
+            *txt_scr++ = 0x07200720;
+    }
     write_font_data();                          /* copy fonts to video mem */
     VGA_blank(0);                               /* unblank the screen      */
 }
+
+
+
+/*
+ * set_view_window
+ *   DESCRIPTION: Set the logical view window, moving its location within
+ *                the build buffer if necessary to keep all on-screen data
+ *                in the build buffer.  If the location within the build
+ *                buffer moves, this function copies all data from the old
+ *                window that are within the new screen to the appropriate
+ *                new location, so only data not previously on the screen
+ *                must be drawn before calling show_screen.
+ *   INPUTS: (scr_x,scr_y) -- new upper left pixel of logical view window
+ *   OUTPUTS: none
+ *   RETURN VALUE: none
+ *   SIDE EFFECTS: may shift position of logical view window within build
+ *                 buffer
+ */
+void set_view_window(int scr_x, int scr_y) {
+    int old_x, old_y;       /* old position of logical view window           */
+    int start_x, start_y;   /* starting position for copying from old to new */
+    int end_x, end_y;       /* ending position for copying from old to new   */
+    int start_off;          /* offset of copy start relative to old build    */
+                            /*    buffer start position                      */
+    int length;             /* amount of data to be copied                   */
+    int i;                  /* copy loop index                               */
+    unsigned char* start_addr;  /* starting memory address of copy     */
+    unsigned char* target_addr; /* destination memory address for copy */
+
+    /* Record the old position. */
+    old_x = show_x;
+    old_y = show_y;
+
+    /* Keep track of the new view window. */
+    show_x = scr_x;
+    show_y = scr_y;
+
+    /*
+     * If the new view window fits within the boundaries of the build
+     * buffer, we need move nothing around.
+     */
+    if (img3_off + (scr_x >> 2) + scr_y * SCROLL_X_WIDTH >= 0 &&
+        img3_off + 3 * SCROLL_SIZE +
+        ((scr_x + SCROLL_X_DIM - 1) >> 2) +
+        (scr_y + SCROLL_Y_DIM - 1) * SCROLL_X_WIDTH < BUILD_BUF_SIZE)
+        return;
+
+    /*
+     * If the new screen does not overlap at all with the old screen, none
+     * of the old data need to be saved, and we can simply reposition the
+     * valid window of the build buffer in the middle of that buffer.
+     */
+    if (scr_x <= old_x - SCROLL_X_DIM || scr_x >= old_x + SCROLL_X_DIM ||
+        scr_y <= old_y - SCROLL_Y_DIM || scr_y >= old_y + SCROLL_Y_DIM) {
+        img3_off = BUILD_BASE_INIT - (scr_x >> 2) - scr_y * SCROLL_X_WIDTH;
+        img3 = build + img3_off + MEM_FENCE_WIDTH;
+        return;
+    }
+
+    /*
+     * Any still-visible portion of the old screen should be retained.
+     * Rather than clipping exactly, we copy all contiguous data between
+     * a clipped starting point to a clipped ending point (which may
+     * include non-visible data).
+     *
+     * The starting point is the maximum (x,y) coordinates between the
+     * new and old screens.  The ending point is the minimum (x,y)
+     * coordinates between the old and new screens (offset by the screen
+     * size).
+     */
+    if (scr_x > old_x) {
+        start_x = scr_x;
+        end_x = old_x;
+    }
+    else {
+        start_x = old_x;
+        end_x = scr_x;
+    }
+    end_x += SCROLL_X_DIM - 1;
+    if (scr_y > old_y) {
+        start_y = scr_y;
+        end_y = old_y;
+    }
+    else {
+        start_y = old_y;
+        end_y = scr_y;
+    }
+    end_y += SCROLL_Y_DIM - 1;
+
+    /*
+     * We now calculate the starting and ending addresses for the copy
+     * as well as the new offsets for use with the build buffer.  The
+     * length to be copied is basically the ending offset minus the starting
+     * offset plus one (plus the three screens in between planes 3 and 0).
+     */
+    start_off = (start_x >> 2) + start_y * SCROLL_X_WIDTH;
+    start_addr = img3 + start_off;
+    length = (end_x >> 2) + end_y * SCROLL_X_WIDTH + 1 - start_off + 3 * SCROLL_SIZE;
+    img3_off = BUILD_BASE_INIT - (show_x >> 2) - show_y * SCROLL_X_WIDTH;
+    img3 = build + img3_off + MEM_FENCE_WIDTH;
+    target_addr = img3 + start_off;
+
+    /*
+     * Copy the relevant portion of the screen from the old location to the
+     * new one.  The areas may overlap, so copy direction is important.
+     * (You should be able to explain why!)
+     */
+    if (start_addr < target_addr)
+        for (i = length; i-- > 0; )
+            target_addr[i] = start_addr[i];
+    else
+        for (i = 0; i < length; i++)
+            target_addr[i] = start_addr[i];
+}
+
+/*
+ * show_screen
+ *   DESCRIPTION: Show the logical view window on the video display.
+ *   INPUTS: none
+ *   OUTPUTS: none
+ *   RETURN VALUE: none
+ *   SIDE EFFECTS: copies from the build buffer to video memory;
+ *                 shifts the VGA display source to point to the new image
+ */
+void show_screen() {
+    unsigned char* addr;    /* source address for copy             */
+    int p_off;              /* plane offset of first display plane */
+    int i;                  /* loop index over video planes        */
+
+    /*
+     * Calculate offset of build buffer plane to be mapped into plane 0
+     * of display.
+     */
+    p_off = (3 - (show_x & 3));
+
+    /* Switch to the other target screen in video memory. */
+    target_img ^= 0x4000;
+
+    /* Calculate the source address. */
+    addr = img3 + (show_x >> 2) + show_y * SCROLL_X_WIDTH;
+
+    /* Draw to each plane in the video memory. */
+    for (i = 0; i < 4; i++) {
+        SET_WRITE_MASK(1 << (i + 8));
+        copy_image(addr + ((p_off - i + 4) & 3) * SCROLL_SIZE + (p_off < i), target_img);
+    }
+
+    /*
+     * Change the VGA registers to point the top left of the screen
+     * to the video memory that we just filled.
+     */
+    OUTW(0x03D4, (target_img & 0xFF00) | 0x0C);
+    OUTW(0x03D4, ((target_img & 0x00FF) << 8) | 0x0D);
+}
+
+
+/*
+ * draw_full_block
+ *   DESCRIPTION: Draw a BLOCK_X_DIM x BLOCK_Y_DIM block at absolute
+ *                coordinates.  Mask any portion of the block not inside
+ *                the logical view window.
+ *   INPUTS: (pos_x,pos_y) -- coordinates of upper left corner of block
+ *           blk -- image data for block (one byte per pixel, as a C array
+ *                  of dimensions [BLOCK_Y_DIM][BLOCK_X_DIM])
+ *   OUTPUTS: none
+ *   RETURN VALUE: none
+ *   SIDE EFFECTS: draws into the build buffer
+ */
+void draw_full_block(int pos_x, int pos_y, unsigned char* blk) {
+    int dx, dy;          /* loop indices for x and y traversal of block */
+    int x_left, x_right; /* clipping limits in horizontal dimension     */
+    int y_top, y_bottom; /* clipping limits in vertical dimension       */
+
+    /* If block is completely off-screen, we do nothing. */
+    if (pos_x + BLOCK_X_DIM <= show_x || pos_x >= show_x + SCROLL_X_DIM ||
+        pos_y + BLOCK_Y_DIM <= show_y || pos_y >= show_y + SCROLL_Y_DIM)
+        return;
+
+    /* Clip any pixels falling off the left side of screen. */
+    if ((x_left = show_x - pos_x) < 0)
+        x_left = 0;
+    /* Clip any pixels falling off the right side of screen. */
+    if ((x_right = show_x + SCROLL_X_DIM - pos_x) > BLOCK_X_DIM)
+        x_right = BLOCK_X_DIM;
+    /* Skip the first x_left pixels in both screen position and block data. */
+    pos_x += x_left;
+    blk += x_left;
+
+    /*
+     * Adjust x_right to hold the number of pixels to be drawn, and x_left
+     * to hold the amount to skip between rows in the block, which is the
+     * sum of the original left clip and (BLOCK_X_DIM - the original right
+     * clip).
+     */
+    x_right -= x_left;
+    x_left = BLOCK_X_DIM - x_right;
+
+    /* Clip any pixels falling off the top of the screen. */
+    if ((y_top = show_y - pos_y) < 0)
+        y_top = 0;
+    /* Clip any pixels falling off the bottom of the screen. */
+    if ((y_bottom = show_y + SCROLL_Y_DIM - pos_y) > BLOCK_Y_DIM)
+        y_bottom = BLOCK_Y_DIM;
+    /*
+     * Skip the first y_left pixel in screen position and the first
+     * y_left rows of pixels in the block data.
+     */
+    pos_y += y_top;
+    blk += y_top * BLOCK_X_DIM;
+    /* Adjust y_bottom to hold the number of pixel rows to be drawn. */
+    y_bottom -= y_top;
+
+    /* Draw the clipped image. */
+    for (dy = 0; dy < y_bottom; dy++, pos_y++) {
+        for (dx = 0; dx < x_right; dx++, pos_x++, blk++)
+            *(img3 + (pos_x >> 2) + pos_y * SCROLL_X_WIDTH +
+            (3 - (pos_x & 3)) * SCROLL_SIZE) = *blk;
+        pos_x -= x_right;
+        blk += x_left;
+    }
+}
+
+
+/*
+ * draw_vert_line
+ *   DESCRIPTION: Draw a vertical map line into the build buffer.  The
+ *                line should be offset from the left side of the logical
+ *                view window screen by the given number of pixels.
+ *   INPUTS: x -- the 0-based pixel column number of the line to be drawn
+ *                within the logical view window (equivalent to the number
+ *                of pixels from the leftmost pixel to the line to be
+ *                drawn)
+ *   OUTPUTS: none
+ *   RETURN VALUE: Returns 0 on success.  If x is outside of the valid
+ *                 SCROLL range, the function returns -1.
+ *   SIDE EFFECTS: draws into the build buffer
+ */
+int draw_vert_line(int x) {
+    unsigned char buf[SCROLL_Y_DIM];    /* buffer for graphical image of line */
+    unsigned char* addr;                /* address of first pixel in build    */
+                                        /*     buffer (without plane offset)  */
+    int p_off;                          /* offset of plane of first pixel     */
+    int i;                              /* loop index over pixels             */
+
+    /* Check whether requested line falls in the logical view window. */
+    if (x < 0 || x >= SCROLL_X_DIM)
+        return -1;
+
+    /* Adjust x to the logical row value. */
+    x += show_x;
+
+    /* Get the image of the line. */
+    fill_vert_buffer (x, show_y, buf);
+
+    /* Calculate starting address in build buffer. */
+    addr = img3 + (x >> 2) + show_y * SCROLL_X_WIDTH;
+
+    /* Calculate plane offset of first pixel. */
+    p_off = (3 - (x & 3));
+
+    /* Copy image data into appropriate planes in build buffer. */
+    for (i = 0; i < SCROLL_Y_DIM; i++) {
+        addr[p_off * SCROLL_SIZE] = buf[i];
+        addr=addr+SCROLL_X_WIDTH;
+    }
+    /* Return success. */
+    return 0;
+}
+
+/*
+ * draw_horiz_line
+ *   DESCRIPTION: Draw a horizontal map line into the build buffer.  The
+ *                line should be offset from the top of the logical view
+ *                window screen by the given number of pixels.
+ *   INPUTS: y -- the 0-based pixel row number of the line to be drawn
+ *                within the logical view window (equivalent to the number
+ *                of pixels from the top pixel to the line to be drawn)
+ *   OUTPUTS: none
+ *   RETURN VALUE: Returns 0 on success.  If y is outside of the valid
+ *                 SCROLL range, the function returns -1.
+ *   SIDE EFFECTS: draws into the build buffer
+ */
+int draw_horiz_line(int y) {
+    unsigned char buf[SCROLL_X_DIM];    /* buffer for graphical image of line */
+    unsigned char* addr;                /* address of first pixel in build    */
+                                        /*     buffer (without plane offset)  */
+    int p_off;                          /* offset of plane of first pixel     */
+    int i;                              /* loop index over pixels             */
+
+    /* Check whether requested line falls in the logical view window. */
+    if (y < 0 || y >= SCROLL_Y_DIM)
+        return -1;
+
+    /* Adjust y to the logical row value. */
+    y += show_y;
+
+    /* Get the image of the line. */
+    fill_horiz_buffer (show_x, y, buf);
+
+    /* Calculate starting address in build buffer. */
+    addr = img3 + (show_x >> 2) + y * SCROLL_X_WIDTH;
+
+    /* Calculate plane offset of first pixel. */
+    p_off = (3 - (show_x & 3));
+
+    /* Copy image data into appropriate planes in build buffer. */
+    for (i = 0; i < SCROLL_X_DIM; i++) {
+        addr[p_off * SCROLL_SIZE] = buf[i];
+        if (--p_off < 0) {
+            p_off = 3;
+            addr++;
+        }
+    }
+
+    /* Return success. */
+    return 0;
+}
+
+/*
+ * copy_image
+ *   DESCRIPTION: Copy one plane of a screen from the build buffer to the
+ *                video memory.
+ *   INPUTS: img -- a pointer to a single screen plane in the build buffer
+ *           scr_addr -- the destination offset in video memory
+ *   OUTPUTS: none
+ *   RETURN VALUE: none
+ *   SIDE EFFECTS: copies a plane from the build buffer to video memory
+ */
+static void copy_image(unsigned char* img, unsigned short scr_addr) {
+    /*
+     * memcpy is actually probably good enough here, and is usually
+     * implemented using ISA-specific features like those below,
+     * but the code here provides an example of x86 string moves
+     */
+    asm volatile ("                                             \n\
+        cld                                                     \n\
+        movl $16000,%%ecx                                       \n\
+        rep movsb    /* copy ECX bytes from M[ESI] to M[EDI] */ \n\
+        "
+        : /* no outputs */
+        : "S"(img), "D"(mem_image + scr_addr)
+        : "eax", "ecx", "memory"
+    );
+}
+

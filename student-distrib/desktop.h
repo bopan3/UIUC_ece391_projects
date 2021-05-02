@@ -1,12 +1,10 @@
 #ifndef DESKTOP_H
 #define DESKTOP_H
 
-#include "blocks.h"
 #include "modex.h"
 #include "types.h"
 
 #define SHOW_MIN       6  /* hide the last six pixels of boundary */
-#define FRUIT_TEX_APPEARTIME 5 //the seconds for displaying the fruitTXT after eatten
 
 /*
  * Define maze minimum and maximum dimensions.  The description of make_maze
@@ -19,10 +17,9 @@
 #define MAZE_MIN_Y_DIM ((SCROLL_Y_DIM + (BLOCK_Y_DIM - 1) + 2 * SHOW_MIN) / (2 * BLOCK_Y_DIM))
 #define MAZE_MAX_Y_DIM 30
 
-#ifndef __GLOBAL__
-#define __GLOBAL__
-
-#endif
+// #ifndef __GLOBAL__
+// #define __GLOBAL__
+// #endif
 
 /* bit vector of properties for spaces in the maze */
 typedef enum {
@@ -37,41 +34,14 @@ typedef enum {
     MAZE_REACH          = 128   /* seen already (not shrouded in mist)      */
 } maze_bit_t;
 
-/* create a maze and place some fruits inside it */
-extern int make_maze(int x_dim, int y_dim, int start_fruits);
+/* create a desktop and place UI for it */
+extern int make_desktop(int x_dim, int y_dim);
 
 /* fill a buffer with the pixels for a horizontal line of the maze */
 extern void fill_horiz_buffer(int x, int y, unsigned char buf[SCROLL_X_DIM]);
 
 /* fill a buffer with the pixels for a vertical line of the maze */
 extern void fill_vert_buffer(int x, int y, unsigned char buf[SCROLL_Y_DIM]);
-
-/* mark a maze location as reached and draw it onto the screen if necessary */
-extern void unveil_space(int x, int y);
-
-/* consume fruit at a space, if any; returns the fruit number consumed */
-extern int check_for_fruit(int x, int y);
-
-/* check whether the player has reached the exit with no fruits left */
-extern int check_for_win(int x, int y);
-
-/* add a new fruit randomly in the maze */
-extern int add_a_fruit();
-
-/* get pointer to the player's block image; depends on direction of motion */
-extern unsigned char* get_player_block(dir_t cur_dir);
-
-/* get pointer to the player's mask image; depends on direction of motion */
-extern unsigned char* get_player_mask(dir_t cur_dir);
-
-/* determine which directions are open to movement from a given maze point */
-extern void find_open_directions(int x, int y, int op[NUM_DIRS]);
-
-/*return the number of fuits in maze*/
-extern int get_num_fruits();
-
-
-
 
 extern int32_t desktop_open(const uint8_t* filename);
 

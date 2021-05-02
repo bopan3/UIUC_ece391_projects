@@ -24,12 +24,32 @@
 #define NUM_NONTRANS_COLOR      64      //number of non-tranparent colors in the palette
 
 
+/////* Puts the VGA into mode X. [clears (or preset) video memory] */
+extern int32_t switch_to_modeX();
 
+/////* Put VGA into text mode 3 (color text).  [may clear screens; writes font data to video memory] */
+extern void set_text_mode_3(int clear_scr);
+
+
+/* set logical view window coordinates */
+extern void set_view_window(int scr_x, int scr_y);
+
+/* show the logical view window on the monitor */
+extern void show_screen();
 
 /* clear the video memory in mode X */
 extern void clear_screens();
-/* Puts the VGA into mode X. [clears (or preset) video memory] */
-extern int32_t switch_to_modeX();
-/* Put VGA into text mode 3 (color text).  [may clear screens; writes font data to video memory] */
-extern void set_text_mode_3(int clear_scr);
+
+/*
+ * draw a 12x12 block with upper left corner at logical position
+ * (pos_x,pos_y); any part of the block outside of the logical view window
+ * is clipped (cut off and not drawn)
+ */
+extern void draw_full_block(int pos_x, int pos_y, unsigned char* blk);
+
+/* draw a horizontal line at vertical pixel y within the logical view window */
+extern int draw_horiz_line(int y);
+
+/* draw a vertical line at horizontal pixel x within the logical view window */
+extern int draw_vert_line(int x);
 #endif
