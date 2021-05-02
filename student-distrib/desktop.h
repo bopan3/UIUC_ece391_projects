@@ -4,7 +4,7 @@
 #include "modex.h"
 #include "types.h"
 
-#define SHOW_MIN       6  /* hide the last six pixels of boundary */
+#define SHOW_MIN       0  /* hide the last six pixels of boundary */
 
 /*
  * Define maze minimum and maximum dimensions.  The description of make_maze

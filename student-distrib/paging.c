@@ -22,7 +22,7 @@ void paging_init(void){
                     page_dict[i].RW = 1;        /* RW enable */
                     page_dict[i].US = 0;        /* for kernel */
                     page_dict[i].PWT = 0;       /* always write back policy */
-                    page_dict[i].PCD = 1;       /* 1 for code and data */
+                    page_dict[i].PCD = 0;       /* 1 for code and data */
                     page_dict[i].A = 0;         /* set to 1 by processor */
 
                     page_dict[i].bit6 = 0;      /* for 4KB */
@@ -65,7 +65,7 @@ void paging_init(void){
                     page_dict[i].RW = 1;        /* RW enable */
                     page_dict[i].US = 0;        /* for kernel */
                     page_dict[i].PWT = 0;       /* always write back policy */
-                    page_dict[i].PCD = 1;       /* 1 for code and data */
+                    page_dict[i].PCD = 0;       /* 1 for code and data */
                     page_dict[i].A = 0;         /* set to 1 by processor */
 
                     page_dict[i].bit6 = 0;      /* for 4KB */
@@ -113,7 +113,7 @@ void paging_init(void){
         page_table[i].US = 0;                           /* kernel */
         page_table[i].PWT = 0;
 //        page_table[i].PCD = ((i*_4KB_) != (VIDEO));     /* disable cache only for video memory */
-        page_table[i].PCD = 1;//set all as vedio for convenience //1 - (i <= (VIDEO / _4KB_) + 3 && i >= ( VIDEO / _4KB_));
+        page_table[i].PCD = 0;//set all as vedio for convenience //1 - (i <= (VIDEO / _4KB_) + 3 && i >= ( VIDEO / _4KB_));
 
         page_table[i].A = 0;
         page_table[i].D = 0;                            /* Set by processor */
@@ -130,7 +130,7 @@ void paging_init(void){
         page_table_temp_vmem[i].RW = 1;                           /* Read/Write enable */                           
         page_table_temp_vmem[i].US = 0;                           /* kernel */
         page_table_temp_vmem[i].PWT = 0; 
-        page_table_temp_vmem[i].PCD = 1 ; /* disable cache only for video memory */
+        page_table_temp_vmem[i].PCD = 0 ; /* disable cache only for video memory */
 
         page_table_temp_vmem[i].A = 0;
         page_table_temp_vmem[i].D = 0;                            /* Set by processor */
@@ -159,7 +159,7 @@ void paging_set_user_mapping(int32_t pid){
         page_dict[USER_PROG_ADDR].RW = 1;        /* RW enable */
         page_dict[USER_PROG_ADDR].US = 1;        /* for user code */
         page_dict[USER_PROG_ADDR].PWT = 0;       /* always write back policy */
-        page_dict[USER_PROG_ADDR].PCD = 1;       /* 1 for code and data */
+        page_dict[USER_PROG_ADDR].PCD = 0;       /* 1 for code and data */
         page_dict[USER_PROG_ADDR].A = 0;         /* set to 1 by processor */
 
         page_dict[USER_PROG_ADDR].bit6 = 0;      /* set to 0 as Dirty for 4MB */
@@ -200,7 +200,7 @@ void paging_set_for_vedio_mem(int32_t virtual_addr_for_vedio, int32_t phys_addr_
         page_dict[dict_idx].RW = 1;        /* RW enable */
         page_dict[dict_idx].US = 1;        /* for user code */
         page_dict[dict_idx].PWT = 0;       /* always write back policy */
-        page_dict[dict_idx].PCD = 1;       /* disable cache only for video memory */
+        page_dict[dict_idx].PCD = 0;       /* disable cache only for video memory */
         page_dict[dict_idx].A = 0;         /* set to 1 by processor */
 
         page_dict[dict_idx].bit6 = 0;      /* for 4KB */
@@ -218,7 +218,7 @@ void paging_set_for_vedio_mem(int32_t virtual_addr_for_vedio, int32_t phys_addr_
         page_table_vedio_mem[i].RW = 1;                           /* Read/Write enable */                           
         page_table_vedio_mem[i].US = 1;                           /* user */
         page_table_vedio_mem[i].PWT = 0;
-        page_table_vedio_mem[i].PCD = 1;     /* disable cache only for video memory */
+        page_table_vedio_mem[i].PCD = 0;     /* disable cache only for video memory */
 
         page_table_vedio_mem[i].A = 0;
         page_table_vedio_mem[i].D = 0;                            /* Set by processor */

@@ -63,7 +63,8 @@ int32_t desktop_open(const uint8_t* filename) {
     /* Set logical view and draw initial screen. */
     set_view_window(game_info.map_x, game_info.map_y);
     for (i = 0; i < SCROLL_Y_DIM; i++)
-        (void)draw_horiz_line (i);
+        draw_horiz_line (i);
+    show_screen();
     return 0;
 }
 
@@ -182,15 +183,15 @@ int make_desktop(int x_dim, int y_dim) {
     maze_y_dim = y_dim;
 
     /* Fill the maze with walls. */
-    memset(maze, MAZE_WALL, sizeof (maze));
+    memset(maze, BLOCK_FRUIT_1, sizeof (maze));
+    maze[MAZE_INDEX(10, 10)] = BLOCK_EMPTY;
 
-
-     /* Remove all walls! */
-    for (x = 1; x < 2 * maze_x_dim; x++) {
-        for (y = 1; y < 2 * maze_y_dim; y++) {
-            maze[MAZE_INDEX(x, y)] = MAZE_NONE;
-        }
-    }
+    //  /* Remove all walls! */
+    // for (x = 1; x < 2 * maze_x_dim; x++) {
+    //     for (y = 1; y < 2 * maze_y_dim; y++) {
+    //         maze[MAZE_INDEX(x, y)] = MAZE_NONE;
+    //     }
+    // }
 
     return 0;
 }
@@ -206,12 +207,7 @@ int make_desktop(int x_dim, int y_dim) {
  *                 C array of dimension [BLOCK_Y_DIM][BLOCK_X_DIM]
  *   SIDE EFFECTS: none
  */
-static unsigned char* find_block(int x, int y) {
-    /* Show empty space. */
-    if ((maze[MAZE_INDEX(x, y)] & MAZE_WALL) == 0) { return (unsigned char*)blocks[BLOCK_EMPTY];}
-    else{ return (unsigned char*) blocks[BLOCK_SHADOW];}
-}
-
+static unsigned char* find_block(int x, int y) { return (unsigned char*) blocks[maze[MAZE_INDEX(x, y)]]; }
 
 /* 
  * fill_horiz_buffer

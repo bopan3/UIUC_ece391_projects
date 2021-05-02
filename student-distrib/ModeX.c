@@ -188,6 +188,22 @@ extern int32_t switch_to_modeX(){
     for (i = 0; i < _4KB_*4; i++) {mem_temp_v[i] = (VM_addr)[i];}
     /* set the start of mem_image of ModeX */
     mem_image= (unsigned char*) MODEX_STR_ADDR;
+
+    ////
+    /* Initialize the logical view window to position (0,0). */
+    show_x = show_y = 0;
+    img3_off = BUILD_BASE_INIT;
+    img3 = build + img3_off + MEM_FENCE_WIDTH;
+
+    /* Set up the memory fence on the build buffer. */
+    for (i = 0; i < MEM_FENCE_WIDTH; i++) {
+        build[i] = MEM_FENCE_MAGIC;
+        build[BUILD_BUF_SIZE + MEM_FENCE_WIDTH + i] = MEM_FENCE_MAGIC;
+    }
+
+    /* One display page goes at the start of video memory. */
+    target_img = 18* IMAGE_X_WIDTH; // 18 = text hight+ 2 pixel.  Here we just add offset for the bar
+
     VGA_blank(1);                               /* blank the screen      */
     set_seq_regs_and_reset(mode_X_seq, 0x63);   /* sequencer registers   */
     set_CRTC_registers(mode_X_CRTC);            /* CRT control registers */
