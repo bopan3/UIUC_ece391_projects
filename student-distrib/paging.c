@@ -3,6 +3,8 @@
 #include "paging.h"
 extern int32_t terminal_tick;
 extern int32_t terminal_display; 
+int32_t task_use_vidmem = 0;        /* Counter the number of task using the user space vid mem */
+
 /* paging_init
  *  Description: Initialize the paging dict and paging table, also mapping the video memory
  *  Input:  none    
@@ -195,7 +197,9 @@ void paging_set_for_vedio_mem(int32_t virtual_addr_for_vedio, int32_t phys_addr_
     int i;
     int dict_idx = virtual_addr_for_vedio/_4MB_;
     int table_idx = (virtual_addr_for_vedio << (10)) >> 22 ; // left shift 10 bits first and then right shift 22 bits to extract the second 10 bits in the virtual address
+    
     /* setting page dic entry*/
+    if (page_dict[dict_idx].P == 0){
         page_dict[dict_idx].P = 1;         /* make it present */
         page_dict[dict_idx].RW = 1;        /* RW enable */
         page_dict[dict_idx].US = 1;        /* for user code */
@@ -212,6 +216,8 @@ void paging_set_for_vedio_mem(int32_t virtual_addr_for_vedio, int32_t phys_addr_
         page_dict[dict_idx].bit12 = (((int) page_table_vedio_mem) >> (ADDR_OFF)) & (_1BIT_);             /* Skip the 12 LSB */
         page_dict[dict_idx].bit21_13 = (((int) page_table_vedio_mem) >> (ADDR_OFF + 1 )) & (_9BIT_);     /* also skip bit12 */
         page_dict[dict_idx].bit31_22 = (((int) page_table_vedio_mem) >> (ADDR_OFF + 10 )) & (_10BIT_);   /* also skip bit21-12 */
+    }
+    
     /* setting page table entry*/
     for (i = 0; i < PT_SIZE; i++){
         page_table_vedio_mem[i].P = ( i == (table_idx));       /* only the Video 4KB page is present when initialized */
@@ -228,6 +234,8 @@ void paging_set_for_vedio_mem(int32_t virtual_addr_for_vedio, int32_t phys_addr_
         page_table_vedio_mem[i].address = phys_addr_for_vedio>>12 ;     /* Physical Address MSB 20bits (so we need to right shift by 12) */  
     }
     TLB_flush();
+    task_use_vidmem++;
+
 }
 
 /* 
@@ -239,14 +247,19 @@ void paging_set_for_vedio_mem(int32_t virtual_addr_for_vedio, int32_t phys_addr_
  *   SIDE EFFECTS:  unmap "the start of virtual address for the vedio mem" to "0xB8000" (physical vedio memory)
  */
 void paging_restore_for_vedio_mem(int32_t virtual_addr_for_vedio){
-    // int i;
-    // int dict_idx = virtual_addr_for_vedio/_4MB_;
-    // // int table_idx = (virtual_addr_for_vedio << (10)) >> 22 ; // left shift 10 bits first and then right shift 22 bits to extract the second 10 bits in the virtual address
-    // /* setting page dic entry*/
-    //     page_dict[dict_idx].P = 0;         /* make it not present */        
-    // /* setting page table entry*/
-    // for (i = 0; i < PT_SIZE; i++){
-    //     page_table_vedio_mem[i].P = 0;       /* make all not present */ 
-    // }
-    // TLB_flush();
+    int i;
+    int dict_idx = virtual_addr_for_vedio/_4MB_;
+    // int table_idx = (virtual_addr_for_vedio << (10)) >> 22 ; // left shift 10 bits first and then right shift 22 bits to extract the second 10 bits in the virtual address
+    task_use_vidmem--;
+
+    if(task_use_vidmem == 0){
+        /* setting page dic entry*/
+        page_dict[dict_idx].P = 0;         /* make it not present */        
+        /* setting page table entry*/
+        for (i = 0; i < PT_SIZE; i++){
+            page_table_vedio_mem[i].P = 0;       /* make all not present */ 
+        }
+        TLB_flush();
+    }
+    
 }

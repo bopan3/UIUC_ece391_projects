@@ -528,7 +528,7 @@ void exp_halt(){
     pcb* cur_pcb_ptr = get_pcb_ptr(pid);
     pcb* prev_pcb_ptr;
 
-    printf("===================================================A\n");
+    // printf("===================================================A\n");
 
     /* intend to halt shell */
     if (cur_pcb_ptr->pid < running_terminal){
@@ -574,6 +574,7 @@ void exp_halt(){
     prev_pcb_ptr = get_pcb_ptr(cur_pcb_ptr->prev_pid);
     task_array[pid] = 0;        /* release the pid entry at task array */
     pid = prev_pcb_ptr->pid;    /* update pid */
+    tm_array[terminal_tick].tm_pid = pid; 
 
     /* tss update */
     tss.ss0 = KERNEL_DS;
@@ -581,6 +582,7 @@ void exp_halt(){
 
     /* Restore parent paging */
     paging_set_user_mapping(pid);
+    paging_restore_for_vedio_mem(VIRTUAL_ADDR_VEDIO_PAGE);
 
     /* Close any relevant FDs */
     /* close normal file */
