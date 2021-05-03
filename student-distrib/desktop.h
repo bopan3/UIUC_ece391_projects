@@ -50,4 +50,7 @@ extern int32_t desktop_close(int32_t fd);
 extern int32_t desktop_read(int32_t fd, void* buf, int32_t nbytes);
 
 extern int32_t desktop_write(int32_t fd, const void* buf, int32_t nbytes);
+
+extern void refresh_screen();
+
 #endif /* MAZE_H */
