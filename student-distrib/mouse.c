@@ -132,12 +132,12 @@ void mouse_irq_handler() {
     // printf("[Test] (left, right, mid): (%d, %d, %d)\n", mouse_key_left, mouse_key_right, mouse_key_mid);
 
     /* Display mouse cursor */
-    ;
+    draw_fruit_text_with_mask(mouse_x_coor, mouse_y_coor, unsigned char* mask, unsigned char* restore_block);
 
     show_screen();
 
     /* Erase mouse cursor */
-    ;
+    restore_fruit_text_with_mask(mouse_x_coor, mouse_y_coor, unsigned char* mask, unsigned char* restore_block);
 
 }
 
