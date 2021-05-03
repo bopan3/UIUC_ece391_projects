@@ -1253,4 +1253,19 @@ void restore_fruit_text_with_mask(int pos_x, int pos_y, unsigned char* mask, uns
     }
 }
 
+/* 
+ * get_block_img
+ *   DESCRIPTION: Get  a pointer to the graphical image for the block.
+ *   INPUTS: block_name -- macro name of the block
+ *   OUTPUTS: none
+ *   RETURN VALUE: a pointer to an image of a BLOCK_X_DIM x BLOCK_Y_DIM
+ *                 block of data with one byte per pixel laid out as a
+ *                 C array of dimension [BLOCK_Y_DIM][BLOCK_X_DIM]
+ *   SIDE EFFECTS: none
+ */
+unsigned char* get_block_img(int32_t block_name) {
+    return (unsigned char*)blocks[block_name];
+}
+
+
 
