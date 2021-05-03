@@ -34,6 +34,13 @@ typedef enum {
     MAZE_REACH          = 128   /* seen already (not shrouded in mist)      */
 } maze_bit_t;
 
+// variables borrowed from mazegame.c
+typedef struct {
+    /* dynamic values within a level -- you may want to add more... */
+    unsigned int map_x, map_y;   /* current upper left display pixel */
+    int is_ModX;
+} game_info_t;
+
 /* create a desktop and place UI for it */
 extern int make_desktop(int x_dim, int y_dim);
 

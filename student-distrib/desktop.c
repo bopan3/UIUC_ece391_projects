@@ -7,13 +7,8 @@
 #include "desktop.h"
 #include "blocks.h"
 
-// variables borrowed from mazegame.c
-typedef struct {
-    /* dynamic values within a level -- you may want to add more... */
-    unsigned int map_x, map_y;   /* current upper left display pixel */
-} game_info_t;
 
-static game_info_t game_info;
+game_info_t game_info;
 
 /*
  * The maze array contains a one byte bit vector (maze_bit_t) for each
@@ -41,6 +36,11 @@ static int maze_y_dim;          /* vertical dimension of maze   */
  */
 #define MAZE_INDEX(a,b) ((a) + ((b) + 1) * maze_x_dim * 2)
 
+void init_game_info() {
+    game_info.is_ModX = 0;
+    game_info.map_x = SHOW_MIN;
+    game_info.map_y = SHOW_MIN;
+}
 
 /*
 *	desktop_open
@@ -57,6 +57,7 @@ int32_t desktop_open(const uint8_t* filename) {
 
     /* Initialize dynamic values. */
     game_info.map_x = game_info.map_y = SHOW_MIN;
+    game_info.is_ModX = 1;
     // make the maze (desktop)
     make_desktop(MAZE_MIN_X_DIM, MAZE_MIN_Y_DIM);
 
@@ -79,6 +80,7 @@ int32_t desktop_open(const uint8_t* filename) {
 */
 int32_t desktop_close(int32_t fd) {
     set_text_mode_3(0);
+    game_info.is_ModX = 0;
     //reopen schedule
     enable_irq(PIT_IRQ);
     return 0;

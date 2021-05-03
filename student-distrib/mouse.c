@@ -1,6 +1,8 @@
 #include "mouse.h"
 #include "i8259.h"
 #include "ModeX.h"
+#include "blocks.h"
+#include "desktop.h"
 
 /* Global variables */
 int32_t mouse_x_move;
@@ -10,6 +12,8 @@ int32_t mouse_y_coor;       // Set to the middle of GUI
 int32_t mouse_key_left;     // 1 means pressed, 0 means not
 int32_t mouse_key_right;    // 1 means pressed, 0 means not
 int32_t mouse_key_mid;      // 1 means pressed, 0 means not
+
+extern game_info_t game_info;
 
 /* mouse_init
  *  Description: initialize the mouse device
@@ -87,6 +91,11 @@ void mouse_irq_handler() {
     send_eoi(MOUSE_IRQ_NUM);
     // sti();
 
+    /* If not in GUI, do nothing */
+    // if (!game_info.is_ModX)
+    //     return;
+    // printf("[Test] is_ModX: %d\n", game_info.is_ModX);
+
     /* Read data */
     temp = read_port();
     mouse_in.left_btn = temp & 0x01;
@@ -131,13 +140,13 @@ void mouse_irq_handler() {
 
     // printf("[Test] (left, right, mid): (%d, %d, %d)\n", mouse_key_left, mouse_key_right, mouse_key_mid);
 
-    /* Display mouse cursor */
-    draw_fruit_text_with_mask(mouse_x_coor, mouse_y_coor, unsigned char* mask, unsigned char* restore_block);
+    // /* Display mouse cursor */
+    // draw_fruit_text_with_mask(mouse_x_coor, mouse_y_coor, get_block_img(MOUSE_CURSOR), get_block_img(MOUSE_CURSOR));
 
-    show_screen();
+    // show_screen();
 
-    /* Erase mouse cursor */
-    restore_fruit_text_with_mask(mouse_x_coor, mouse_y_coor, unsigned char* mask, unsigned char* restore_block);
+    // /* Erase mouse cursor */
+    // restore_fruit_text_with_mask(mouse_x_coor, mouse_y_coor, get_block_img(MOUSE_CURSOR), get_block_img(MOUSE_CURSOR));
 
 }
 
@@ -151,7 +160,7 @@ void mouse_irq_handler() {
  */
 void wait_in() {
     int32_t wait_time = VERY_LONG_TIME;
-    while (1) {
+    while (wait_time--) {
         if (!(inb(MOUSE_PORT_NUM) & WAIT_IN_MASK));
             break;
     }
@@ -167,7 +176,7 @@ void wait_in() {
  */
 void wait_out() {
     int32_t wait_time = VERY_LONG_TIME;
-    while (1) {
+    while (wait_time--) {
         if (!(inb(MOUSE_PORT_NUM) & WAIT_OUT_MASK));
             break;
     }

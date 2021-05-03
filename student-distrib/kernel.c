@@ -16,6 +16,7 @@
 #include "scheduler.h"
 #include "ModeX.h"
 #include "mouse.h"
+#include "desktop.h"
 #define RUN_TESTS
 
 /* Macros. */
@@ -165,8 +166,9 @@ void entry(unsigned long magic, unsigned long addr) {
     fop_t_init();
     scheduler_init();
     paging_init();
-    
 
+    init_game_info();
+    
     /* Enable interrupts */
     /* Do not enable the following until after you have set up your
      * IDT correctly otherwise QEMU will triple fault and simple close
