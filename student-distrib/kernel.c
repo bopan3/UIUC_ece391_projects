@@ -172,7 +172,8 @@ void entry(unsigned long magic, unsigned long addr) {
     // printf("Enabling Interrupts\n");
     clear();
     // beep(500, 50);
-    execute((uint8_t*) "shell");
+    // execute((uint8_t*) "shell");
+    test_play_music();
 
 #ifdef RUN_TESTS
     /* Run tests */

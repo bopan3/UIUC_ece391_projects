@@ -64,6 +64,7 @@ asm_irq_linkage(irq_Real_Time_Clock, IRQ_Real_Time_Clock);
 asm_irq_linkage(irq_Eth0, IRQ_Eth0);
 asm_irq_linkage(irq_PS2_Mouse, IRQ_PS2_Mouse);
 asm_irq_linkage(irq_Ide0, IRQ_Ide0);
+asm_irq_linkage(irq_sb16, IRQ_sb16);
 
 /*------------------- System call -------------------*/
 call_table:

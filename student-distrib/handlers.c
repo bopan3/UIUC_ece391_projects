@@ -8,6 +8,8 @@
 #include "keyboard.h"
 #include "rtc.h"
 #include "timer.h"
+#include "./dev/sound.h"
+
 /* 
  * irq_handler
  *   DESCRIPTION: save registers and pass control to a interrupt handler specified by irq_vect
@@ -51,6 +53,10 @@ void irq_handler(int irq_vect) {
             break;
         case IRQ_Ide0:
             printf("INTERRUPT #0x%x: Ide0\n", irq_vect);
+            break;
+        case IRQ_sb16:
+            printf("INTERRUPT #0x%x: SB16\n", irq_vect);
+            sb16_handler();
             break;
         default:
             printf("INTERRUPT #0x%x: not defined\n", irq_vect);

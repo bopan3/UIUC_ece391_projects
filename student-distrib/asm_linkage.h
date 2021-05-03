@@ -14,6 +14,7 @@ extern void irq_Real_Time_Clock();
 extern void irq_Eth0();
 extern void irq_PS2_Mouse();
 extern void irq_Ide0();
+extern void irq_sb16();
 extern void asm_sys_linkage();
 extern void page_excpt_asmlink();
 

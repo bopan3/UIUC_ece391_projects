@@ -1,4 +1,5 @@
 #include "../types.h"
+#define _64K_ 65536
 
 #define CH2_PORT 0x42
 #define PIT_MODE_REG 0x43
@@ -54,6 +55,7 @@ void little_star();
  * 3. http://qzx.com/pc-gpe/sbdsp.txt
  */
 #define DSP_Mixer 0x224
+#define DSP_Mixer_data 0x225
 #define DSP_Reset 0x226
 #define DSP_Read  0x22A
 #define DSP_Write 0x22C
@@ -66,6 +68,8 @@ void little_star();
 #define SingleMode      0x48
 #define AutoMode        0x58
 
+/* =============================== */
+#define Chunk_Size 2048
 
 
 
@@ -76,3 +80,7 @@ void sound_player();
 void reset_DSP();
 void Program_DMA_8b(int8_t chan_num, uint32_t address, uint16_t length);
 void Set_Sample_Rate(int32_t sample_rate, int8_t input_b);
+void test_play_music();
+
+
+void player(const uint8_t* music_name);
