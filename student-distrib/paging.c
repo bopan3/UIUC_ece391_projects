@@ -3,8 +3,8 @@
 #include "paging.h"
 extern int32_t terminal_tick;
 extern int32_t terminal_display; 
-uint8_t task_use_vidmem = 0;        /* bitmap for the number of task using the user space vid mem */
-uint8_t vidmem_bitmap[3] = {1, 2, 4};
+uint8_t task_use_vidmem = 0;            /* bitmap for the number of task using the user space vid mem */
+uint8_t vidmem_bitmap[3] = {1, 2, 4};   /* for mask the using vidmap task */
 
 /* paging_init
  *  Description: Initialize the paging dict and paging table, also mapping the video memory

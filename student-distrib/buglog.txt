@@ -213,3 +213,8 @@ Files: timer.c && timer.h
 Bug: When intending to test change the piece period, the time did not really changes. And testing on the windows machine, would have a bit lag than on the Max amchine.
 Solution: Wrong formula to calculate the frequency divider. And refer to the code from the devos website, change a different way to set the divider. Then it works fine.
 
+Contributer: Jiang Fengqing
+Date: May 2  2021
+Files: paging.c
+Bug: When open several fish, it may have page fault when restore the user video memory.
+Solution: using incorrect method to determine if it should close the page. Only using user vid page task could affect, a simple counter can not work.
