@@ -147,13 +147,15 @@ void mouse_irq_handler() {
     // printf("[Test] (left, right, mid): (%d, %d, %d)\n", mouse_key_left, mouse_key_right, mouse_key_mid);
 
     cli();
-    /* Display mouse cursor */
-    draw_fruit_text_with_mask(mouse_x_coor, mouse_y_coor, get_block_img(MOUSE_CURSOR_MASK), restore_block);
-
-    show_screen();
-
-    /* Erase mouse cursor */
-    restore_fruit_text_with_mask(mouse_x_coor, mouse_y_coor, get_block_img(MOUSE_CURSOR_MASK), restore_block);
+    if (mouse_key_left || mouse_key_right || mouse_key_mid) {
+        draw_full_block_with_mask(mouse_x_coor, mouse_y_coor, get_block_img(MOUSE_CURSOR), get_block_img(MOUSE_CURSOR_MASK), restore_block);
+        show_screen();
+        restore_full_block_with_mask(mouse_x_coor, mouse_y_coor, get_block_img(MOUSE_CURSOR), get_block_img(MOUSE_CURSOR_MASK), restore_block);
+    } else {
+        draw_fruit_text_with_mask(mouse_x_coor, mouse_y_coor, get_block_img(MOUSE_CURSOR_MASK), restore_block);
+        show_screen();
+        restore_fruit_text_with_mask(mouse_x_coor, mouse_y_coor, get_block_img(MOUSE_CURSOR_MASK), restore_block);
+    }
     sti();
 }
 
