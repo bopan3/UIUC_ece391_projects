@@ -46,3 +46,10 @@ void nosound();
 void beep(uint32_t fre, uint32_t wait);
 
 void little_star();
+
+/* ================== SB16 ================= */
+#define DSP_Reset 0x226
+#define DSP_Read  0x22A
+#define DSP_Write 0x22C
+#define DSP_Read_buf_status 0x22E
+#define DSP_INT_ACK 0x22F
