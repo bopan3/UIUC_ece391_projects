@@ -26,7 +26,7 @@ extern int32_t running_terminal;
  */
 int32_t getargs (uint8_t* buf, int32_t nbytes){
 
-    sti();
+    // sti();
 
     pcb* cur_pcb_ptr;
 
@@ -61,7 +61,7 @@ int32_t getargs (uint8_t* buf, int32_t nbytes){
  */
 int32_t open(const uint8_t* fname){
 
-    sti();
+    // sti();
 
     int i;                          // Loop index
     dentry_t dentry;               // pointer to dentry
@@ -121,7 +121,7 @@ int32_t open(const uint8_t* fname){
  */
 int32_t close(int32_t fd){
 
-    sti();
+    // sti();
 
     // fd number should be between 0 and 8
     if(fd < INI_FILES || fd > N_FILES)
@@ -190,7 +190,7 @@ int32_t read(int32_t fd, void* buf, int32_t nbytes){
  */
 int32_t write(int32_t fd, const void* buf, int32_t nbytes) {
 
-    sti();
+    // sti();
 
     // fd number should be between 0 and 8
     if(fd < 0 || fd > N_FILES)
@@ -282,7 +282,7 @@ void fop_t_init() {
  *   SIDE EFFECTS: set up the page starting at virtual space 0x8800000
  */
 int32_t vidmap (uint8_t** screen_start){
-    sti();
+    // sti();
     // check whether the address falls within the address range covered by the single user-level page
     if (screen_start==NULL || (int) screen_start<USER_PAGE_BASE || (int) screen_start>=USER_PAGE_BASE+_4MB_-_4B_){   //also make sure the end of variable "screen_start" is not out of the user space
          return SYS_CALL_FAIL;
@@ -306,7 +306,7 @@ int32_t vidmap (uint8_t** screen_start){
  */
 int32_t halt(uint8_t status){
 
-    // sti();
+    cli();
 
     int i;              /* loop index */
 
@@ -497,12 +497,12 @@ int32_t execute(const uint8_t* command){
 
 /* Signal Support for extra credit, just fake placeholder now */
 int32_t set_handler (int32_t signum, void* handler_address){
-    sti();
+    // sti();
     return SYS_CALL_FAIL;
 }
 
 int32_t sigreturn (void){
-    sti();
+    // sti();
     return SYS_CALL_FAIL;
 }
 

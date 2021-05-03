@@ -105,13 +105,13 @@ int32_t terminal_write(int32_t fd, const void* buf, int32_t nbytes) {
     if (buf == NULL)
         return -1;
 
-    cli();
+    // cli();
     for(i = 0; i < nbytes; ++i) {
         curr = ((char*) buf)[i];
         if(curr != '\0')            // Skip null
             putc(curr);             // Print other characters
     }
-    sti();
+    // sti();
     return 0;
 }
 

@@ -3,7 +3,8 @@
 #include "paging.h"
 extern int32_t terminal_tick;
 extern int32_t terminal_display; 
-int32_t task_use_vidmem = 0;        /* Counter the number of task using the user space vid mem */
+uint8_t task_use_vidmem = 0;        /* bitmap for the number of task using the user space vid mem */
+uint8_t vidmem_bitmap[3] = {1, 2, 4};
 
 /* paging_init
  *  Description: Initialize the paging dict and paging table, also mapping the video memory
@@ -196,7 +197,7 @@ void paging_set_for_vedio_mem(int32_t virtual_addr_for_vedio, int32_t phys_addr_
         page_table_vedio_mem[i].address = phys_addr_for_vedio>>12 ;     /* Physical Address MSB 20bits (so we need to right shift by 12) */  
     }
     TLB_flush();
-    task_use_vidmem++;
+    task_use_vidmem = task_use_vidmem | vidmem_bitmap[terminal_tick];
 
 }
 
@@ -212,7 +213,18 @@ void paging_restore_for_vedio_mem(int32_t virtual_addr_for_vedio){
     int i;
     int dict_idx = virtual_addr_for_vedio/_4MB_;
     // int table_idx = (virtual_addr_for_vedio << (10)) >> 22 ; // left shift 10 bits first and then right shift 22 bits to extract the second 10 bits in the virtual address
-    task_use_vidmem--;
+    switch (terminal_tick)
+    {
+        case 0:
+            task_use_vidmem = task_use_vidmem & 0xFE; /* set 0 for bit 0 */
+            break;
+        case 1:
+            task_use_vidmem = task_use_vidmem & 0xFD; /* set 0 for bit 1 */
+            break;
+        case 2:
+            task_use_vidmem = task_use_vidmem & 0xFB; /* set 0 for bit 2 */
+            break;
+    }
 
     if(task_use_vidmem == 0){
         /* setting page dic entry*/
