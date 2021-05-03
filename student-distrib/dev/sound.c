@@ -54,9 +54,38 @@ void little_star(){
 
 /* ================== SB16 ================= */
 
-void play_music(){
+void sound_player(int32_t sample_rate, int32_t length){
     // uint8_t tmp;
+    reset_DSP();
+    
+    
+    // Load sound data to memory
+    /* TODO */
 
+    // Set master volume
+    Set_Vol(0xA, 0xA);
+
+    // Turn speaker on
+    Turn_ON_SB16();
+
+    // Program ISA DMA to transfer
+    Program_DMA_8b(1, ,);
+
+    // set input and output rate
+    Set_Sample_Rate(sample_rate, 1)
+    Set_Sample_Rate(sample_rate, 0)
+
+    length--;
+    /* transfer mode */
+    outb(0xC0, DSP_Write);
+    outb(0x00, DSP_Write);  /* data type */
+    outb((length & 0xFF00) >> 8, DSP_Write);    /* High Byte */
+    outb((uint8_t)(length & 0xFF), DSP_Write);  /* Low Byte */
+    
+}
+
+
+void reset_DSP(){
     // Reset DSP
     outb(1, DSP_Reset);
     asm volatile (
@@ -66,21 +95,60 @@ void play_music(){
         "int $0x15;"
         : /* No output */
         : /* No input */
-        : "eax", "ebx", "edx"
+        : "eax", "ecx", "edx"
     )
     outb(0, DSP_Reset);
 
     while ((inb(DSP_Read_buf_status) & 0x80) == 0){}
     while ((inb(DSP_Read) != 0xAA)){}
-    
-    // Load sound data to memory
-    // Set master volume
-    // Turn speaker on
-    // Program ISA DMA to transfer
-    // Set time constant. Notice that the Sound Blaster 16 is able to use sample rates instead of time constants using command 0x41 instead of 0x40.
-    // You can calculate the time constant like this: Time constant = 65536 - (256000000 / (channels * sampling rate))
-    // Set output sample rate
-    // Write transfer mode to DSP
-    // Write type of sound data
-    // Write data length to DSP(Low byte/High byte) (You must calculate LENGTH-1 e.g. if is your real length 0x0FFF, you must send 0xFE and 0x0F)
 }
+
+
+
+/* DMAC use physical address only */
+void Program_DMA_8b(int8_t chan_num, uint32_t address, uint16_t length){
+    uint8_t tmp;
+    length--;
+
+    /* 1.  Disable channel*/
+    outb(0x04 + chan_num, DMAC1_W_MaskReg);
+
+    /* 2. Write any value to fli-flop port */
+    outb(1, DMAC1_FF);
+
+    /* 3. send transfer mode */
+    outb(AutoMode + chan_num, DMAC1_W_Mode);
+
+    /* 4. send page number */
+    tmp = (uint8_t)((address & 0x00FF0000) >> 16);
+    outb(tmp, CH_Page_Port[chan_num]);
+
+    /* 5. send low bits of position */
+    tmp = (uint8_t)((address & 0x000000FF));
+    outb(tmp, 0x2 * chan_num);
+
+    /* 6. send high bits of position */
+    tmp = (uint8_t)((address & 0x0000FF00) >> 8);
+    outb(tmp, 0x2 * chan_num);
+
+    /* 7. send low bits of length of data */
+    tmp = (uint8_t)(length & 0x00FF);
+    outb(tmp, 0x2 * chan_num + 1);
+
+    /* 8. send high bits o length of data */
+    tmp = (uint8_t)((length & 0xFF00) >> 8);
+    outb(tmp, 0x2 * chan_num + 1);
+
+    /* 9. enable channel number  */
+    outb(chan_num, DMAC1_W_MaskReg);
+
+    return ;
+}
+
+void Set_Sample_Rate(int32_t sample_rate, int8_t input_b){
+    /* set input if 1 */
+    outb(0x41 + input_b, DSP_Write);
+    outb((uint8_t)((sample_rate & 0xFF00) >> 8), DSP_Write);
+    outb((uint8_t)(sample_rate & 0x00FF), DSP_Write);
+}
+

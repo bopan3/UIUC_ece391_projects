@@ -48,8 +48,29 @@ void beep(uint32_t fre, uint32_t wait);
 void little_star();
 
 /* ================== SB16 ================= */
+/* Reference:
+ * 1. https://wiki.osdev.org/Sound_Blaster_16
+ * 2. http://homepages.cae.wisc.edu/~brodskye/sb16doc/sb16doc.html
+ * 3. http://qzx.com/pc-gpe/sbdsp.txt
+ */
+#define DSP_Mixer 0x224
 #define DSP_Reset 0x226
 #define DSP_Read  0x22A
 #define DSP_Write 0x22C
 #define DSP_Read_buf_status 0x22E
 #define DSP_INT_ACK 0x22F
+
+#define DMAC1_W_MaskReg 0x0A
+#define DMAC1_W_Mode    0x0B
+#define DMAC1_FF        0x0C
+#define SingleMode      0x48
+#define AutoMode        0x58
+uint8_t CH_Page_Port[4] = {0x87, 0x83, 0x81, 0x82};
+
+
+
+#define Set_Vol(L, R)  outb((L<<4 | R), DSP_Mixer)
+#define Turn_ON_SB16()  do{outb(0xD1, DSP_Write);} while (0)
+
+void sound_player();
+void reset_DSP();
