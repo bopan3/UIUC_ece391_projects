@@ -110,6 +110,7 @@ enum {
     BLOCK_EXIT,           /* the exit from the maze                       */
     /* User defined blocks */
     MOUSE_CURSOR,
+    MOUSE_CURSOR_MASK,
     /* Must at the end */
     NUM_BLOCKS
 };

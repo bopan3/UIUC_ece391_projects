@@ -17,6 +17,12 @@
 #define MAZE_MIN_Y_DIM ((SCROLL_Y_DIM + (BLOCK_Y_DIM - 1) + 2 * SHOW_MIN) / (2 * BLOCK_Y_DIM))
 #define MAZE_MAX_Y_DIM 30
 
+/* 
+ * maze array index calculation macro; maze dimensions are valid only
+ * after a call to make_maze
+ */
+#define MAZE_INDEX(a,b) ((a) + ((b) + 1) * maze_x_dim * 2)
+
 // #ifndef __GLOBAL__
 // #define __GLOBAL__
 // #endif

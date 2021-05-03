@@ -30,11 +30,7 @@ game_info_t game_info;
 static unsigned char maze[2 * MAZE_MAX_X_DIM * (2 * MAZE_MAX_Y_DIM + 3) + 1];
 static int maze_x_dim;          /* horizontal dimension of maze */
 static int maze_y_dim;          /* vertical dimension of maze   */
-/* 
- * maze array index calculation macro; maze dimensions are valid only
- * after a call to make_maze
- */
-#define MAZE_INDEX(a,b) ((a) + ((b) + 1) * maze_x_dim * 2)
+
 
 void init_game_info() {
     game_info.is_ModX = 0;

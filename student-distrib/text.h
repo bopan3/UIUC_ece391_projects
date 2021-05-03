@@ -43,8 +43,8 @@
 
 #define COLOR_TEXT            0x25
 #define COLOR_BACK            0x24
-#define BLOCK_FRT_TXT_X_DIM   320
-#define BLOCK_FRT_TXT_Y_DIM   18
+#define BLOCK_FRT_TXT_X_DIM   12
+#define BLOCK_FRT_TXT_Y_DIM   12
 
 /* Standard VGA text font. */
 extern unsigned char font_data[256][16];

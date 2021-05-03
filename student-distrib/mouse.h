@@ -15,7 +15,7 @@
 
 #define SIGN_MASK           0xFFFFFF00
 
-#define MOUSE_SPEED_FACTOR  2
+#define MOUSE_SPEED_FACTOR  3
 
 /* Structure of mouse's data package */
 typedef struct mouse_package {

@@ -15,6 +15,9 @@ int32_t mouse_key_mid;      // 1 means pressed, 0 means not
 
 extern game_info_t game_info;
 
+
+static counter = 0;
+
 /* mouse_init
  *  Description: initialize the mouse device
  *  Input: none
@@ -32,8 +35,8 @@ void mouse_init() {
     mouse_key_left = 0;
     mouse_key_right = 0;
     mouse_key_mid = 0;
-    mouse_x_coor = SCROLL_X_DIM / 2;
-    mouse_y_coor = SCROLL_Y_DIM / 2;
+    mouse_x_coor = SCROLL_X_DIM / 4;
+    mouse_y_coor = SCROLL_Y_DIM / 4;
 
 
     /* Enbale auxiliary input of the PS2 keyboard controller */
@@ -69,7 +72,7 @@ void mouse_init() {
     write_port(0xF3);
     read_port();
     wait_out();
-    outb(200, KETBOARD_PORT_NUM);
+    outb(60, KETBOARD_PORT_NUM);
 
     /* Set i8259 */
     enable_irq(MOUSE_IRQ_NUM);
@@ -87,14 +90,15 @@ void mouse_init() {
 void mouse_irq_handler() {
     uint8_t temp;
     mouse_package mouse_in;
+    unsigned char restore_block[12*12];
 
     send_eoi(MOUSE_IRQ_NUM);
     // sti();
+    // printf("[Test] is_ModX: %d\n", game_info.is_ModX);
 
     /* If not in GUI, do nothing */
-    // if (!game_info.is_ModX)
-    //     return;
-    // printf("[Test] is_ModX: %d\n", game_info.is_ModX);
+    if (!game_info.is_ModX)
+        return;
 
     /* Read data */
     temp = read_port();
@@ -111,8 +115,8 @@ void mouse_irq_handler() {
     if ((!mouse_in.always_1) || mouse_in.x_overflow || mouse_in.y_overflow)
         return;
     
-    mouse_x_move = read_port() / MOUSE_SPEED_FACTOR;
-    mouse_y_move = read_port() / MOUSE_SPEED_FACTOR;
+    mouse_x_move = read_port();
+    mouse_y_move = read_port();
 
     /* Sign extention */
     if (mouse_in.x_sign)
@@ -122,32 +126,35 @@ void mouse_irq_handler() {
     
     
     /* Update other parameters */
-    mouse_x_coor += mouse_x_move;
-    mouse_y_coor += mouse_y_move;
+    mouse_x_coor += mouse_x_move / MOUSE_SPEED_FACTOR;
+    mouse_y_coor -= mouse_y_move / MOUSE_SPEED_FACTOR;
     if (mouse_x_coor < 0)
         mouse_x_coor = 0;
     if (mouse_y_coor < 0)
         mouse_y_coor = 0;
-    if (mouse_x_coor >= SCROLL_X_DIM)
-        mouse_x_coor = SCROLL_X_DIM - 1;
-    if (mouse_y_coor >= SCROLL_Y_DIM)
-        mouse_y_coor = SCROLL_Y_DIM - 1;
+    if (mouse_x_coor >= SCROLL_X_DIM - 10)
+        mouse_x_coor = SCROLL_X_DIM - 11;
+    if (mouse_y_coor >= SCROLL_Y_DIM -10)
+        mouse_y_coor = SCROLL_Y_DIM - 11;
 
     /* Update press state */
     mouse_key_left = mouse_in.left_btn;
     mouse_key_right = mouse_in.right_btn;
     mouse_key_mid = mouse_in.mid_btn;
 
+    
+
     // printf("[Test] (left, right, mid): (%d, %d, %d)\n", mouse_key_left, mouse_key_right, mouse_key_mid);
 
-    // /* Display mouse cursor */
-    // draw_fruit_text_with_mask(mouse_x_coor, mouse_y_coor, get_block_img(MOUSE_CURSOR), get_block_img(MOUSE_CURSOR));
+    cli();
+    /* Display mouse cursor */
+    draw_fruit_text_with_mask(mouse_x_coor, mouse_y_coor, get_block_img(MOUSE_CURSOR_MASK), restore_block);
 
-    // show_screen();
+    show_screen();
 
-    // /* Erase mouse cursor */
-    // restore_fruit_text_with_mask(mouse_x_coor, mouse_y_coor, get_block_img(MOUSE_CURSOR), get_block_img(MOUSE_CURSOR));
-
+    /* Erase mouse cursor */
+    restore_fruit_text_with_mask(mouse_x_coor, mouse_y_coor, get_block_img(MOUSE_CURSOR_MASK), restore_block);
+    sti();
 }
 
 
