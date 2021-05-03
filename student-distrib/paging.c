@@ -124,7 +124,7 @@ void paging_init(void){
     }
 
     /* Initialize the page table for 144-148 MB */
-    /* 0x900000...*/
+    /* 0x9000000...*/
     for (i = 0; i < PT_SIZE; i++){
         page_table_temp_vmem[i].P = 1;
         page_table_temp_vmem[i].RW = 1;                           /* Read/Write enable */                           
