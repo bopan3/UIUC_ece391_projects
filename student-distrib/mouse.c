@@ -1,5 +1,6 @@
 #include "mouse.h"
 #include "i8259.h"
+#include "ModeX.h"
 
 /* Global variables */
 int32_t mouse_x_move;
@@ -129,6 +130,14 @@ void mouse_irq_handler() {
     mouse_key_mid = mouse_in.mid_btn;
 
     // printf("[Test] (left, right, mid): (%d, %d, %d)\n", mouse_key_left, mouse_key_right, mouse_key_mid);
+
+    /* Display mouse cursor */
+    ;
+
+    show_screen();
+
+    /* Erase mouse cursor */
+    ;
 
 }
 

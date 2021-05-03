@@ -193,24 +193,6 @@ int make_desktop(int x_dim, int y_dim) {
     return 0;
 }
 
-/* 
- * refresh_screen
- *   DESCRIPTION: refresh screen periodically
- *   INPUTS: none
- *   OUTPUTS: none
- *   RETURN VALUE: none
- *   SIDE EFFECTS: update the screen content of GUI
- */
-void refresh_screen() {
-
-    /* Display mouse cursor */
-
-    show_screen();
-
-    /* Erase mouse cursor */
-
-}
-
 
 /* 
  * find_block
