@@ -65,7 +65,7 @@ void little_star();
 #define DMAC1_FF        0x0C
 #define SingleMode      0x48
 #define AutoMode        0x58
-uint8_t CH_Page_Port[4] = {0x87, 0x83, 0x81, 0x82};
+
 
 
 
@@ -74,3 +74,5 @@ uint8_t CH_Page_Port[4] = {0x87, 0x83, 0x81, 0x82};
 
 void sound_player();
 void reset_DSP();
+void Program_DMA_8b(int8_t chan_num, uint32_t address, uint16_t length);
+void Set_Sample_Rate(int32_t sample_rate, int8_t input_b);

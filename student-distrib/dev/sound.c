@@ -1,6 +1,7 @@
 #include "sound.h"
 #include "../lib.h"
 // #include "../timer.h"
+uint8_t CH_Page_Port[4] = {0x87, 0x83, 0x81, 0x82};
 
 /* ================== PC Speaker ================= */
 /* Adapted from https://wiki.osdev.org/PC_Speaker  */
@@ -54,7 +55,7 @@ void little_star(){
 
 /* ================== SB16 ================= */
 
-void sound_player(int32_t sample_rate, int32_t length){
+void sound_player(int32_t address, int32_t sample_rate, int32_t length){
     // uint8_t tmp;
     reset_DSP();
     
@@ -69,11 +70,11 @@ void sound_player(int32_t sample_rate, int32_t length){
     Turn_ON_SB16();
 
     // Program ISA DMA to transfer
-    Program_DMA_8b(1, ,);
+    Program_DMA_8b(1, address, length);
 
     // set input and output rate
-    Set_Sample_Rate(sample_rate, 1)
-    Set_Sample_Rate(sample_rate, 0)
+    Set_Sample_Rate(sample_rate, 1);
+    Set_Sample_Rate(sample_rate, 0);
 
     length--;
     /* transfer mode */
@@ -91,12 +92,12 @@ void reset_DSP(){
     asm volatile (
         "movb $0x86, %%AH;"
         "movw $0, %%CX;"
-        "movw $FFFF, %%DX;"
+        "movw $0xFFFF, %%DX;"
         "int $0x15;"
         : /* No output */
         : /* No input */
         : "eax", "ecx", "edx"
-    )
+    );
     outb(0, DSP_Reset);
 
     while ((inb(DSP_Read_buf_status) & 0x80) == 0){}
@@ -121,7 +122,7 @@ void Program_DMA_8b(int8_t chan_num, uint32_t address, uint16_t length){
 
     /* 4. send page number */
     tmp = (uint8_t)((address & 0x00FF0000) >> 16);
-    outb(tmp, CH_Page_Port[chan_num]);
+    outb(tmp, CH_Page_Port[(uint8_t)chan_num]);
 
     /* 5. send low bits of position */
     tmp = (uint8_t)((address & 0x000000FF));
