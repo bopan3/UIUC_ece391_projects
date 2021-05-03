@@ -27,7 +27,7 @@ extern int32_t running_terminal;
  */
 int32_t getargs (uint8_t* buf, int32_t nbytes){
 
-    sti();
+    // sti();
 
     pcb* cur_pcb_ptr;
 
@@ -62,7 +62,7 @@ int32_t getargs (uint8_t* buf, int32_t nbytes){
  */
 int32_t open(const uint8_t* fname){
 
-    sti();
+    // sti();
 
     int i;                          // Loop index
     dentry_t dentry;               // pointer to dentry
@@ -122,7 +122,7 @@ int32_t open(const uint8_t* fname){
  */
 int32_t close(int32_t fd){
 
-    sti();
+    // sti();
 
     // fd number should be between 0 and 8
     if(fd < INI_FILES || fd > N_FILES)
@@ -283,7 +283,7 @@ void fop_t_init() {
  *   SIDE EFFECTS: set up the page starting at virtual space 0x8800000
  */
 int32_t vidmap (uint8_t** screen_start){
-    sti();
+    // sti();
     // check whether the address falls within the address range covered by the single user-level page
     if (screen_start==NULL || (int) screen_start<USER_PAGE_BASE || (int) screen_start>=USER_PAGE_BASE+_4MB_-_4B_){   //also make sure the end of variable "screen_start" is not out of the user space
          return SYS_CALL_FAIL;
@@ -307,7 +307,7 @@ int32_t vidmap (uint8_t** screen_start){
  */
 int32_t halt(uint8_t status){
 
-    // sti();
+    cli();
 
     int i;              /* loop index */
 
@@ -502,12 +502,12 @@ int32_t execute(const uint8_t* command){
 
 /* Signal Support for extra credit, just fake placeholder now */
 int32_t set_handler (int32_t signum, void* handler_address){
-    sti();
+    // sti();
     return SYS_CALL_FAIL;
 }
 
 int32_t sigreturn (void){
-    sti();
+    // sti();
     return SYS_CALL_FAIL;
 }
 
@@ -533,7 +533,7 @@ void exp_halt(){
     pcb* cur_pcb_ptr = get_pcb_ptr(pid);
     pcb* prev_pcb_ptr;
 
-    printf("===================================================A\n");
+    // printf("===================================================A\n");
 
     /* intend to halt shell */
     if (cur_pcb_ptr->pid < running_terminal){
@@ -579,6 +579,7 @@ void exp_halt(){
     prev_pcb_ptr = get_pcb_ptr(cur_pcb_ptr->prev_pid);
     task_array[pid] = 0;        /* release the pid entry at task array */
     pid = prev_pcb_ptr->pid;    /* update pid */
+    tm_array[terminal_tick].tm_pid = pid; 
 
     /* tss update */
     tss.ss0 = KERNEL_DS;
@@ -586,6 +587,7 @@ void exp_halt(){
 
     /* Restore parent paging */
     paging_set_user_mapping(pid);
+    paging_restore_for_vedio_mem(VIRTUAL_ADDR_VEDIO_PAGE);
 
     /* Close any relevant FDs */
     /* close normal file */
