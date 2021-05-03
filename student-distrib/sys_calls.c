@@ -190,7 +190,7 @@ int32_t read(int32_t fd, void* buf, int32_t nbytes){
  */
 int32_t write(int32_t fd, const void* buf, int32_t nbytes) {
 
-    // sti();
+    sti();
 
     // fd number should be between 0 and 8
     if(fd < 0 || fd > N_FILES)
