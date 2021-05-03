@@ -157,11 +157,6 @@ int32_t desktop_close(int32_t fd) {
 
 
 
-
-
-
-
-
 /* 
  * make_desktop
  *   DESCRIPTION: Create a desktop of specified dimensions.  
@@ -186,7 +181,7 @@ int make_desktop(int x_dim, int y_dim) {
 
     /* Fill the maze with walls. */
     memset(maze, BLOCK_FRUIT_1, sizeof (maze));
-    maze[MAZE_INDEX(10, 10)] = BLOCK_EMPTY;
+    maze[MAZE_INDEX(10, 10)] = MOUSE_CURSOR;
 
     //  /* Remove all walls! */
     // for (x = 1; x < 2 * maze_x_dim; x++) {
@@ -197,6 +192,25 @@ int make_desktop(int x_dim, int y_dim) {
 
     return 0;
 }
+
+/* 
+ * refresh_screen
+ *   DESCRIPTION: refresh screen periodically
+ *   INPUTS: none
+ *   OUTPUTS: none
+ *   RETURN VALUE: none
+ *   SIDE EFFECTS: update the screen content of GUI
+ */
+void refresh_screen() {
+
+    /* Display mouse cursor */
+
+    show_screen();
+
+    /* Erase mouse cursor */
+
+}
+
 
 /* 
  * find_block

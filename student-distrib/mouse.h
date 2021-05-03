@@ -3,6 +3,7 @@
 
 #include "types.h"
 #include "lib.h"
+#include "ModeX.h"
 
 #define MOUSE_IRQ_NUM       12
 #define MOUSE_PORT_NUM      0x64
@@ -13,6 +14,8 @@
 #define WAIT_IN_MASK        1
 
 #define SIGN_MASK           0xFFFFFF00
+
+#define MOUSE_SPEED_FACTOR  2
 
 /* Structure of mouse's data package */
 typedef struct mouse_package {

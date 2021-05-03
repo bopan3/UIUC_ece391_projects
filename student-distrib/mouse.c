@@ -27,6 +27,9 @@ void mouse_init() {
     mouse_key_left = 0;
     mouse_key_right = 0;
     mouse_key_mid = 0;
+    mouse_x_coor = SCROLL_X_DIM / 2;
+    mouse_y_coor = SCROLL_Y_DIM / 2;
+
 
     /* Enbale auxiliary input of the PS2 keyboard controller */
     wait_out();
@@ -93,14 +96,13 @@ void mouse_irq_handler() {
     mouse_in.y_sign = (temp & 0x20) >> 5;   
     mouse_in.x_overflow = (temp & 0x40) >> 6;
     mouse_in.y_overflow = (temp & 0x80) >> 7;
-    printf("(%d, %d, %d)", mouse_in.always_1, mouse_in.x_overflow, mouse_in.y_overflow);
 
     /* Sanity check */
     if ((!mouse_in.always_1) || mouse_in.x_overflow || mouse_in.y_overflow)
         return;
     
-    mouse_x_move = read_port();
-    mouse_y_move = read_port();
+    mouse_x_move = read_port() / MOUSE_SPEED_FACTOR;
+    mouse_y_move = read_port() / MOUSE_SPEED_FACTOR;
 
     /* Sign extention */
     if (mouse_in.x_sign)
@@ -110,20 +112,23 @@ void mouse_irq_handler() {
     
     
     /* Update other parameters */
-    // mouse_x_coor += mouse_x_move;
-    // mouse_y_coor += mouse_y_move;
-    // if (mouse_x_coor < 0)
-    //     mouse_x_coor = 0;
-    // if (mouse_y_coor < 0)
-    //     mouse_y_coor = 0;
-    // if (mouse_x_coor >= /* TODO */)
-    //     mouse_x_coor = /* TODO */ - 1;
-    // if (mouse_y_coor >= /* TODO */)
-    //     mouse_y_coor = /* TODO */ - 1;
+    mouse_x_coor += mouse_x_move;
+    mouse_y_coor += mouse_y_move;
+    if (mouse_x_coor < 0)
+        mouse_x_coor = 0;
+    if (mouse_y_coor < 0)
+        mouse_y_coor = 0;
+    if (mouse_x_coor >= SCROLL_X_DIM)
+        mouse_x_coor = SCROLL_X_DIM - 1;
+    if (mouse_y_coor >= SCROLL_Y_DIM)
+        mouse_y_coor = SCROLL_Y_DIM - 1;
 
-    // /* Update press state */
+    /* Update press state */
+    mouse_key_left = mouse_in.left_btn;
+    mouse_key_right = mouse_in.right_btn;
+    mouse_key_mid = mouse_in.mid_btn;
 
-    // send_eoi(MOUSE_IRQ_NUM);
+    // printf("[Test] (left, right, mid): (%d, %d, %d)\n", mouse_key_left, mouse_key_right, mouse_key_mid);
 
 }
 

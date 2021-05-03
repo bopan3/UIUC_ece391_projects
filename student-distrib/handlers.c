@@ -55,7 +55,6 @@ void irq_handler(int irq_vect) {
             printf("INTERRUPT #0x%x: Eth0\n", irq_vect);
             break;
         case IRQ_PS2_Mouse:
-            printf("(Test) (x, y): (%d, %d)\n", mouse_x_move, mouse_y_move);
             mouse_irq_handler();
             break;
         case IRQ_Ide0:
