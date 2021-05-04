@@ -16,6 +16,7 @@
 #include "scheduler.h"
 #include "ModeX.h"
 #include "mouse.h"
+#include "sys_calls.h"
 #define RUN_TESTS
 
 /* Macros. */
@@ -165,6 +166,7 @@ void entry(unsigned long magic, unsigned long addr) {
     fop_t_init();
     scheduler_init();
     paging_init();
+    paging_set_always_access_VEDEO(VIRTUAL_ADDR_AlWAYS_ACCESS_VEDIO_PAGE,VIDEO);
     // printf("All Init Correctly");
 
     /* Enable interrupts */

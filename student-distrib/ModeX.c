@@ -6,6 +6,7 @@
 #include "keyboard.h"
 #include "desktop.h"
 #include "blocks.h"
+#include "sys_calls.h"
 
 
 
@@ -199,9 +200,13 @@ static unsigned short text_graphics[NUM_GRAPHICS_REGS] = {
 extern int32_t switch_to_modeX(){
     int32_t i;
     uint8_t* VM_addr = (uint8_t*)(VIDEO);  
+    uint8_t* VM_ACCESS_addr = (uint8_t*)(VIRTUAL_ADDR_AlWAYS_ACCESS_VEDIO_PAGE);  
     mem_temp_v= (unsigned char*) TEMP_STOR_FOR_MODEX; //i.e. 0x900000
-    /* copy 0xB8000--0xB8000+4KB*4 to 0x900000--0x900000+4KB*4 for storage of text screens */
+    
+    /* copy 0xB8000--0xB8000+4KB*4 to 0x9000000--0x9000000+4KB*4 for storage of text screens */
     for (i = 0; i < _4KB_*4; i++) {mem_temp_v[i] = (VM_addr)[i];}
+    /* copy physical 0xB8000--0xB8000+4KB to 0x9800000--0x9800000+4KB for storage of text screens */
+    for (i = 0; i < _4KB_; i++) {mem_temp_v[i] = (VM_ACCESS_addr)[i];}
     /* set the start of mem_image of ModeX */
     mem_image= (unsigned char*) MODEX_STR_ADDR;
 
@@ -498,7 +503,9 @@ extern void set_text_mode_3(int clear_scr) {
     int i;                      /* loop over text screen words             */
     int32_t j;
     uint8_t* VM_addr = (uint8_t*)(VIDEO);  
+    uint8_t* VM_ACCESS_addr = (uint8_t*)(VIRTUAL_ADDR_AlWAYS_ACCESS_VEDIO_PAGE);  
     mem_temp_v= (unsigned char*) TEMP_STOR_FOR_MODEX; //i.e. 0x900000
+
 
     VGA_blank(1);                               /* blank the screen        */
     /*
@@ -512,8 +519,10 @@ extern void set_text_mode_3(int clear_scr) {
     set_graphics_registers(text_graphics);      /* graphics registers      */
     fill_palette();                             /* palette colors          */
 
-    /* restore 0xB8000--0xB8000+4KB*4 from 0x900000--0x900000+4KB*4 for restorage of text screens */
+    /* restore 0xB8000--0xB8000+4KB*4 from 0x9000000--0x9000000+4KB*4 for restorage of text screens */
     for (j = 0; j < _4KB_*4; j++) {VM_addr[j] = (mem_temp_v)[j];}
+    /* restore physical 0xB8000--0xB8000+4KB from 0x9800000--0x9800000+4KB for storage of text screens */
+    for (i = 0; i < _4KB_; i++) {VM_ACCESS_addr[i] = (mem_temp_v)[i];}
 
     if (clear_scr) {                            /* clear screens if needed */
         txt_scr = (unsigned long*)(mem_image + 0x18000);
