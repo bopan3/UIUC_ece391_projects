@@ -111,6 +111,16 @@ enum {
     /* User defined blocks */
     MOUSE_CURSOR,
     MOUSE_CURSOR_MASK,
+    BACKGROUND,
+    ICON_EDGE_1,
+    ICON_EDGE_2,
+    ICON_EDGE_3,
+    ICON_EDGE_4,
+    ICON_EDGE_5,    // Same as backgroud block
+    ICON_EDGE_6,
+    ICON_EDGE_7,
+    ICON_EDGE_8,
+    ICON_EDGE_9,
     /* Must at the end */
     NUM_BLOCKS
 };

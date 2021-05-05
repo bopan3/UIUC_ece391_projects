@@ -15,7 +15,32 @@
 
 #define SIGN_MASK           0xFFFFFF00
 
+#define X_BLOCK_NUM         26
+#define Y_BLOCK_NUM         15
+
 #define MOUSE_SPEED_FACTOR  3
+
+/* Number of icon in screen */
+#define NUM_ICON 3
+
+/* Use a number to indicate each file */
+#define DOT             0
+#define SIGTEST         1
+#define SHELL           2
+#define GREP            3
+#define SYSERR          4      
+#define RTC             5
+#define FISH            6
+#define COUNTER         7
+#define PINGPONG        8
+#define CAT             9
+#define FRAME0_TXT      10
+#define VERY_LONG_TXT   11
+#define LS              12
+#define TESTPRINT       13
+#define CREATED_TXT     14
+#define FRAME1_TXT      15
+#define HELLO           16
 
 /* Structure of mouse's data package */
 typedef struct mouse_package {
@@ -36,5 +61,6 @@ void wait_out();
 uint8_t read_port();
 void write_port(uint8_t data);
 void mouse_irq_handler();
+void screen_layout_init();
 
 #endif

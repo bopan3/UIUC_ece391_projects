@@ -6,9 +6,13 @@
 #include "keyboard.h"
 #include "desktop.h"
 #include "blocks.h"
+#include "mouse.h"
 
 
 game_info_t game_info;
+
+extern int center_blk_idx[NUM_ICON][2];
+extern int center_blk_fnum[NUM_ICON];
 
 /*
  * The maze array contains a one byte bit vector (maze_bit_t) for each
@@ -27,9 +31,9 @@ game_info_t game_info;
  * 2 X_DIM (2 Y_DIM + 3), and the space allocated is one larger than this
  * maximum index value.
  */
-static unsigned char maze[2 * MAZE_MAX_X_DIM * (2 * MAZE_MAX_Y_DIM + 3) + 1];
-static int maze_x_dim;          /* horizontal dimension of maze */
-static int maze_y_dim;          /* vertical dimension of maze   */
+unsigned char maze[2 * MAZE_MAX_X_DIM * (2 * MAZE_MAX_Y_DIM + 3) + 1];
+int maze_x_dim;          /* horizontal dimension of maze */
+int maze_y_dim;          /* vertical dimension of maze   */
 
 
 void init_game_info() {
@@ -168,7 +172,7 @@ int32_t desktop_close(int32_t fd) {
  */
 int make_desktop(int x_dim, int y_dim) {
  
-    //int x, y;
+    int x, y, i;
 
     /* Check the requested size, and save in local state if it is valid. */
     if (x_dim < MAZE_MIN_X_DIM || x_dim > MAZE_MAX_X_DIM ||
@@ -177,9 +181,26 @@ int make_desktop(int x_dim, int y_dim) {
     maze_x_dim = x_dim;
     maze_y_dim = y_dim;
 
-    /* Fill the maze with walls. */
-    memset(maze, BLOCK_FRUIT_1, sizeof (maze));
-    maze[MAZE_INDEX(10, 10)] = MOUSE_CURSOR;
+    /* Fill the maze with icons. */
+    memset(maze, BACKGROUND, sizeof (maze));
+    /* Set matrix value for each icon */
+    for (i = 0; i < NUM_ICON; i++) {
+        // file_num = center_blk_fnum[i];
+        y = center_blk_idx[i][0];
+        x = center_blk_idx[i][1];
+
+        maze[MAZE_INDEX(x-1, y-1)] = ICON_EDGE_1;
+        maze[MAZE_INDEX(x, y-1)] = ICON_EDGE_2;
+        maze[MAZE_INDEX(x+1, y-1)] = ICON_EDGE_3;
+        maze[MAZE_INDEX(x-1, y)] = ICON_EDGE_4;
+        maze[MAZE_INDEX(x, y)] = ICON_EDGE_5;
+        maze[MAZE_INDEX(x+1, y)] = ICON_EDGE_6;
+        maze[MAZE_INDEX(x-1, y+1)] = ICON_EDGE_7;
+        maze[MAZE_INDEX(x, y+1)] = ICON_EDGE_8;
+        maze[MAZE_INDEX(x+1, y+1)] = ICON_EDGE_9;
+    }
+
+    // maze[MAZE_INDEX(10, 10)] = MOUSE_CURSOR;
 
     //  /* Remove all walls! */
     // for (x = 1; x < 2 * maze_x_dim; x++) {

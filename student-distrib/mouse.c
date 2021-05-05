@@ -15,8 +15,17 @@ int32_t mouse_key_mid;      // 1 means pressed, 0 means not
 
 extern game_info_t game_info;
 
-
-static counter = 0;
+uint8_t icon_location[X_BLOCK_NUM][Y_BLOCK_NUM];
+int center_blk_idx[NUM_ICON][2] = {
+    {2, 2},
+    {2, 7},
+    {2, 12}
+};
+int center_blk_fnum[NUM_ICON] = {
+    FISH,
+    COUNTER,
+    PINGPONG
+};
 
 /* mouse_init
  *  Description: initialize the mouse device
@@ -76,6 +85,44 @@ void mouse_init() {
 
     /* Set i8259 */
     enable_irq(MOUSE_IRQ_NUM);
+
+    screen_layout_init();
+}
+
+/* screen_layout_init
+ *  Description: initialize the screen layout matrix and other parameters
+ *  Input: none
+ *  Output: none
+ *  Return: none
+ *  Side Effect: none
+ */
+void screen_layout_init() {
+    int x, y, i;
+    int file_num;
+
+    for (x = 0; x < X_BLOCK_NUM; x++) {
+        for (y = 0; y < Y_BLOCK_NUM; y++) {
+            icon_location[x][y] = 0;
+        }
+    }
+
+    /* Set matrix value for each icon */
+    for (i = 0; i < NUM_ICON; i++) {
+        file_num = center_blk_fnum[i];
+        x = center_blk_idx[i][0];
+        y = center_blk_idx[i][1];
+
+        icon_location[x-1][y] = file_num;
+        icon_location[x-1][y-1] = file_num;
+        icon_location[x-1][y+1] = file_num;
+        icon_location[x][y] = file_num;
+        icon_location[x][y-1] = file_num;
+        icon_location[x][y+1] = file_num;
+        icon_location[x+1][y] = file_num;
+        icon_location[x+1][y-1] = file_num;
+        icon_location[x+1][y+1] = file_num;
+    }
+
 
 }
 
@@ -147,16 +194,41 @@ void mouse_irq_handler() {
     // printf("[Test] (left, right, mid): (%d, %d, %d)\n", mouse_key_left, mouse_key_right, mouse_key_mid);
 
     cli();
-    if (mouse_key_left || mouse_key_right || mouse_key_mid) {
-        draw_full_block_with_mask(mouse_x_coor, mouse_y_coor, get_block_img(MOUSE_CURSOR), get_block_img(MOUSE_CURSOR_MASK), restore_block);
-        show_screen();
-        restore_full_block_with_mask(mouse_x_coor, mouse_y_coor, get_block_img(MOUSE_CURSOR), get_block_img(MOUSE_CURSOR_MASK), restore_block);
-    } else {
-        draw_fruit_text_with_mask(mouse_x_coor, mouse_y_coor, get_block_img(MOUSE_CURSOR_MASK), restore_block);
-        show_screen();
-        restore_fruit_text_with_mask(mouse_x_coor, mouse_y_coor, get_block_img(MOUSE_CURSOR_MASK), restore_block);
-    }
+    // if (mouse_key_left || mouse_key_right || mouse_key_mid) {
+    //     // draw_full_block_with_mask(mouse_x_coor, mouse_y_coor, get_block_img(MOUSE_CURSOR), get_block_img(MOUSE_CURSOR_MASK), restore_block);
+    //     // show_screen();
+    //     // restore_full_block_with_mask(mouse_x_coor, mouse_y_coor, get_block_img(MOUSE_CURSOR), get_block_img(MOUSE_CURSOR_MASK), restore_block);
+    // } else {
+    //     draw_fruit_text_with_mask(mouse_x_coor, mouse_y_coor, get_block_img(MOUSE_CURSOR_MASK), restore_block);
+    //     show_screen();
+    //     restore_fruit_text_with_mask(mouse_x_coor, mouse_y_coor, get_block_img(MOUSE_CURSOR_MASK), restore_block);
+    // }
+    draw_fruit_text_with_mask(mouse_x_coor, mouse_y_coor, get_block_img(MOUSE_CURSOR_MASK), restore_block);
+    show_screen();
+    restore_fruit_text_with_mask(mouse_x_coor, mouse_y_coor, get_block_img(MOUSE_CURSOR_MASK), restore_block);
     sti();
+
+    /* Determine location of mouse w.r.t icon */
+    int blk_y = mouse_x_coor / 12;
+    int blk_x = mouse_y_coor / 12;
+    int offset[4][4] = {{0,0}, {0,1}, {1,0}, {1,1}};
+    int i;
+    int f_num;
+
+    for (i = 0; i < 4; i++) {
+        if (blk_x + offset[i][0] < X_BLOCK_NUM && blk_y + offset[i][1] < Y_BLOCK_NUM) {
+            f_num = icon_location[blk_x + offset[i][0]][blk_y + offset[i][1]];
+        } else {
+            f_num = 0;
+        }
+
+        // if (f_num != 0) {
+        //     restore_fruit_text_with_mask(mouse_x_coor, mouse_y_coor, get_block_img(MOUSE_CURSOR_MASK), restore_block);
+        //     show_screen();
+        //     break;
+        // }
+    }
+    
 }
 
 
