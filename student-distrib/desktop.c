@@ -189,15 +189,15 @@ int make_desktop(int x_dim, int y_dim) {
         x = center_blk_idx[i][0];
         y = center_blk_idx[i][1];
 
-        maze[MAZE_INDEX(x-1, y-1)] = ICON_TEST_1;
-        maze[MAZE_INDEX(x, y-1)] = ICON_TEST_2;
-        maze[MAZE_INDEX(x+1, y-1)] = ICON_TEST_3;
-        maze[MAZE_INDEX(x-1, y)] = ICON_TEST_4;
-        maze[MAZE_INDEX(x, y)] = ICON_TEST_5;
-        maze[MAZE_INDEX(x+1, y)] = ICON_TEST_6;
-        maze[MAZE_INDEX(x-1, y+1)] = ICON_TEST_7;
-        maze[MAZE_INDEX(x, y+1)] = ICON_TEST_8;
-        maze[MAZE_INDEX(x+1, y+1)] = ICON_TEST_9;
+        maze[MAZE_INDEX(x-1, y-1)] = ICON_TEST_1 + 9 * (i + 1);
+        maze[MAZE_INDEX(x, y-1)] = ICON_TEST_2 + 9 * (i + 1);
+        maze[MAZE_INDEX(x+1, y-1)] = ICON_TEST_3 + 9 * (i + 1);
+        maze[MAZE_INDEX(x-1, y)] = ICON_TEST_4 + 9 * (i + 1);
+        maze[MAZE_INDEX(x, y)] = ICON_TEST_5 + 9 * (i + 1);
+        maze[MAZE_INDEX(x+1, y)] = ICON_TEST_6 + 9 * (i + 1);
+        maze[MAZE_INDEX(x-1, y+1)] = ICON_TEST_7 + 9 * (i + 1);
+        maze[MAZE_INDEX(x, y+1)] = ICON_TEST_8 + 9 * (i + 1);
+        maze[MAZE_INDEX(x+1, y+1)] = ICON_TEST_9 + 9 * (i + 1);
     }
 
     return 0;

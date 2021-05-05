@@ -64,4 +64,6 @@ extern int32_t desktop_read(int32_t fd, void* buf, int32_t nbytes);
 
 extern int32_t desktop_write(int32_t fd, const void* buf, int32_t nbytes);
 
+void init_game_info();
+
 #endif /* MAZE_H */

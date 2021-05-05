@@ -41,6 +41,8 @@
 #define CREATED_TXT     14
 #define FRAME1_TXT      15
 #define HELLO           16
+#define MP              16
+#define VIDEO_1         17
 
 /* Structure of mouse's data package */
 typedef struct mouse_package {

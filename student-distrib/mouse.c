@@ -18,25 +18,25 @@ extern game_info_t game_info;
 /* File icon in GUI */
 uint8_t icon_location[X_BLOCK_NUM][Y_BLOCK_NUM];
 int center_blk_idx[NUM_ICON][2] = {
-    {2, 2},
-    {7, 2},
-    {12, 2},
-    {17, 2},
-    {22, 2}
+    {3, 2},
+    {8, 2},
+    {13, 2},
+    {18, 2},
+    {23, 2}
 };
 int center_blk_fnum[NUM_ICON] = {
-    FISH,
+    MP,
     COUNTER,
     PINGPONG,
-    LS,
-    TESTPRINT
+    VIDEO_1,
+    FISH
 };
 char* instruction[NUM_ICON] = {
-    "fish",
+    "mp",
     "counter",
     "pingpong",
-    "ls",
-    "testprint"
+    "video",
+    "fish"
 };
 
 /* mouse_init

@@ -85,4 +85,7 @@ extern void restore_fruit_text_with_mask(int pos_x, int pos_y, unsigned char* ma
  * set the palette color for given index 
  */
 extern void set_palette_color(unsigned char color_index, unsigned char* RGB);
+
+unsigned char* get_block_img(int32_t block_name);
+
 #endif
