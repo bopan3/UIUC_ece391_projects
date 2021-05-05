@@ -186,8 +186,8 @@ int make_desktop(int x_dim, int y_dim) {
     /* Set matrix value for each icon */
     for (i = 0; i < NUM_ICON; i++) {
         // file_num = center_blk_fnum[i];
-        y = center_blk_idx[i][0];
-        x = center_blk_idx[i][1];
+        x = center_blk_idx[i][0];
+        y = center_blk_idx[i][1];
 
         maze[MAZE_INDEX(x-1, y-1)] = ICON_TEST_1;
         maze[MAZE_INDEX(x, y-1)] = ICON_TEST_2;

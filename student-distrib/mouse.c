@@ -15,16 +15,28 @@ int32_t mouse_key_mid;      // 1 means pressed, 0 means not
 
 extern game_info_t game_info;
 
+/* File icon in GUI */
 uint8_t icon_location[X_BLOCK_NUM][Y_BLOCK_NUM];
 int center_blk_idx[NUM_ICON][2] = {
     {2, 2},
-    {2, 7},
-    {2, 12}
+    {7, 2},
+    {12, 2},
+    {17, 2},
+    {22, 2}
 };
 int center_blk_fnum[NUM_ICON] = {
     FISH,
     COUNTER,
-    PINGPONG
+    PINGPONG,
+    LS,
+    TESTPRINT
+};
+char* instruction[NUM_ICON] = {
+    "fish",
+    "counter",
+    "pingpong",
+    "ls",
+    "testprint"
 };
 
 /* mouse_init
@@ -138,6 +150,7 @@ void mouse_irq_handler() {
     uint8_t temp;
     mouse_package mouse_in;
     unsigned char restore_block[12*12];
+    unsigned char restore_block_cursor[12*12];
 
     send_eoi(MOUSE_IRQ_NUM);
     // sti();
@@ -189,38 +202,82 @@ void mouse_irq_handler() {
     mouse_key_right = mouse_in.right_btn;
     mouse_key_mid = mouse_in.mid_btn;
 
-    
+    // printf("(Test) (blk_x, blk_y) (%d, %d)\n", mouse_x_coor / 12, mouse_y_coor / 12);
+    // return;
 
     // printf("[Test] (left, right, mid): (%d, %d, %d)\n", mouse_key_left, mouse_key_right, mouse_key_mid);
-
     cli();
     if (mouse_key_left || mouse_key_right || mouse_key_mid) {
-        draw_full_block_with_mask(mouse_x_coor, mouse_y_coor, get_block_img(MOUSE_CURSOR), get_block_img(MOUSE_CURSOR_MASK_SOLID), restore_block);
+        draw_full_block_with_mask(mouse_x_coor, mouse_y_coor, (unsigned char*)get_block_img(MOUSE_CURSOR), (unsigned char*)get_block_img(MOUSE_CURSOR_MASK_SOLID), restore_block_cursor);
         show_screen();
-        restore_full_block_with_mask(mouse_x_coor, mouse_y_coor, get_block_img(MOUSE_CURSOR), get_block_img(MOUSE_CURSOR_MASK_SOLID), restore_block);
+        restore_full_block_with_mask(mouse_x_coor, mouse_y_coor, (unsigned char*)get_block_img(MOUSE_CURSOR), (unsigned char*)get_block_img(MOUSE_CURSOR_MASK_SOLID), restore_block_cursor);
     } else {
-        draw_fruit_text_with_mask(mouse_x_coor, mouse_y_coor, get_block_img(MOUSE_CURSOR_MASK_TRANS), restore_block);
+        draw_fruit_text_with_mask(mouse_x_coor, mouse_y_coor, (unsigned char*)get_block_img(MOUSE_CURSOR_MASK_TRANS), restore_block_cursor);
         show_screen();
-        restore_fruit_text_with_mask(mouse_x_coor, mouse_y_coor, get_block_img(MOUSE_CURSOR_MASK_TRANS), restore_block);
+        restore_fruit_text_with_mask(mouse_x_coor, mouse_y_coor, (unsigned char*)get_block_img(MOUSE_CURSOR_MASK_TRANS), restore_block_cursor);
     }
     sti();
 
     /* Determine location of mouse w.r.t icon */
-    int blk_y = mouse_x_coor / 12;
-    int blk_x = mouse_y_coor / 12;
-    int offset[4][4] = {{0,0}, {0,1}, {1,0}, {1,1}};
-    int i;
+    int blk_x = mouse_x_coor / 12;
+    int blk_y = mouse_y_coor / 12;
+    int offset[4][2] = {{0,0}, {0,1}, {1,0}, {1,1}};
+    int i, j;
+    int blk_x_i, blk_y_i;
+    int coor_x, coor_y;
     int f_num;
 
+
     for (i = 0; i < 4; i++) {
-        if (blk_x + offset[i][0] < X_BLOCK_NUM && blk_y + offset[i][1] < Y_BLOCK_NUM) {
-            f_num = icon_location[blk_x + offset[i][0]][blk_y + offset[i][1]];
+        blk_x_i = blk_x + offset[i][0];
+        blk_y_i = blk_y + offset[i][1];
+        if (blk_x_i < X_BLOCK_NUM && blk_y_i < Y_BLOCK_NUM) {
+            f_num = icon_location[blk_x_i][blk_y_i];
         } else {
             f_num = 0;
         }
 
+        /* If locate in a block  */
         if (f_num != 0) {
+            /* Dispaly edge for that icon */
+            for (j = 0; j < NUM_ICON; j++) {
+                if (center_blk_fnum[j] == f_num)
+                    break;
+            }
+            coor_x = 12 * center_blk_idx[j][0];
+            coor_y = 12 * center_blk_idx[j][1];
+            cli();
+            draw_full_block_with_mask(coor_x-12, coor_y-12, (unsigned char*)get_block_img(ICON_EDGE_1), (unsigned char*)get_block_img(ICON_EDGE_MASK_1), restore_block);
+            draw_full_block_with_mask(coor_x, coor_y-12, (unsigned char*)get_block_img(ICON_EDGE_2), (unsigned char*)get_block_img(ICON_EDGE_MASK_2), restore_block);
+            draw_full_block_with_mask(coor_x+12, coor_y-12, (unsigned char*)get_block_img(ICON_EDGE_3), (unsigned char*)get_block_img(ICON_EDGE_MASK_3), restore_block);
+            draw_full_block_with_mask(coor_x-12, coor_y, (unsigned char*)get_block_img(ICON_EDGE_4), (unsigned char*)get_block_img(ICON_EDGE_MASK_4), restore_block);
+            draw_full_block_with_mask(coor_x, coor_y, (unsigned char*)get_block_img(ICON_EDGE_5), (unsigned char*)get_block_img(ICON_EDGE_MASK_5), restore_block);
+            draw_full_block_with_mask(coor_x+12, coor_y, (unsigned char*)get_block_img(ICON_EDGE_6), (unsigned char*)get_block_img(ICON_EDGE_MASK_6), restore_block);
+            draw_full_block_with_mask(coor_x-12, coor_y+12, (unsigned char*)get_block_img(ICON_EDGE_7), (unsigned char*)get_block_img(ICON_EDGE_MASK_7), restore_block);
+            draw_full_block_with_mask(coor_x, coor_y+12, (unsigned char*)get_block_img(ICON_EDGE_8), (unsigned char*)get_block_img(ICON_EDGE_MASK_8), restore_block);
+            draw_full_block_with_mask(coor_x+12, coor_y+12, (unsigned char*)get_block_img(ICON_EDGE_9), (unsigned char*)get_block_img(ICON_EDGE_MASK_9), restore_block);
             
+            if (mouse_key_left || mouse_key_right || mouse_key_mid) {
+                draw_full_block_with_mask(mouse_x_coor, mouse_y_coor, (unsigned char*)get_block_img(MOUSE_CURSOR), (unsigned char*)get_block_img(MOUSE_CURSOR_MASK_SOLID), restore_block_cursor);
+                show_screen();
+                restore_full_block_with_mask(mouse_x_coor, mouse_y_coor, (unsigned char*)get_block_img(MOUSE_CURSOR), (unsigned char*)get_block_img(MOUSE_CURSOR_MASK_SOLID), restore_block_cursor);
+            } else {
+                draw_fruit_text_with_mask(mouse_x_coor, mouse_y_coor, (unsigned char*)get_block_img(MOUSE_CURSOR_MASK_TRANS), restore_block_cursor);
+                show_screen();
+                restore_fruit_text_with_mask(mouse_x_coor, mouse_y_coor, (unsigned char*)get_block_img(MOUSE_CURSOR_MASK_TRANS), restore_block_cursor);
+            }
+
+            restore_full_block_with_mask(coor_x-12, coor_y-12, (unsigned char*)get_block_img(ICON_EDGE_1), (unsigned char*)get_block_img(ICON_EDGE_MASK_1), restore_block);
+            restore_full_block_with_mask(coor_x, coor_y-12, (unsigned char*)get_block_img(ICON_EDGE_2), (unsigned char*)get_block_img(ICON_EDGE_MASK_2), restore_block);
+            restore_full_block_with_mask(coor_x+12, coor_y-12, (unsigned char*)get_block_img(ICON_EDGE_3), (unsigned char*)get_block_img(ICON_EDGE_MASK_3), restore_block);
+            restore_full_block_with_mask(coor_x-12, coor_y, (unsigned char*)get_block_img(ICON_EDGE_4), (unsigned char*)get_block_img(ICON_EDGE_MASK_4), restore_block);
+            restore_full_block_with_mask(coor_x, coor_y, (unsigned char*)get_block_img(ICON_EDGE_5), (unsigned char*)get_block_img(ICON_EDGE_MASK_5), restore_block);
+            restore_full_block_with_mask(coor_x+12, coor_y, (unsigned char*)get_block_img(ICON_EDGE_6), (unsigned char*)get_block_img(ICON_EDGE_MASK_6), restore_block);
+            restore_full_block_with_mask(coor_x-12, coor_y+12, (unsigned char*)get_block_img(ICON_EDGE_7), (unsigned char*)get_block_img(ICON_EDGE_MASK_7), restore_block);
+            restore_full_block_with_mask(coor_x, coor_y+12, (unsigned char*)get_block_img(ICON_EDGE_8), (unsigned char*)get_block_img(ICON_EDGE_MASK_8), restore_block);
+            restore_full_block_with_mask(coor_x+12, coor_y+12, (unsigned char*)get_block_img(ICON_EDGE_9), (unsigned char*)get_block_img(ICON_EDGE_MASK_9), restore_block);
+            sti();
+
             break;
         }
     }

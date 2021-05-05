@@ -21,7 +21,7 @@
 #define MOUSE_SPEED_FACTOR  3
 
 /* Number of icon in screen */
-#define NUM_ICON 3
+#define NUM_ICON 5
 
 /* Use a number to indicate each file */
 #define DOT             0

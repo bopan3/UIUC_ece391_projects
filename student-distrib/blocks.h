@@ -73,41 +73,6 @@ typedef enum {
  * order in blocks.s.
  */
 enum {
-    BLOCK_,               /* 16 blocks for walls with up, right, down,    */
-    BLOCK_U,              /*   and left connections to adjacent walls     */
-    BLOCK_R,
-    BLOCK_UR,
-    BLOCK_D,
-    BLOCK_UD,
-    BLOCK_RD,
-    BLOCK_URD,
-    BLOCK_L,
-    BLOCK_UL,
-    BLOCK_RL,
-    BLOCK_URL,
-    BLOCK_DL,
-    BLOCK_UDL,
-    BLOCK_RDL,
-    BLOCK_URDL,
-    BLOCK_EMPTY,          /* empty (non-wall) maze space                  */
-    BLOCK_SHADOW,         /* obscured maze space                          */
-    BLOCK_PLAYER_UP,      /* four pictures of the player, in dir_t order  */
-    BLOCK_PLAYER_RIGHT,
-    BLOCK_PLAYER_DOWN,
-    BLOCK_PLAYER_LEFT,
-    BLOCK_PLAYER_MASK_UP, /* four masks for player images, in dir_t order */
-    BLOCK_PLAYER_MASK_RIGHT,
-    BLOCK_PLAYER_MASK_DOWN,
-    BLOCK_PLAYER_MASK_LEFT,
-    BLOCK_FRUIT_1,        /* fruit pictures                               */
-    BLOCK_FRUIT_2,
-    BLOCK_FRUIT_3,
-    BLOCK_FRUIT_4,
-    BLOCK_FRUIT_5,
-    BLOCK_FRUIT_6,
-    BLOCK_FRUIT_7,  LAST_FRUIT = BLOCK_FRUIT_7,
-    BLOCK_FRUIT_SHADOW,   /* obscured fruit                               */
-    BLOCK_EXIT,           /* the exit from the maze                       */
     /* User defined blocks */
     MOUSE_CURSOR,
     MOUSE_CURSOR_MASK_SOLID,
@@ -122,6 +87,15 @@ enum {
     ICON_EDGE_7,
     ICON_EDGE_8,
     ICON_EDGE_9,
+    ICON_EDGE_MASK_1,
+    ICON_EDGE_MASK_2,
+    ICON_EDGE_MASK_3,
+    ICON_EDGE_MASK_4,
+    ICON_EDGE_MASK_5,
+    ICON_EDGE_MASK_6,
+    ICON_EDGE_MASK_7,
+    ICON_EDGE_MASK_8,
+    ICON_EDGE_MASK_9,
     ICON_TEST_1,
     ICON_TEST_2,
     ICON_TEST_3,
