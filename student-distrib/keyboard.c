@@ -4,9 +4,12 @@
 #include "terminal.h"
 #include "scheduler.h"
 #include "./dev/sound.h"
+#include "ModeX.h"
+#include "desktop.h"
+#include "blocks.h"
+
 #define SCANCODE_SET_SIZE 58
 #define EMP 0x0
-#define IRQ_NUM_KEYBOARD 0x01
 #define KEYBOARD_DATA_PORT 0x60
 
 #define ON      1
@@ -47,15 +50,13 @@ static uint8_t alt_flag = OFF;
 extern int32_t terminal_tick;
 extern int32_t terminal_display;
 extern terminal_t tm_array[];
-// extern void player(const uint8_t* music_name);
-// extern uint8_t music_states;
-
+int32_t debug_counter=0;
 /*
 * The table used to map the scancode to ascii
 * The table is adapt from https://wiki.osdev.org/Keyboard
 */
 uint8_t scancode_to_ascii[SCANCODE_SET_SIZE][2] = {     // two ascii char for each entry
-    {EMP, EMP}, {EMP, EMP},     
+    {EMP, EMP}, {EMP, EMP},
     {'1', '!'}, {'2', '@'},
     {'3', '#'}, {'4', '$'},
     {'5', '%'}, {'6', '^'},
@@ -83,10 +84,10 @@ uint8_t scancode_to_ascii[SCANCODE_SET_SIZE][2] = {     // two ascii char for ea
     {'m', 'M'}, {',', '<'},     // 32, 33
     {'.', '>'}, {'/', '?'},     // 34, 35
     {EMP, EMP}, {EMP, EMP},     // Right Shift,
-    {EMP, EMP}, {' ', ' '},    
+    {EMP, EMP}, {' ', ' '},
 };
 
-/* 
+/*
  * keyboard_init
  *   DESCRIPTION: initialize the keyboard
  *   INPUTS: none
@@ -98,7 +99,7 @@ void keyboard_init() {
     enable_irq(IRQ_NUM_KEYBOARD);
 }
 
-/* 
+/*
  * keyboard_handler
  *   DESCRIPTION: IRQ handler for keyboard
  *   INPUTS: none
@@ -138,7 +139,7 @@ void keyboard_handler() {
         send_eoi(IRQ_NUM_KEYBOARD);
         sti();
         return;
-    } 
+    }
 
     // make sure inside legit range
     if ((scan_code >= SCANCODE_SET_SIZE) || (scan_code < 0x02)){    // < 0x02 since the first two are empty
@@ -151,18 +152,38 @@ void keyboard_handler() {
         if (ctrl_flag) {
             switch ((scancode_to_ascii[scan_code][LOWER])) {
                 case 'l':
+                    // clear_screens_manul();
                     clear();
                     break;
                 /* ============== only for local test ============== */
                 case '1':
                     switch_visible_terminal(0);
                     break;
-                case '2':
-                    switch_visible_terminal(1);
+                // case '2':
+                //     switch_visible_terminal(1);
+                //     break;
+                // case '3':
+                //     switch_visible_terminal(2);
+                //     break;
+                case '4':
+                    desktop_open(NULL);
                     break;
-                case '3':
-                    switch_visible_terminal(2);
+                case '5':
+                    desktop_close(NULL);
                     break;
+                case '6':
+                    switch_another_screen();
+                    break;
+                case '7':
+                    clear_screens_manul();
+                    break;
+                case '8':
+                    change_top_left();
+                    break;
+                case '9':
+                    refresh_mp4(get_block_img(MOUSE_CURSOR));
+                    //refresh_mp4(debug_counter+_4KB_);
+                    //debug_counter=debug_counter+_4KB_;
                 /*==============  only for local test ============== */
                 case 'r':
                     player((uint8_t*)RICKROLL_WAV);
@@ -179,11 +200,11 @@ void keyboard_handler() {
                 default:
                     break;
             }
-        } 
+        }
         // else if (alt_flag) {
         //     printf("Scan Code:%x\n", scan_code);
         //     switch (scan_code) {
-                
+
         //         case F1:
         //             switch_visible_terminal(0);
         //             break;
@@ -196,7 +217,7 @@ void keyboard_handler() {
         //         default:
         //             break;
         //     }
-        // } 
+        // }
         else {
             // Set ascii_code in respond to caps_flag and SHIFT_FLAG
             // Spacial case for numbers and -,= do not change when only caps_flag
@@ -217,7 +238,7 @@ void keyboard_handler() {
 //            putc(ascii_code);
             line_buf_in(ascii_code);
         }
-    } 
+    }
     send_eoi(IRQ_NUM_KEYBOARD);
     sti();
     return;
@@ -267,4 +288,3 @@ int spe_key_check(uint8_t scan_code) {
             return COMMON;
     }
 }
-

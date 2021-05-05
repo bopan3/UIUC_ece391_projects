@@ -4,8 +4,19 @@
 #include "lib.h"
 #include "scheduler.h"
 #include "paging.h"
+#define ___4KB 0x1000  // 3 zeros
+#define ___64KB 0x10000 // 4 zeros
+#define ___1MB 0x100000 // 5 zeros
+#define ___16MB 0x1000000 // 6 zeros
+#define ___256MB 0x10000000 // 7 zeros
+#define ___4GB 0x100000000 // 8 zeros
+#define V_buf1 0xA05A0   //641.xx KB
+#define V_buf2 0xA45A0   //657.xx KB
+#define MEM_FOR_SOUND 0x100000 // start from 1MB
+#define MODEX_VIDEO 0xA0000 // 640KB-
+#define END_OF_VGA_MEM 0xBFFFF // -764KB
+#define VIDEO       0xB8000 // 736-740 KB
 
-#define VIDEO       0xB8000
 #define NUM_COLS    80
 #define NUM_ROWS    25
 #define ATTRIB      0x7
@@ -22,6 +33,7 @@
 extern int32_t terminal_tick;
 extern int32_t terminal_display;
 extern terminal_t tm_array[];
+extern int32_t in_modex;
 
 static char* video_mem = (char *)VIDEO;
 
@@ -35,7 +47,7 @@ void clear(void) {
     int32_t i;
 
     // change page mapping to physical video memory
-    page_table[VIDEO_REGION_START_K].address = VIDEO_REGION_START_K; /* set for kernel */
+    page_table[VIDEO_REGION_START_K].address = VIDEO_REGION_START_K+in_modex*(TEMP_ADDR_VEDIO_PAGE-VIDEO)/_4KB_; /* set for kernel */
 //    page_table_vedio_mem[VIDEO_REGION_START_U].address =  VIDEO_REGION_START_K; /* set for user */
     TLB_flush();
 
@@ -46,8 +58,8 @@ void clear(void) {
     }
 
     // change back the page mapping
-    page_table[VIDEO_REGION_START_K].address = VIDEO_REGION_START_K +  (terminal_display != terminal_tick) * (terminal_tick + 1); /* set for kernel */
-    page_table_vedio_mem[VIDEO_REGION_START_U].address =  VIDEO_REGION_START_K + (terminal_display != terminal_tick) * (terminal_tick + 1); /* set for user */
+    page_table[VIDEO_REGION_START_K].address = VIDEO_REGION_START_K +  (terminal_display != terminal_tick) * (terminal_tick + 1) +in_modex*(TEMP_ADDR_VEDIO_PAGE-VIDEO)/_4KB_; /* set for kernel */
+    page_table_vedio_mem[VIDEO_REGION_START_U].address =  VIDEO_REGION_START_K + (terminal_display != terminal_tick) * (terminal_tick + 1) +in_modex*(TEMP_ADDR_VEDIO_PAGE-VIDEO)/_4KB_; /* set for user */
     TLB_flush();
 
     // reset coordinates

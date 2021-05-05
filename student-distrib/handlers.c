@@ -8,9 +8,10 @@
 #include "keyboard.h"
 #include "rtc.h"
 #include "timer.h"
+#include "mouse.h"
 #include "./dev/sound.h"
 
-/* 
+/*
  * irq_handler
  *   DESCRIPTION: save registers and pass control to a interrupt handler specified by irq_vect
  *   INPUTS: irq_num - index of interrupt in IDT
@@ -21,6 +22,9 @@
 void irq_handler(int irq_vect) {
     /* Enable interrupt */
     // asm volatile("sti");
+
+    // printf("(Test) IRQ #: %x\n", irq_vect);
+
 
     /* For CP1, just print the message */
     cli();
@@ -43,13 +47,13 @@ void irq_handler(int irq_vect) {
             //printf("INTERRUPT #0x%x: Real Time Clock\n", irq_vect);
             #if TEST_RTC==1
             rtc_handler();
-            #endif 
+            #endif
             break;
         case IRQ_Eth0:
             printf("INTERRUPT #0x%x: Eth0\n", irq_vect);
             break;
         case IRQ_PS2_Mouse:
-            printf("INTERRUPT #0x%x: PS/2 Mouse\n", irq_vect);
+            mouse_irq_handler();
             break;
         case IRQ_Ide0:
             printf("INTERRUPT #0x%x: Ide0\n", irq_vect);
@@ -65,5 +69,3 @@ void irq_handler(int irq_vect) {
     sti();
     return;
 }
-
-

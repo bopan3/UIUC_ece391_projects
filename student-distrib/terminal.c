@@ -7,11 +7,14 @@
 #include "scheduler.h"
 #include "lib.h"
 #include "paging.h"
+#include "desktop.h"
 
 #define ON          1
 #define OFF         0
 
 volatile uint8_t enter_flag = OFF;      /* Record the state of whether enter is pressed */
+volatile uint8_t click_flag = OFF;      /* Record the state of whether mouse is clicked */
+
 //static char line_buf[LINE_BUF_SIZE];    /* The line buffer */
 //static int num_char = 0;                /* Record current number of chars in line buffer */
 
@@ -19,7 +22,7 @@ volatile uint8_t enter_flag = OFF;      /* Record the state of whether enter is 
 extern int32_t terminal_tick;
 extern int32_t terminal_display;
 extern terminal_t tm_array[];
-
+extern int32_t in_modex;
 #define NUM_CHAR    tm_array[terminal_tick].num_char
 #define LINE_BUF    tm_array[terminal_tick].kb_buf
 
@@ -65,7 +68,10 @@ int32_t terminal_read(int32_t fd, void* buf, int32_t nbytes) {
         return -1;
 
     // While enter not pressed, wait for enter
-    while (OFF == enter_flag || terminal_tick != terminal_display) {}
+    while (1) {
+        if (enter_flag && (terminal_tick == terminal_display)) break;
+        if (click_flag) break;
+    }
     cli();
 
     // Define a temp buffer for data transfer
@@ -78,10 +84,13 @@ int32_t terminal_read(int32_t fd, void* buf, int32_t nbytes) {
             break;
         }
     }
+    
+    if (click_flag) desktop_close(NULL);
 
     // Clear the buffer
     line_buf_clear();
     enter_flag = OFF;
+    click_flag = OFF;
 
     sti();
     return i;
@@ -197,8 +206,8 @@ void put_dis_ter(char curr) {
     int32_t term_buf;
 
     // change page mapping to physical video memory
-    page_table[VIDEO_REGION_START_K].address = VIDEO_REGION_START_K; /* set for kernel */
-    page_table_vedio_mem[VIDEO_REGION_START_U].address =  VIDEO_REGION_START_K; /* set for user */
+    page_table[VIDEO_REGION_START_K].address = VIDEO_REGION_START_K;//+in_modex*(TEMP_ADDR_VEDIO_PAGE-VIDEO)/_4KB_; /* set for kernel */
+    page_table_vedio_mem[VIDEO_REGION_START_U].address =  VIDEO_REGION_START_K;//+in_modex*(TEMP_ADDR_VEDIO_PAGE-VIDEO)/_4KB_; /* set for user */
     TLB_flush();
 
     // back up original active terminal number
@@ -212,7 +221,7 @@ void put_dis_ter(char curr) {
     terminal_tick = term_buf;
 
     // change back the page mapping
-    page_table[VIDEO_REGION_START_K].address = VIDEO_REGION_START_K +  (terminal_display != terminal_tick) * (terminal_tick + 1); /* set for kernel */
-    page_table_vedio_mem[VIDEO_REGION_START_U].address =  VIDEO_REGION_START_K + (terminal_display != terminal_tick) * (terminal_tick + 1); /* set for user */
+    page_table[VIDEO_REGION_START_K].address = VIDEO_REGION_START_K ;//+  (terminal_display != terminal_tick) * (terminal_tick + 1)+in_modex*(TEMP_ADDR_VEDIO_PAGE-VIDEO)/_4KB_; /* set for kernel */
+    page_table_vedio_mem[VIDEO_REGION_START_U].address =  VIDEO_REGION_START_K;// + (terminal_display != terminal_tick) * (terminal_tick + 1)+in_modex*(TEMP_ADDR_VEDIO_PAGE-VIDEO)/_4KB_; /* set for user */
     TLB_flush();
 }

@@ -16,6 +16,8 @@ int32_t pid = 0, new_pid = 0;       /* pid cursor */
 extern terminal_t tm_array[];
 extern int32_t terminal_tick;   
 extern int32_t running_terminal;
+extern int32_t in_modex;
+
 /*
  *   getargs
  *   DESCRIPTION: copy program args from kernel to user
@@ -288,10 +290,10 @@ int32_t vidmap (uint8_t** screen_start){
     if (screen_start==NULL || (int) screen_start<USER_PAGE_BASE || (int) screen_start>=USER_PAGE_BASE+_4MB_-_4B_){   //also make sure the end of variable "screen_start" is not out of the user space
          return SYS_CALL_FAIL;
     }
-    if ( pid == tm_array[terminal_tick].tm_pid) {paging_set_for_vedio_mem(VIRTUAL_ADDR_VEDIO_PAGE,VIDEO);}
-    else if (terminal_tick==0){paging_set_for_vedio_mem(VIRTUAL_ADDR_VEDIO_PAGE,TERMINAL_1_ADDR);}
-    else if (terminal_tick==1){paging_set_for_vedio_mem(VIRTUAL_ADDR_VEDIO_PAGE,TERMINAL_2_ADDR);}
-    else if (terminal_tick==2){paging_set_for_vedio_mem(VIRTUAL_ADDR_VEDIO_PAGE,TERMINAL_3_ADDR);}
+    if ( pid == tm_array[terminal_tick].tm_pid) {paging_set_for_vedio_mem(VIRTUAL_ADDR_VEDIO_PAGE,VIDEO+in_modex*(TEMP_ADDR_VEDIO_PAGE-VIDEO));}
+    else if (terminal_tick==0){paging_set_for_vedio_mem(VIRTUAL_ADDR_VEDIO_PAGE,TERMINAL_1_ADDR+in_modex*(TEMP_ADDR_VEDIO_PAGE-VIDEO));}
+    else if (terminal_tick==1){paging_set_for_vedio_mem(VIRTUAL_ADDR_VEDIO_PAGE,TERMINAL_2_ADDR+in_modex*(TEMP_ADDR_VEDIO_PAGE-VIDEO));}
+    else if (terminal_tick==2){paging_set_for_vedio_mem(VIRTUAL_ADDR_VEDIO_PAGE,TERMINAL_3_ADDR+in_modex*(TEMP_ADDR_VEDIO_PAGE-VIDEO));}
     else{ return SYS_CALL_FAIL;}
     *screen_start= (uint8_t*) VIRTUAL_ADDR_VEDIO_PAGE;
     return 0;
@@ -758,7 +760,7 @@ int32_t _mem_setting_(const uint8_t* filename, int32_t* eip){
     Loading_address = (uint8_t*)0x8048000; /* fixed address, according to Appendix C */
     read_data(den.idx_inode, 0, Loading_address, get_file_size(den.idx_inode));
 
-    *eip = *(int32_t*)(Loading_address+24);
+    *eip = *(int32_t*)(Loading_address+24); // 24 is the offset address of the first instruction
     return SUCCESS;
 
 }

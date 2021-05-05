@@ -6,6 +6,7 @@ int32_t running_terminal = 1;   /* the number of running terminal */
 terminal_t tm_array[MAX_TM];    /* array for the states of all terminals */
 volatile int32_t terminal_tick = 0;      /* for the active running terminal, default the first terminal */
 volatile int32_t terminal_display = 0;   /* for the displayed terminal, only change when function-key pressed */
+extern int32_t in_modex;
 
 
 /*
@@ -75,8 +76,8 @@ void scheduler(){
         page_dict[USER_PROG_ADDR].bit31_22 = pid + KERNEL_Base / _4MB_; /* start from 8MB */
 
         /* set video memory map */
-        page_table[VIDEO_REGION_START_K].address = VIDEO_REGION_START_K +  (terminal_display != terminal_tick) * (terminal_tick + 1); /* set for kernel */
-        page_table_vedio_mem[VIDEO_REGION_START_U].address =  VIDEO_REGION_START_K + (terminal_display != terminal_tick) * (terminal_tick + 1); /* set for user */
+        page_table[VIDEO_REGION_START_K].address = VIDEO_REGION_START_K +  (terminal_display != terminal_tick) * (terminal_tick + 1)+in_modex*(TEMP_ADDR_VEDIO_PAGE-VIDEO)/_4KB_; /* set for kernel */
+        page_table_vedio_mem[VIDEO_REGION_START_U].address =  VIDEO_REGION_START_K + (terminal_display != terminal_tick) * (terminal_tick + 1)+in_modex*(TEMP_ADDR_VEDIO_PAGE-VIDEO)/_4KB_; /* set for user */
 
         TLB_flush();
 
@@ -120,7 +121,7 @@ void switch_visible_terminal(int new_tm_id){
 
     /* Save old terminal's screen to video page assigned for it
        restore new terminal's screen to video memory */
-    page_table[VIDEO_REGION_START_K].address = VIDEO_REGION_START_K;
+    page_table[VIDEO_REGION_START_K].address = VIDEO_REGION_START_K+in_modex*(TEMP_ADDR_VEDIO_PAGE-VIDEO)/_4KB_;
     
     TLB_flush();
 
@@ -135,8 +136,8 @@ void switch_visible_terminal(int new_tm_id){
     }
 
     /* set video memory map */
-    page_table[VIDEO_REGION_START_K].address = VIDEO_REGION_START_K +  (terminal_display != terminal_tick) * (terminal_tick + 1); /* set for kernel */
-    page_table_vedio_mem[VIDEO_REGION_START_U].address =  VIDEO_REGION_START_K + (terminal_display != terminal_tick) * (terminal_tick + 1); /* set for user */
+    page_table[VIDEO_REGION_START_K].address = VIDEO_REGION_START_K +  (terminal_display != terminal_tick) * (terminal_tick + 1)+in_modex*(TEMP_ADDR_VEDIO_PAGE-VIDEO)/_4KB_; /* set for kernel */
+    page_table_vedio_mem[VIDEO_REGION_START_U].address =  VIDEO_REGION_START_K + (terminal_display != terminal_tick) * (terminal_tick + 1)+in_modex*(TEMP_ADDR_VEDIO_PAGE-VIDEO)/_4KB_; /* set for user */
     TLB_flush();
 
     update_cursor();
