@@ -37,7 +37,7 @@
 #define IRQ_Eth0                43
 #define IRQ_PS2_Mouse           44
 #define IRQ_Ide0                46
-#define IRQ_sb16                41
+#define IRQ_sb16                0x25
 #define SYS_System_Call         128
 /*---------------------------------------------*/
 
