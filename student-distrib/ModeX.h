@@ -96,4 +96,6 @@ extern void change_top_left();
 extern unsigned char* get_block_img(int32_t block_name);
 extern void refresh_mp4(unsigned char* pt_2_mp4_buffer);
 extern void copy_mp4(unsigned char* img, unsigned short scr_addr);
+void fill_palette_vedio();
+
 #endif

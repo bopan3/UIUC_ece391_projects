@@ -55,7 +55,7 @@ static unsigned char* mem_temp_v;
 int32_t in_modex=0;
 extern volatile int32_t terminal_tick;      /* for the active running terminal, default the first terminal */
 extern volatile int32_t terminal_display;   /* for the displayed terminal, only change when function-key pressed */
-// static unsigned char palette_RGB_vedio[256][3]; //= {
+unsigned char palette_RGB_vedio[256][3]; //= {
         // /**/
         // { 0x00, 0x00, 0x00 },{ 0x00, 0x00, 0x2A },   /* palette 0x00 - 0x0F    */
         // { 0x00, 0x2A, 0x00 },{ 0x00, 0x2A, 0x2A },   /* basic VGA colors       */
@@ -474,7 +474,7 @@ static void fill_palette() {
  *   RETURN VALUE: none
  *   SIDE EFFECTS: changes the first 64 palette colors
  */
-static void fill_palette_vedio(pellete_struct_t* palette_RGB_vedio) {
+void fill_palette_vedio() {
     /* 6-bit RGB (red, green, blue) values for first 64 colors */
     /* Start writing at color 0. */
     OUTB(0x03C8, 0x00);
@@ -955,7 +955,7 @@ void refresh_bar(int level, int num_fruit, int time){
 
 extern void refresh_mp4(unsigned char* pt_2_mp4_buffer){
     //static unsigned char tex_buffer[320*18];                  //buffer for text graphic. size = width of bar * hight_of_bar
-    static unsigned char tex_VGA_buffer[4*(SCROLL_X_WIDTH*18)]; /* buffer for graphical image in VGA friendly farmat
+    static unsigned char tex_VGA_buffer[4*(SCROLL_X_WIDTH*182)]; /* buffer for graphical image in VGA friendly farmat
                                                           size = num_plane*(SCROLL_X_WIDTH* hight_of_bar)*/
     int tex_buffer_idx; // idx of the pixel in tex_buffer
     int tex_VGA_buffer_idx; // idx of the pixel in tex_VGA_buffer
@@ -981,7 +981,7 @@ extern void refresh_mp4(unsigned char* pt_2_mp4_buffer){
     /* Draw to each plane in the video memory. */
     for ( p_off = 0; p_off < 4; p_off++) {
         SET_WRITE_MASK(1 << (p_off + 8)); // set musk for the plane we want
-        addr=tex_VGA_buffer+p_off*SCROLL_X_WIDTH*18; //18 is the hight of the bar
+        addr=tex_VGA_buffer+p_off*SCROLL_X_WIDTH*182; //18 is the hight of the bar
         copy_mp4(addr, target_img); //(num_of_pixel_in_plane=SCROLL_X_WIDTH*(200-18)) 
     }  
 

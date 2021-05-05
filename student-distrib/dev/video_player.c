@@ -1,16 +1,23 @@
 #include "video_player.h"
 #include "../file_sys.h"
+#include "../ModeX.h"
 #include "../lib.h"
 /* global section */
 uint32_t frame_index; 
 dentry_t vid_dent;
 uint32_t vid_width, vid_height, frame_num, frame_rate, palette_num;
 uint8_t video_status = PLAY_VID;
+extern unsigned char palette_RGB_vedio[256][3];
+
+
+
+
 void video_player(const uint8_t* video_name){
     cli();
     
     uint32_t vid_file_len;
     uint8_t  vid_info_buf[vid_buf_size];
+    uint8_t  palette_buf[256*3];
     
     uint8_t tmp[320*182];
 
@@ -34,7 +41,11 @@ void video_player(const uint8_t* video_name){
     printf("Frame rate: %d\n", frame_rate);
     printf("Palette Entry: %d\n", palette_num);
 
+    read_data(vid_dent.idx_inode, 20, (uint8_t*)palette_RGB_vedio, palette_num);
     read_data(vid_dent.idx_inode, 20+palette_num, tmp, vid_width * vid_height);
+    fill_palette_vedio();
+
+    refresh_mp4(tmp);
 
 
     frame_index = 1; /* the next to be displayed  */
@@ -51,3 +62,4 @@ void video_handler(){
         frame_index++;
     }
 }
+

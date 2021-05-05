@@ -4,6 +4,7 @@
 #include "terminal.h"
 #include "scheduler.h"
 #include "./dev/sound.h"
+#include "./dev/video_player.h"
 #include "ModeX.h"
 #include "desktop.h"
 #include "blocks.h"
@@ -181,7 +182,9 @@ void keyboard_handler() {
                     change_top_left();
                     break;
                 case '9':
-                    refresh_mp4(get_block_img(MOUSE_CURSOR));
+                    // refresh_mp4(get_block_img(MOUSE_CURSOR));
+                    video_player((uint8_t*)RICKROLL_VID );
+                    break ;
                     //refresh_mp4(debug_counter+_4KB_);
                     //debug_counter=debug_counter+_4KB_;
                 /*==============  only for local test ============== */
