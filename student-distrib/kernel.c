@@ -157,7 +157,7 @@ void entry(unsigned long magic, unsigned long addr) {
     keyboard_init();
     rtc_init();
     filesys_init();
-    pit_init();
+    // pit_init();
 
     /* Init the file operations table pointer */
     fop_t_init();
@@ -173,7 +173,9 @@ void entry(unsigned long magic, unsigned long addr) {
     clear();
     // beep(500, 50);
     // execute((uint8_t*) "shell");
-    test_play_music();
+    // test_play_music();
+    // sti();
+    player((uint8_t*)"badapple.wav");
 
 #ifdef RUN_TESTS
     /* Run tests */
