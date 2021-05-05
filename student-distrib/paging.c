@@ -25,7 +25,8 @@ void paging_init(void){
                     page_dict[i].RW = 1;        /* RW enable */
                     page_dict[i].US = 0;        /* for kernel */
                     page_dict[i].PWT = 0;       /* always write back policy */
-                    page_dict[i].PCD = 1;       /* 1 for code and data */
+                    // page_dict[i].PCD = 1;       /* 1 for code and data */
+                    page_dict[i].PCD = 0;       /* non-cache for all case */
                     page_dict[i].A = 0;         /* set to 1 by processor */
 
                     page_dict[i].bit6 = 0;      /* for 4KB */
@@ -47,7 +48,8 @@ void paging_init(void){
                     page_dict[i].RW = 1;        /* RW enable */
                     page_dict[i].US = 0;        /* for kernel */
                     page_dict[i].PWT = 0;       /* always write back policy */
-                    page_dict[i].PCD = 1;       /* 1 for code and data */
+                    // page_dict[i].PCD = 1;       /* 1 for code and data */
+                    page_dict[i].PCD = 0;       /* non-cache for all case */    
                     page_dict[i].A = 0;         /* set to 1 by processor */
 
                     page_dict[i].bit6 = 0;      /* set to 0 as Dirty for 4MB */
@@ -70,7 +72,7 @@ void paging_init(void){
                     page_dict[i].RW = 1;        /* RW enable */
                     page_dict[i].US = 0;        /* for kernel */
                     page_dict[i].PWT = 0;       /* always write back policy */
-                    page_dict[i].PCD = 1;       /* 1 for code and data */
+                    page_dict[i].PCD = 0;       /* 1 for code and data */
                     page_dict[i].A = 0;         /* set to 1 by processor */
 
                     page_dict[i].bit6 = 0;      /* set to 0 as Dirty for 4MB */
@@ -89,12 +91,13 @@ void paging_init(void){
     /* Especially the Video Memory 4KB page */
     for (i = 0; i < PT_SIZE; i++){
 //        page_table[i].P = ((i*_4KB_) == (VIDEO));       /* only the Video 4KB page is present when initialized */
-        page_table[i].P = (((i <= (VIDEO / _4KB_) + 3) && (i >= ( VIDEO / _4KB_))) || (i == (DMA_ADDR)));
+        page_table[i].P = (((i <= (VIDEO / _4KB_) + 3) && (i >= ( VIDEO / _4KB_))) );
         page_table[i].RW = 1;                           /* Read/Write enable */                           
         page_table[i].US = 0;                           /* kernel */
         page_table[i].PWT = 0;
 //        page_table[i].PCD = ((i*_4KB_) != (VIDEO));     /* disable cache only for video memory */
-        page_table[i].PCD = 1 - (((i <= (VIDEO / _4KB_) + 3) && (i >= ( VIDEO / _4KB_))) || (i == (DMA_ADDR)));
+        // page_table[i].PCD = 1 - (((i <= (VIDEO / _4KB_) + 3) && (i >= ( VIDEO / _4KB_))) || (i == (DMA_ADDR / _4KB_)));
+        page_table[i].PCD = 0;                          
 
         page_table[i].A = 0;
         page_table[i].D = 0;                            /* Set by processor */
@@ -124,7 +127,7 @@ void paging_set_user_mapping(int32_t pid){
         page_dict[USER_PROG_ADDR].RW = 1;        /* RW enable */
         page_dict[USER_PROG_ADDR].US = 1;        /* for user code */
         page_dict[USER_PROG_ADDR].PWT = 0;       /* always write back policy */
-        page_dict[USER_PROG_ADDR].PCD = 1;       /* 1 for code and data */
+        page_dict[USER_PROG_ADDR].PCD = 0;       /* 1 for code and data */
         page_dict[USER_PROG_ADDR].A = 0;         /* set to 1 by processor */
 
         page_dict[USER_PROG_ADDR].bit6 = 0;      /* set to 0 as Dirty for 4MB */
