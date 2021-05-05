@@ -7,6 +7,7 @@
 #include "scheduler.h"
 #include "lib.h"
 #include "paging.h"
+#include "desktop.h"
 
 #define ON          1
 #define OFF         0
@@ -83,6 +84,8 @@ int32_t terminal_read(int32_t fd, void* buf, int32_t nbytes) {
             break;
         }
     }
+    
+    if (click_flag) desktop_close(NULL);
 
     // Clear the buffer
     line_buf_clear();

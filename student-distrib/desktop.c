@@ -94,21 +94,11 @@ int32_t desktop_open(const uint8_t* filename) {
 *	effects: none
 */
 int32_t desktop_close(int32_t fd) {
-    int32_t i, j;
-
     set_text_mode_3(0);
     game_info.is_ModX = 0;
 
-    /* Clear line buffers */
-    for (i = 0; i < MAX_TM; ++i) {
-        for (j = 0; j < LINE_BUF_SIZE; ++j) {
-            tm_array[i].kb_buf[j] = '\0';
-        }
-        tm_array[i].num_char = 0;
-    }
-
     //reopen schedule
-    enable_irq(PIT_IRQ);
+//    enable_irq(PIT_IRQ);
     return 0;
 }
 
