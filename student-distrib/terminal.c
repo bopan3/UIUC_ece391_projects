@@ -12,6 +12,8 @@
 #define OFF         0
 
 volatile uint8_t enter_flag = OFF;      /* Record the state of whether enter is pressed */
+volatile uint8_t click_flag = OFF;      /* Record the state of whether mouse is clicked */
+
 //static char line_buf[LINE_BUF_SIZE];    /* The line buffer */
 //static int num_char = 0;                /* Record current number of chars in line buffer */
 
@@ -65,7 +67,10 @@ int32_t terminal_read(int32_t fd, void* buf, int32_t nbytes) {
         return -1;
 
     // While enter not pressed, wait for enter
-    while (OFF == enter_flag || terminal_tick != terminal_display) {}
+    while (1) {
+        if (enter_flag && (terminal_tick == terminal_display)) break;
+        if (click_flag) break;
+    }
     cli();
 
     // Define a temp buffer for data transfer
@@ -82,6 +87,7 @@ int32_t terminal_read(int32_t fd, void* buf, int32_t nbytes) {
     // Clear the buffer
     line_buf_clear();
     enter_flag = OFF;
+    click_flag = OFF;
 
     sti();
     return i;
