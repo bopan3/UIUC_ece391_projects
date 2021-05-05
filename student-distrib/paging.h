@@ -20,7 +20,7 @@
 #define VIDEO_REGION_START_K (VIDEO / _4KB_)
 #define VIDEO_REGION_START_U 0
 
-#define DMA_ADDR  0xC0000
+// #define DMA_ADDR  0xC0000
 
 /* Set the reg in hardware to enable page mode.  
  * Description: This macro takes a 32-bit address which points to 
