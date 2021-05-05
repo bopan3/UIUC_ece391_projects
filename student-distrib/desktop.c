@@ -189,25 +189,16 @@ int make_desktop(int x_dim, int y_dim) {
         y = center_blk_idx[i][0];
         x = center_blk_idx[i][1];
 
-        maze[MAZE_INDEX(x-1, y-1)] = ICON_EDGE_1;
-        maze[MAZE_INDEX(x, y-1)] = ICON_EDGE_2;
-        maze[MAZE_INDEX(x+1, y-1)] = ICON_EDGE_3;
-        maze[MAZE_INDEX(x-1, y)] = ICON_EDGE_4;
-        maze[MAZE_INDEX(x, y)] = ICON_EDGE_5;
-        maze[MAZE_INDEX(x+1, y)] = ICON_EDGE_6;
-        maze[MAZE_INDEX(x-1, y+1)] = ICON_EDGE_7;
-        maze[MAZE_INDEX(x, y+1)] = ICON_EDGE_8;
-        maze[MAZE_INDEX(x+1, y+1)] = ICON_EDGE_9;
+        maze[MAZE_INDEX(x-1, y-1)] = ICON_TEST_1;
+        maze[MAZE_INDEX(x, y-1)] = ICON_TEST_2;
+        maze[MAZE_INDEX(x+1, y-1)] = ICON_TEST_3;
+        maze[MAZE_INDEX(x-1, y)] = ICON_TEST_4;
+        maze[MAZE_INDEX(x, y)] = ICON_TEST_5;
+        maze[MAZE_INDEX(x+1, y)] = ICON_TEST_6;
+        maze[MAZE_INDEX(x-1, y+1)] = ICON_TEST_7;
+        maze[MAZE_INDEX(x, y+1)] = ICON_TEST_8;
+        maze[MAZE_INDEX(x+1, y+1)] = ICON_TEST_9;
     }
-
-    // maze[MAZE_INDEX(10, 10)] = MOUSE_CURSOR;
-
-    //  /* Remove all walls! */
-    // for (x = 1; x < 2 * maze_x_dim; x++) {
-    //     for (y = 1; y < 2 * maze_y_dim; y++) {
-    //         maze[MAZE_INDEX(x, y)] = MAZE_NONE;
-    //     }
-    // }
 
     return 0;
 }

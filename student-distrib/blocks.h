@@ -110,7 +110,8 @@ enum {
     BLOCK_EXIT,           /* the exit from the maze                       */
     /* User defined blocks */
     MOUSE_CURSOR,
-    MOUSE_CURSOR_MASK,
+    MOUSE_CURSOR_MASK_SOLID,
+    MOUSE_CURSOR_MASK_TRANS,
     BACKGROUND,
     ICON_EDGE_1,
     ICON_EDGE_2,
@@ -121,6 +122,15 @@ enum {
     ICON_EDGE_7,
     ICON_EDGE_8,
     ICON_EDGE_9,
+    ICON_TEST_1,
+    ICON_TEST_2,
+    ICON_TEST_3,
+    ICON_TEST_4,
+    ICON_TEST_5,    // Same as backgroud block
+    ICON_TEST_6,
+    ICON_TEST_7,
+    ICON_TEST_8,
+    ICON_TEST_9,
     /* Must at the end */
     NUM_BLOCKS
 };
