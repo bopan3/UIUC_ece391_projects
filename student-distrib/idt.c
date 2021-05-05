@@ -8,6 +8,7 @@
 #include "x86_desc.h"
 #include "asm_linkage.h"
 #include "sys_calls.h"
+#include "ModeX.h"
 
 
 

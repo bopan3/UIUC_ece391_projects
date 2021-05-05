@@ -81,8 +81,8 @@ int32_t desktop_open(const uint8_t* filename) {
     for (i = 0; i < SCROLL_Y_DIM; i++)
         draw_horiz_line (i);
 
-    // refresh_bar(NULL,NULL,NULL);
-    // show_screen();
+    refresh_bar(NULL,NULL,NULL);
+    show_screen();
     return 0;
 }
 
