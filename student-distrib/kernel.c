@@ -15,6 +15,8 @@
 #include "timer.h"
 #include "scheduler.h"
 #include "./dev/sound.h"
+#include "./dev/video_player.h"
+
 #define RUN_TESTS
 
 /* Macros. */
@@ -172,8 +174,8 @@ void entry(unsigned long magic, unsigned long addr) {
     // printf("Enabling Interrupts\n");
     clear();
     // beep(500, 50);
-
-    execute((uint8_t*) "shell");
+    video_player((uint8_t*)"rickroll_inone.mp4");
+    // execute((uint8_t*) "shell");
     // test_play_music();
     // sti();
     // player((uint8_t*)"rickroll4k.wav");
