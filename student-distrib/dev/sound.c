@@ -2,8 +2,14 @@
 #include "../paging.h"
 #include "../lib.h"
 #include "../file_sys.h"
-/* Global Section */
+#include "../i8259.h"
 
+/* Global Section */
+volatile uint32_t total_samples; /* the remained unload date */
+volatile uint32_t chunk_off;    /* index to-loaded data from the start */
+// volatile uint8_t play_music = 0;
+dentry_t music_dent;   
+volatile uint8_t DMA_ADDR[Chunk_Size*2];
 // #include "../timer.h"
 uint8_t CH_Page_Port[4] = {0x87, 0x83, 0x81, 0x82};
 
@@ -202,13 +208,26 @@ void test_play_music(){
 
 /* Top envoke API */
 void player(const uint8_t* music_name){
-    dentry_t music_dent;
-    uint8_t  wav_buf[_64K_];
+    cli();
+    uint8_t tmp[4096];
+    int i;
+    // dentry_t music_dent;
+    // uint8_t  wav_buf[_64K_];
     uint8_t  wav_info[36];
     uint16_t wav_file_len;         
 
     uint32_t wav_samples, sample_rate;
     uint16_t channels, bit_per_sample;
+
+    /* Global Initialization  */
+    if (total_samples > 0){
+        printf("Other music are still playing\n");
+        return ;
+    }else {
+        chunk_off = 0;
+        total_samples = 0;
+    }
+    
 
     /* Get file dentry */
     if (read_dentry_by_name(music_name, &music_dent) == -1){
@@ -228,13 +247,34 @@ void player(const uint8_t* music_name){
     printf("Channels: %d\n", channels);
     printf("Sample Rate: %d\n", sample_rate);
     printf("Bit per Sample: %d\n", bit_per_sample);
+    read_data(music_dent.idx_inode, 44, tmp, 10);
+    printf("First ten Bytes:\n");
+    for (i = 0; i < 10; i ++){
+        printf("Byte %d: %x\n", i, tmp[i]);
+    }
 
     /* Prepare Data */
     if (wav_samples > Chunk_Size){
-        read_data(music_dent.idx_inode, 44, (uint8_t*)DMA_ADDR, Chunk_Size);
-    }else{
+        chunk_off = 2;
+        if (wav_samples > Chunk_Size * 2){
+
+            read_data(music_dent.idx_inode, 44, (uint8_t*)DMA_ADDR, Chunk_Size*2);
+            // read_data(music_dent.idx_inode, 44, (uint8_t*)tmp, Chunk_Size*2);
+            // memcpy((uint8_t*)DMA_ADDR , tmp, 4096 );
+            
+        } 
+        else {
+            read_data(music_dent.idx_inode, 44, (uint8_t*)DMA_ADDR, Chunk_Size);
+        }
+    } 
+    else{
         read_data(music_dent.idx_inode, 44, (uint8_t*)DMA_ADDR, wav_samples);
     }
+
+    enable_irq(DSP_IRQ);
+    // inb(DSP_Read_buf_status);
+    printf("\nThe Master Mask values are %x \n", inb(MASTER_8259_DATA));
+
     /* Prepare to use DSP */
     reset_DSP();
     Set_Vol(0xA, 0xA);
@@ -247,19 +287,37 @@ void player(const uint8_t* music_name){
     Set_Sample_Rate(sample_rate, 1);
     Set_Sample_Rate(sample_rate, 0);
 
+    outb(0x40, DSP_Write);
+    outb(65536 - (256000000/(sample_rate)), DSP_Write);
+
     /* Transfer mode */
     if (wav_samples > Chunk_Size){
-        outb(0xC6, DSP_Write);  /* 8-bit auto-initialized output */
+        outb(0xC4, DSP_Write);  /* 8-bit auto-initialized output */
         outb(0x00, DSP_Write);  /* mono, 8 bit */
-        outb((uint8_t)(Chunk_Size & 0xFF00) >> 8, DSP_Write);       /* High Byte */
-        outb((uint8_t)(Chunk_Size & 0xFF), DSP_Write);              /* Low Byte */
+
+        // outb(0x48, DSP_Write);
+        outb((uint8_t)((Chunk_Size - 1) & 0xFF), DSP_Write);              /* Low Byte */
+        outb((uint8_t)(((Chunk_Size - 1) & 0xFF00) >> 8), DSP_Write);       /* High Byte */
+        
+        
+        total_samples = wav_samples - Chunk_Size;
+
     } else {
         outb(0xC0, DSP_Write);  /* 8-bit single-cycle output */
         outb(0x00, DSP_Write);  /* mono, 8 bit */
-        outb((uint8_t)(wav_samples & 0xFF00) >> 8, DSP_Write);      /* High Byte */
         outb((uint8_t)(wav_samples & 0xFF), DSP_Write);             /* Low Byte */
+        outb((uint8_t)(wav_samples & 0xFF00) >> 8, DSP_Write);      /* High Byte */
+        
+        total_samples = 0;
     }
 
+
+    /* set irw */
+    _set_irq();
+    // inb(DSP_Read_buf_status);
+    outb(0x1C, DSP_Write);
+    // play_music = 1;
+    sti();
     return ;
     
 
@@ -300,6 +358,41 @@ void _set_irq(){
     outb(0x80, DSP_Mixer);
     outb(0x02,DSP_Mixer_data);  /* for IRQ 5 */
 }
-void sb16_handler(){
 
+int handler_number = 0;
+void sb16_handler(){
+    uint8_t tmp;
+    printf("handler called %d:\n", handler_number);
+    handler_number++;
+    outb(0x82, DSP_Mixer);
+    printf("Current 0x82 is %x\n", inb(DSP_Mixer_data));
+    /* handler called when played done a chunk */
+    tmp = inb(DSP_Read_buf_status);
+    printf("tmp = %x\n", tmp);
+
+    if (total_samples > Chunk_Size){
+        /* the remaining part is more than 1 chunk */
+        /* prepare next next chunk */
+        if (total_samples > Chunk_Size * 2){
+            if (Chunk_Size != read_data(music_dent.idx_inode, 44 + Chunk_Size * chunk_off, (uint8_t*)(DMA_ADDR + Chunk_Size * (chunk_off % 2)), Chunk_Size)){
+                printf("read data fail\n");
+            }
+            // read_data(music_dent.idx_inode, 44 + Chunk_Size * chunk_off, (uint8_t*)(DMA_ADDR + Chunk_Size * (chunk_off % 2)), Chunk_Size);
+            chunk_off++;
+        }
+        else {
+            read_data(music_dent.idx_inode, 44 + Chunk_Size * chunk_off, (uint8_t*)(DMA_ADDR + Chunk_Size * (chunk_off % 2)), total_samples - Chunk_Size);
+            chunk_off++;
+        }
+        total_samples -= Chunk_Size;
+    }
+    else {
+        total_samples = 0;
+        /* set end sb16 mode */
+        outb(0xDA, DSP_Write);
+        disable_irq(DSP_IRQ); /* Turn off the irq */
+        // play_music = 0;
+    } 
+    send_eoi(DSP_IRQ);
+    return ;
 }

@@ -68,8 +68,10 @@ void little_star();
 #define SingleMode      0x48
 #define AutoMode        0x58
 
+#define DSP_IRQ         0x05
 /* =============================== */
-#define Chunk_Size 2048
+// #define Chunk_Size 2048
+#define Chunk_Size 256
 
 
 
@@ -84,3 +86,8 @@ void test_play_music();
 
 
 void player(const uint8_t* music_name);
+void sb16_handler();
+void _set_irq();
+void DMAC_Setting(int8_t chan_num, uint32_t address, uint16_t length);
+
+
