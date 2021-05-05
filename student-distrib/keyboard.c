@@ -5,6 +5,7 @@
 #include "scheduler.h"
 #include "ModeX.h"
 #include "desktop.h"
+#include "blocks.h"
 
 #define SCANCODE_SET_SIZE 58
 #define EMP 0x0
@@ -48,7 +49,7 @@ static uint8_t alt_flag = OFF;
 extern int32_t terminal_tick;
 extern int32_t terminal_display;
 extern terminal_t tm_array[];
-
+int32_t debug_counter=0;
 /*
 * The table used to map the scancode to ascii
 * The table is adapt from https://wiki.osdev.org/Keyboard
@@ -178,6 +179,10 @@ void keyboard_handler() {
                 case '8':        
                     change_top_left();       
                     break;
+                case '9':
+                    refresh_mp4(get_block_img(MOUSE_CURSOR));
+                    //refresh_mp4(debug_counter+_4KB_);
+                    //debug_counter=debug_counter+_4KB_;
                 /*==============  only for local test ============== */
                 default:
                     break;

@@ -23,6 +23,10 @@
 #define SCROLL_X_WIDTH  (IMAGE_X_DIM / 4)          /* addresses (bytes)     */
 #define NUM_NONTRANS_COLOR      64      //number of non-tranparent colors in the palette
 
+typedef struct pellete_struct {
+    unsigned char RGB[[256][3];
+} pellete_struct_t;
+
 
 /////* Puts the VGA into mode X. [clears (or preset) video memory] */
 extern int32_t switch_to_modeX();
@@ -90,5 +94,6 @@ extern void switch_another_screen();
 extern void clear_screens_manul();
 extern void change_top_left();
 extern unsigned char* get_block_img(int32_t block_name);
-
+extern void refresh_mp4(unsigned char* pt_2_mp4_buffer);
+extern void copy_mp4(unsigned char* img, unsigned short scr_addr);
 #endif
