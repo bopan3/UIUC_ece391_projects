@@ -230,6 +230,9 @@ int32_t puts(int8_t* s) {
  *  Function: Output a character to the console */
 void putc(uint8_t c) {
     cli();
+    // if (in_modex==1){
+
+    // }
     if(c == '\n' || c == '\r') {                // Check if meets line increment
         if ((NUM_ROWS - 1) == tm_array[terminal_tick].y) {       // Check if it reaches bottom of the screen
             // go through every line in the console

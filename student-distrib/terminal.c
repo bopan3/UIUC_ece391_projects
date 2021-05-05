@@ -197,8 +197,8 @@ void put_dis_ter(char curr) {
     int32_t term_buf;
 
     // change page mapping to physical video memory
-    page_table[VIDEO_REGION_START_K].address = VIDEO_REGION_START_K;//+in_modex*(TEMP_ADDR_VEDIO_PAGE-VIDEO)/_4KB_; /* set for kernel */
-    page_table_vedio_mem[VIDEO_REGION_START_U].address =  VIDEO_REGION_START_K;//+in_modex*(TEMP_ADDR_VEDIO_PAGE-VIDEO)/_4KB_; /* set for user */
+    page_table[VIDEO_REGION_START_K].address = VIDEO_REGION_START_K+in_modex*(TEMP_ADDR_VEDIO_PAGE-VIDEO)/_4KB_; /* set for kernel */
+    page_table_vedio_mem[VIDEO_REGION_START_U].address =  VIDEO_REGION_START_K+in_modex*(TEMP_ADDR_VEDIO_PAGE-VIDEO)/_4KB_; /* set for user */
     TLB_flush();
 
     // back up original active terminal number
@@ -212,7 +212,7 @@ void put_dis_ter(char curr) {
     terminal_tick = term_buf;
 
     // change back the page mapping
-    page_table[VIDEO_REGION_START_K].address = VIDEO_REGION_START_K ;//+  (terminal_display != terminal_tick) * (terminal_tick + 1)+in_modex*(TEMP_ADDR_VEDIO_PAGE-VIDEO)/_4KB_; /* set for kernel */
-    page_table_vedio_mem[VIDEO_REGION_START_U].address =  VIDEO_REGION_START_K;// + (terminal_display != terminal_tick) * (terminal_tick + 1)+in_modex*(TEMP_ADDR_VEDIO_PAGE-VIDEO)/_4KB_; /* set for user */
+    page_table[VIDEO_REGION_START_K].address = VIDEO_REGION_START_K +  (terminal_display != terminal_tick) * (terminal_tick + 1)+in_modex*(TEMP_ADDR_VEDIO_PAGE-VIDEO)/_4KB_; /* set for kernel */
+    page_table_vedio_mem[VIDEO_REGION_START_U].address =  VIDEO_REGION_START_K + (terminal_display != terminal_tick) * (terminal_tick + 1)+in_modex*(TEMP_ADDR_VEDIO_PAGE-VIDEO)/_4KB_; /* set for user */
     TLB_flush();
 }

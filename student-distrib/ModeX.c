@@ -530,6 +530,11 @@ extern void set_text_mode_3(int clear_scr) {
     set_graphics_registers(text_graphics);      /* graphics registers      */
     fill_palette();                             /* palette colors          */
 
+    // /* set video memory map */
+    page_table[VIDEO_REGION_START_K].address = VIDEO_REGION_START_K +  (terminal_display != terminal_tick) * (terminal_tick + 1); /* set for kernel */
+    page_table_vedio_mem[VIDEO_REGION_START_U].address =  VIDEO_REGION_START_K + (terminal_display != terminal_tick) * (terminal_tick + 1); /* set for user */
+    TLB_flush();
+
     /* restore 0xB9000--0xB8000+4KB*4 from 0x9000000+4KB--0x9000000+4KB*4 for restorage of text screens */
     for (j = _4KB_; j < _4KB_*4; j++) {VM_addr[j] = (mem_temp_v)[j];}
     /* restore physical 0xB8000--0xB8000+4KB from 0x9800000--0x9800000+4KB for storage of text screens */
