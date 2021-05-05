@@ -914,45 +914,45 @@ void refresh_bar(int level, int num_fruit, int time){
     }
 }
 
-// void refresh_mp4(unsigned char* pt_2_mp4_buffer){
-//     //static unsigned char tex_buffer[320*18];                  //buffer for text graphic. size = width of bar * hight_of_bar
-//     static unsigned char tex_VGA_buffer[4*(SCROLL_X_WIDTH*18)]; /* buffer for graphical image in VGA friendly farmat
-//                                                           size = num_plane*(SCROLL_X_WIDTH* hight_of_bar)*/
-//     int tex_buffer_idx; // idx of the pixel in tex_buffer
-//     int tex_VGA_buffer_idx; // idx of the pixel in tex_VGA_buffer
-//     int p_off;  // the index of the plane
-//     int pixel_idx; //the index of pixel in a plane
-//     unsigned char* addr; //address to the start of the plane we want to copy
-//     //3. copu the data format in pt_2_mp4_buffer(tex_buffer) into tex_VGA_buffer in a format friendly to VGA
-//     for ( p_off=0; p_off<4;p_off++) {  //loop through 4 planes 
-//         for ( pixel_idx=0; pixel_idx< SCROLL_X_WIDTH*(200-18); pixel_idx++){ //loop through every pixel in this plane (num_of_pixel_in_plane=SCROLL_X_WIDTH*18)
-//             tex_buffer_idx = p_off + pixel_idx*4; // 4 planes
-//             tex_VGA_buffer_idx = p_off* (SCROLL_X_WIDTH*(200-18))+ pixel_idx;  //(num_of_pixel_in_plane=SCROLL_X_WIDTH*18)
-//             tex_VGA_buffer[tex_VGA_buffer_idx]=pt_2_mp4_buffer[tex_buffer_idx]; 
-//             //tex_VGA_buffer[tex_VGA_buffer_idx]= (tex_buffer[tex_buffer_idx]==COLOR_TEXT)?  a : c;
-//         }
-//     }  
-//     //4. do copy_mp4 four times (for each plane) to copy the status bar to the start of vedeo_mem
+extern void refresh_mp4(unsigned char* pt_2_mp4_buffer){
+    //static unsigned char tex_buffer[320*18];                  //buffer for text graphic. size = width of bar * hight_of_bar
+    static unsigned char tex_VGA_buffer[4*(SCROLL_X_WIDTH*18)]; /* buffer for graphical image in VGA friendly farmat
+                                                          size = num_plane*(SCROLL_X_WIDTH* hight_of_bar)*/
+    int tex_buffer_idx; // idx of the pixel in tex_buffer
+    int tex_VGA_buffer_idx; // idx of the pixel in tex_VGA_buffer
+    int p_off;  // the index of the plane
+    int pixel_idx; //the index of pixel in a plane
+    unsigned char* addr; //address to the start of the plane we want to copy
+    //3. copu the data format in pt_2_mp4_buffer(tex_buffer) into tex_VGA_buffer in a format friendly to VGA
+    for ( p_off=0; p_off<4;p_off++) {  //loop through 4 planes 
+        for ( pixel_idx=0; pixel_idx< SCROLL_X_WIDTH*(200-18); pixel_idx++){ //loop through every pixel in this plane (num_of_pixel_in_plane=SCROLL_X_WIDTH*18)
+            tex_buffer_idx = p_off + pixel_idx*4; // 4 planes
+            tex_VGA_buffer_idx = p_off* (SCROLL_X_WIDTH*(200-18))+ pixel_idx;  //(num_of_pixel_in_plane=SCROLL_X_WIDTH*18)
+            tex_VGA_buffer[tex_VGA_buffer_idx]=pt_2_mp4_buffer[tex_buffer_idx]; 
+            //tex_VGA_buffer[tex_VGA_buffer_idx]= (tex_buffer[tex_buffer_idx]==COLOR_TEXT)?  a : c;
+        }
+    }  
+    //4. do copy_mp4 four times (for each plane) to copy the status bar to the start of vedeo_mem
 
 
-//     /* Switch to the other target screen in video memory. */
-//     target_img ^= 0x4000;
+    /* Switch to the other target screen in video memory. */
+    target_img ^= 0x4000;
 
 
-//     /* Draw to each plane in the video memory. */
-//     for ( p_off = 0; p_off < 4; p_off++) {
-//         SET_WRITE_MASK(1 << (p_off + 8)); // set musk for the plane we want
-//         addr=tex_VGA_buffer+p_off*SCROLL_X_WIDTH*18; //18 is the hight of the bar
-//         copy_mp4(addr, target_img); //(num_of_pixel_in_plane=SCROLL_X_WIDTH*(200-18)) 
-//     }  
+    /* Draw to each plane in the video memory. */
+    for ( p_off = 0; p_off < 4; p_off++) {
+        SET_WRITE_MASK(1 << (p_off + 8)); // set musk for the plane we want
+        addr=tex_VGA_buffer+p_off*SCROLL_X_WIDTH*18; //18 is the hight of the bar
+        copy_mp4(addr, target_img); //(num_of_pixel_in_plane=SCROLL_X_WIDTH*(200-18)) 
+    }  
 
-//         /*
-//      * Change the VGA registers to point the top left of the screen
-//      * to the video memory that we just filled.
-//      */
-//     OUTW(0x03D4, (target_img & 0xFF00) | 0x0C);
-//     OUTW(0x03D4, ((target_img & 0x00FF) << 8) | 0x0D);
-// }
+        /*
+     * Change the VGA registers to point the top left of the screen
+     * to the video memory that we just filled.
+     */
+    OUTW(0x03D4, (target_img & 0xFF00) | 0x0C);
+    OUTW(0x03D4, ((target_img & 0x00FF) << 8) | 0x0D);
+}
 
 /*
  * copy_status_bar
@@ -982,33 +982,33 @@ static void copy_status_bar(unsigned char* img, unsigned short scr_addr) {
     // 1440=80*18=pixels in one plane for the bar
 }
 
-// /*
-//  * copy_mp4
-//  *   DESCRIPTION: Copy one plane of a screen from the tex_VGA_buffer to the
-//  *                video memory.
-//  *   INPUTS: img -- a pointer to a single screen plane in the build buffer
-//  *           scr_addr -- the destination offset in video memory
-//  *   OUTPUTS: none
-//  *   RETURN VALUE: none
-//  *   SIDE EFFECTS: copies a plane from the tex_VGA_buffer to video memory
-//  */
-// static void copy_mp4(unsigned char* img, unsigned short scr_addr) {
-//     /*
-//      * memcpy is actually probably good enough here, and is usually
-//      * implemented using ISA-specific features like those below,
-//      * but the code here provides an example of x86 string moves
-//      */
-//     asm volatile ("                                             \n\
-//         cld                                                     \n\
-//         movl $14560,%%ecx                                       \n\
-//         rep movsb    /* copy ECX bytes from M[ESI] to M[EDI] */ \n\
-//         "
-//         : /* no outputs */
-//         : "S"(img), "D"(mem_image + scr_addr)
-//         : "eax", "ecx", "memory"
-//     );
-//     // 14560=(200-18)*80=pixels in one plane for mp4
-// }
+/*
+ * copy_mp4
+ *   DESCRIPTION: Copy one plane of a screen from the tex_VGA_buffer to the
+ *                video memory.
+ *   INPUTS: img -- a pointer to a single screen plane in the build buffer
+ *           scr_addr -- the destination offset in video memory
+ *   OUTPUTS: none
+ *   RETURN VALUE: none
+ *   SIDE EFFECTS: copies a plane from the tex_VGA_buffer to video memory
+ */
+extern void copy_mp4(unsigned char* img, unsigned short scr_addr) {
+    /*
+     * memcpy is actually probably good enough here, and is usually
+     * implemented using ISA-specific features like those below,
+     * but the code here provides an example of x86 string moves
+     */
+    asm volatile ("                                             \n\
+        cld                                                     \n\
+        movl $14560,%%ecx                                       \n\
+        rep movsb    /* copy ECX bytes from M[ESI] to M[EDI] */ \n\
+        "
+        : /* no outputs */
+        : "S"(img), "D"(mem_image + scr_addr)
+        : "eax", "ecx", "memory"
+    );
+    // 14560=(200-18)*80=pixels in one plane for mp4
+}
 
 /*
  * draw_full_block

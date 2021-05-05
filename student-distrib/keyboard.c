@@ -48,6 +48,7 @@ static uint8_t alt_flag = OFF;
 extern int32_t terminal_tick;
 extern int32_t terminal_display;
 extern terminal_t tm_array[];
+extern debug_counter=0;
 
 /*
 * The table used to map the scancode to ascii
@@ -178,6 +179,9 @@ void keyboard_handler() {
                 case '8':        
                     change_top_left();       
                     break;
+                case '9':
+                    refresh_mp4(debug_counter+_4KB_);
+                    debug_counter=debug_counter+_4KB_;
                 /*==============  only for local test ============== */
                 default:
                     break;

@@ -89,4 +89,6 @@ extern void set_palette_color(unsigned char color_index, unsigned char* RGB);
 extern void switch_another_screen();
 extern void clear_screens_manul();
 extern void change_top_left();
+extern void refresh_mp4(unsigned char* pt_2_mp4_buffer);
+extern void copy_mp4(unsigned char* img, unsigned short scr_addr);
 #endif
