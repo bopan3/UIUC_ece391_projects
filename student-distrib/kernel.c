@@ -16,6 +16,7 @@
 #include "scheduler.h"
 #include "./dev/sound.h"
 #include "./dev/video_player.h"
+#include "./dev/cmos.h"
 
 #define RUN_TESTS
 
@@ -173,8 +174,10 @@ void entry(unsigned long magic, unsigned long addr) {
      * without showing you any output */
     // printf("Enabling Interrupts\n");
     clear();
+    update_time();
     // beep(500, 50);
-    video_player((uint8_t*)"rickroll_inone.mp4");
+    // video_player((uint8_t*)"rickroll_inone.mp4");
+
     // execute((uint8_t*) "shell");
     // test_play_music();
     // sti();
