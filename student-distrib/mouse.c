@@ -2,6 +2,7 @@
 #include "i8259.h"
 #include "ModeX.h"
 #include "blocks.h"
+#include "scheduler.h"
 #include "desktop.h"
 
 /* Global variables */
@@ -13,6 +14,12 @@ int32_t mouse_key_left;     // 1 means pressed, 0 means not
 int32_t mouse_key_right;    // 1 means pressed, 0 means not
 int32_t mouse_key_mid;      // 1 means pressed, 0 means not
 
+/* Multi-Terminals */
+extern int32_t terminal_tick;
+extern int32_t terminal_display;
+extern terminal_t tm_array[];
+
+extern uint8_t click_flag;
 extern game_info_t game_info;
 
 /* File icon in GUI */
@@ -247,7 +254,7 @@ void mouse_irq_handler() {
             coor_x = 12 * center_blk_idx[j][0];
             coor_y = 12 * center_blk_idx[j][1];
             cli();
-            
+
             draw_full_block_with_mask(coor_x-12, coor_y-12, (unsigned char*)get_block_img(ICON_EDGE_1), (unsigned char*)get_block_img(ICON_EDGE_MASK_1), restore_block);
             draw_full_block_with_mask(coor_x, coor_y-12, (unsigned char*)get_block_img(ICON_EDGE_2), (unsigned char*)get_block_img(ICON_EDGE_MASK_2), restore_block);
             draw_full_block_with_mask(coor_x+12, coor_y-12, (unsigned char*)get_block_img(ICON_EDGE_3), (unsigned char*)get_block_img(ICON_EDGE_MASK_3), restore_block);
@@ -277,12 +284,20 @@ void mouse_irq_handler() {
             restore_full_block_with_mask(coor_x-12, coor_y+12, (unsigned char*)get_block_img(ICON_EDGE_7), (unsigned char*)get_block_img(ICON_EDGE_MASK_7), restore_block);
             restore_full_block_with_mask(coor_x, coor_y+12, (unsigned char*)get_block_img(ICON_EDGE_8), (unsigned char*)get_block_img(ICON_EDGE_MASK_8), restore_block);
             restore_full_block_with_mask(coor_x+12, coor_y+12, (unsigned char*)get_block_img(ICON_EDGE_9), (unsigned char*)get_block_img(ICON_EDGE_MASK_9), restore_block);
-            sti();
 
+            strcpy(tm_array[0].kb_buf, instruction[j]);
+            strcpy(tm_array[1].kb_buf, instruction[j]);
+            strcpy(tm_array[2].kb_buf, instruction[j]);
+            sti();
             break;
         }
     }
-    
+
+    if (mouse_key_left) {
+        click_flag = 1;
+    }
+
+    sti();
 }
 
 
