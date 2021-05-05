@@ -3,7 +3,7 @@
 #include "i8259.h"
 #include "terminal.h"
 #include "scheduler.h"
-
+#include "./dev/sound.h"
 #define SCANCODE_SET_SIZE 58
 #define EMP 0x0
 #define IRQ_NUM_KEYBOARD 0x01
@@ -47,6 +47,8 @@ static uint8_t alt_flag = OFF;
 extern int32_t terminal_tick;
 extern int32_t terminal_display;
 extern terminal_t tm_array[];
+// extern void player(const uint8_t* music_name);
+// extern uint8_t music_states;
 
 /*
 * The table used to map the scancode to ascii
@@ -162,6 +164,18 @@ void keyboard_handler() {
                     switch_visible_terminal(2);
                     break;
                 /*==============  only for local test ============== */
+                case 'r':
+                    player((uint8_t*)RICKROLL_WAV);
+                    break ;
+                case 'b':
+                    player((uint8_t*)"badapple.wav");
+                    break;
+                case 'p':
+                    pause_or_goon();
+                    break;
+                case 'k':
+                    player_stop();
+                    break;
                 default:
                     break;
             }

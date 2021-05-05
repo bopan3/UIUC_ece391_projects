@@ -261,7 +261,8 @@ int32_t file_read(int32_t fd, void* buf, int32_t nbytes) {
     }
 
     // Find the pcb
-    pcb* cur_pcb = (pcb*)(_8MB_ - _8KB_*(pid+1));
+    // pcb* cur_pcb = (pcb*)(_8MB_ - _8KB_*(pid+1));
+    pcb* cur_pcb = get_pcb_ptr(pid);
 
     // Calculate parameters
     idx_inode = cur_pcb->file_array[fd].idx_inode;
@@ -338,8 +339,9 @@ int32_t direct_read(int32_t fd, void* buf, int32_t nbytes) {
     }
 
     // Find the pcb
-    pcb* cur_pcb = (pcb*)(_8MB_ - _8KB_*(pid+1));
-
+    // pcb* cur_pcb = (pcb*)(_8MB_ - _8KB_*(pid+1));
+    pcb* cur_pcb = get_pcb_ptr(pid);
+    
     if (0 != read_dentry_by_index(cur_pcb->file_array[fd].file_pos, &temp)) {
         return 0;
     }

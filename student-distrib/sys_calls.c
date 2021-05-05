@@ -329,7 +329,8 @@ int32_t halt(uint8_t status){
 
         /* tss settings */
         tss.ss0 = KERNEL_DS;
-        tss.esp0 = _8MB_ - (_8KB_ * pid) - 4;
+        // tss.esp0 = _8MB_ - (_8KB_ * pid) - 4;
+        tss.esp0 = KERNEL_Base - (_8KB_ * (pid)) - 4;
 
         /* value for asm setting */
         uint32_t _0_SS = (uint32_t) USER_DS;
@@ -368,7 +369,8 @@ int32_t halt(uint8_t status){
     
     /* tss update */
     tss.ss0 = KERNEL_DS;
-    tss.esp0 = _8MB_ - (_8KB_ * (pid)) - 4;
+    // tss.esp0 = _8MB_ - (_8KB_ * (pid)) - 4;
+    tss.esp0 = KERNEL_Base - (_8KB_ * (pid)) - 4;
 
     /* Restore parent paging */
     paging_set_user_mapping(pid);
@@ -454,7 +456,8 @@ int32_t execute(const uint8_t* command){
 
     /* tss settings */
     tss.ss0 = KERNEL_DS;
-    tss.esp0 = _8MB_ - (_8KB_ * pid) - 4;
+    // tss.esp0 = _8MB_ - (_8KB_ * pid) - 4;
+    tss.esp0 = KERNEL_Base - (_8KB_ * (pid)) - 4;
 
     /* value for asm setting */
     uint32_t _0_SS = (uint32_t) USER_DS;
@@ -544,7 +547,8 @@ void exp_halt(){
 
         /* tss settings */
         tss.ss0 = KERNEL_DS;
-        tss.esp0 = _8MB_ - (_8KB_ * pid) - 4;
+        // tss.esp0 = _8MB_ - (_8KB_ * pid) - 4;
+        tss.esp0 = KERNEL_Base - (_8KB_ * (pid)) - 4;
 
         /* value for asm setting */
         uint32_t _0_SS = (uint32_t) USER_DS;
@@ -583,7 +587,8 @@ void exp_halt(){
 
     /* tss update */
     tss.ss0 = KERNEL_DS;
-    tss.esp0 = _8MB_ - (_8KB_ * (pid)) - 4;
+    // tss.esp0 = _8MB_ - (_8KB_ * (pid)) - 4;
+    tss.esp0 = KERNEL_Base - (_8KB_ * (pid)) - 4;
 
     /* Restore parent paging */
     paging_set_user_mapping(pid);
@@ -850,5 +855,6 @@ void _fd_init_(pcb* pcb_addr){
  *   SIDE EFFECTS:  
  */
 pcb* get_pcb_ptr(int32_t pid){
-    return (pcb*)(_8MB_ - _8KB_ *(pid + 1));
+    // return (pcb*)(_8MB_ - _8KB_ *(pid + 1));
+    return (pcb*)(KERNEL_Base - _8KB_ *(pid + 1));
 }

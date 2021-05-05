@@ -145,7 +145,7 @@ void entry(unsigned long magic, unsigned long addr) {
 
         tss.ldt_segment_selector = KERNEL_LDT;
         tss.ss0 = KERNEL_DS;
-        tss.esp0 = 0x800000;
+        tss.esp0 = KERNEL_Base;
         ltr(KERNEL_TSS);
     }
     
@@ -155,7 +155,7 @@ void entry(unsigned long magic, unsigned long addr) {
     /* Initialize devices, memory, filesystem, enable device interrupts on the
      * PIC, any other initialization stuff... */
     keyboard_init();
-    rtc_init();
+    // rtc_init();
     filesys_init();
     // pit_init();
 
@@ -172,10 +172,11 @@ void entry(unsigned long magic, unsigned long addr) {
     // printf("Enabling Interrupts\n");
     clear();
     // beep(500, 50);
-    // execute((uint8_t*) "shell");
+
+    execute((uint8_t*) "shell");
     // test_play_music();
     // sti();
-    player((uint8_t*)"badapple.wav");
+    // player((uint8_t*)"rickroll4k.wav");
 
 #ifdef RUN_TESTS
     /* Run tests */

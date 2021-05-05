@@ -55,7 +55,7 @@ void irq_handler(int irq_vect) {
             printf("INTERRUPT #0x%x: Ide0\n", irq_vect);
             break;
         case IRQ_sb16:
-            printf("INTERRUPT #0x%x: SB16\n", irq_vect);
+            // printf("INTERRUPT #0x%x: SB16\n", irq_vect);
             sb16_handler();
             break;
         default:

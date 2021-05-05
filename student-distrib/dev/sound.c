@@ -12,7 +12,7 @@ dentry_t music_dent;
 volatile uint8_t DMA_ADDR[Chunk_Size*2];
 // #include "../timer.h"
 uint8_t CH_Page_Port[4] = {0x87, 0x83, 0x81, 0x82};
-
+uint8_t music_states = STOP;
 /* ================== PC Speaker ================= */
 /* Adapted from https://wiki.osdev.org/PC_Speaker  */
 void play_sound(uint32_t nFrequence) {
@@ -206,13 +206,14 @@ void test_play_music(){
     return ;
 }
 
+/* ================================================================== final player part =========================================== */
 /* Top envoke API */
 void player(const uint8_t* music_name){
     cli();
-    uint8_t tmp[4096];
-    int i;
+    // uint8_t tmp[4096];
+    // int i;
     // dentry_t music_dent;
-    // uint8_t  wav_buf[_64K_];
+
     uint8_t  wav_info[36];
     uint16_t wav_file_len;         
 
@@ -220,12 +221,14 @@ void player(const uint8_t* music_name){
     uint16_t channels, bit_per_sample;
 
     /* Global Initialization  */
-    if (total_samples > 0){
+    if (music_states == PLAY){
         printf("Other music are still playing\n");
         return ;
     }else {
+        /* pause or stop could go on */
         chunk_off = 0;
         total_samples = 0;
+        music_states = PLAY;
     }
     
 
@@ -243,15 +246,16 @@ void player(const uint8_t* music_name){
     channels = *(uint16_t*)(wav_info+22);
     bit_per_sample =  *(uint16_t*)(wav_info+34);
 
-    printf("Wav Samples: %d\n", wav_samples);
-    printf("Channels: %d\n", channels);
-    printf("Sample Rate: %d\n", sample_rate);
-    printf("Bit per Sample: %d\n", bit_per_sample);
-    read_data(music_dent.idx_inode, 44, tmp, 10);
-    printf("First ten Bytes:\n");
-    for (i = 0; i < 10; i ++){
-        printf("Byte %d: %x\n", i, tmp[i]);
-    }
+    // printf("Wav Samples: %d\n", wav_samples);
+    // printf("Channels: %d\n", channels);
+    // printf("Sample Rate: %d\n", sample_rate);
+    // printf("Bit per Sample: %d\n", bit_per_sample);
+
+    // read_data(music_dent.idx_inode, 44, tmp, 10);
+    // printf("First ten Bytes:\n");
+    // for (i = 0; i < 10; i ++){
+    //     printf("Byte %d: %x\n", i, tmp[i]);
+    // }
 
     /* Prepare Data */
     if (wav_samples > Chunk_Size){
@@ -273,7 +277,7 @@ void player(const uint8_t* music_name){
 
     enable_irq(DSP_IRQ);
     // inb(DSP_Read_buf_status);
-    printf("\nThe Master Mask values are %x \n", inb(MASTER_8259_DATA));
+    // printf("\nThe Master Mask values are %x \n", inb(MASTER_8259_DATA));
 
     /* Prepare to use DSP */
     reset_DSP();
@@ -359,16 +363,16 @@ void _set_irq(){
     outb(0x02,DSP_Mixer_data);  /* for IRQ 5 */
 }
 
-int handler_number = 0;
+// int handler_number = 0;
 void sb16_handler(){
     uint8_t tmp;
-    printf("handler called %d:\n", handler_number);
-    handler_number++;
+    // printf("handler called %d:\n", handler_number);
+    // handler_number++;
     outb(0x82, DSP_Mixer);
-    printf("Current 0x82 is %x\n", inb(DSP_Mixer_data));
+    // printf("Current 0x82 is %x\n", inb(DSP_Mixer_data));
     /* handler called when played done a chunk */
     tmp = inb(DSP_Read_buf_status);
-    printf("tmp = %x\n", tmp);
+    // printf("tmp = %x\n", tmp);
 
     if (total_samples > Chunk_Size){
         /* the remaining part is more than 1 chunk */
@@ -392,7 +396,57 @@ void sb16_handler(){
         outb(0xDA, DSP_Write);
         disable_irq(DSP_IRQ); /* Turn off the irq */
         // play_music = 0;
+        music_states = STOP;
     } 
     send_eoi(DSP_IRQ);
     return ;
 }
+
+void player_pause(){
+    music_states = PAUSE;
+    outb(0xD0, DSP_Write);
+    printf("Music pause\n");
+}
+
+void player_stop(){
+    total_samples = 0;
+    music_states = STOP;
+    /* set end sb16 mode */
+    outb(0xDA, DSP_Write);
+    disable_irq(DSP_IRQ); /* Turn off the irq */
+    printf("Music stoped\n");
+}
+
+
+void player_goon(){
+    music_states = PLAY;
+    outb(0xD4, DSP_Write);
+    printf("Music go on\n");
+}
+
+void pause_or_goon(){
+    // if (music_states == STOP){
+    //     printf("No music is playing\n");
+    //     return ;
+    // }
+    switch (music_states)
+    {
+        case STOP:
+            printf("No music is playing\n");
+            return ;
+            break;
+        case PLAY:
+            player_pause();
+            break;
+        case PAUSE:
+            player_goon();
+            break;
+
+        default:
+            break;
+    }
+    return ;
+}
+
+
+

@@ -47,7 +47,8 @@ void nosound();
 void beep(uint32_t fre, uint32_t wait);
 
 void little_star();
-
+#define RICKROLL_WAV "rickroll4k.wav"
+#define BADAPPLE_WAV "badapple.wav"
 /* ================== SB16 ================= */
 /* Reference:
  * 1. https://wiki.osdev.org/Sound_Blaster_16
@@ -71,8 +72,10 @@ void little_star();
 #define DSP_IRQ         0x05
 /* =============================== */
 // #define Chunk_Size 2048
-#define Chunk_Size 256
-
+#define Chunk_Size 0x1000
+#define STOP 0
+#define PLAY 1
+#define PAUSE 2
 
 
 #define Set_Vol(L, R)  outb((L<<4 | R), DSP_Mixer)
@@ -89,5 +92,13 @@ void player(const uint8_t* music_name);
 void sb16_handler();
 void _set_irq();
 void DMAC_Setting(int8_t chan_num, uint32_t address, uint16_t length);
+
+
+void player_pause();
+void player_goon();
+void player_stop();
+void pause_or_goon();
+
+
 
 

@@ -49,6 +49,8 @@
 #define KERNEL_TSS  0x0030
 #define KERNEL_LDT  0x0038
 
+// #define KERNEL_Base 0x800000    /* default is 8M */
+#define KERNEL_Base 0x6800000   /* Max 104 M = 128 - 6*4M */
 /* Size of the task state segment (TSS) */
 #define TSS_SIZE    104
 
