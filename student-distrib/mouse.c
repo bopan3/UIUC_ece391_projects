@@ -247,6 +247,7 @@ void mouse_irq_handler() {
             coor_x = 12 * center_blk_idx[j][0];
             coor_y = 12 * center_blk_idx[j][1];
             cli();
+            
             draw_full_block_with_mask(coor_x-12, coor_y-12, (unsigned char*)get_block_img(ICON_EDGE_1), (unsigned char*)get_block_img(ICON_EDGE_MASK_1), restore_block);
             draw_full_block_with_mask(coor_x, coor_y-12, (unsigned char*)get_block_img(ICON_EDGE_2), (unsigned char*)get_block_img(ICON_EDGE_MASK_2), restore_block);
             draw_full_block_with_mask(coor_x+12, coor_y-12, (unsigned char*)get_block_img(ICON_EDGE_3), (unsigned char*)get_block_img(ICON_EDGE_MASK_3), restore_block);
