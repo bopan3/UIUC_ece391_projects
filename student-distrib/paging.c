@@ -1,9 +1,11 @@
 /* By F. J. */
 
 #include "paging.h"
+#include "sys_calls.h"
 extern int32_t terminal_tick;
 extern int32_t terminal_display; 
 int32_t task_use_vidmem = 0;        /* Counter the number of task using the user space vid mem */
+extern int32_t in_modex;
 
 /* paging_init
  *  Description: Initialize the paging dict and paging table, also mapping the video memory
@@ -177,8 +179,8 @@ void paging_set_user_mapping(int32_t pid){
     page_dict[USER_PROG_ADDR].bit31_22 = pid+2;  /* start from 8MB */
 
     /* set video memory map */
-    page_table[VIDEO_REGION_START_K].address = VIDEO_REGION_START_K +  (terminal_display != terminal_tick) * (terminal_tick + 1); /* set for kernel */
-    page_table_vedio_mem[VIDEO_REGION_START_U].address =  VIDEO_REGION_START_K + (terminal_display != terminal_tick) * (terminal_tick + 1); /* set for user */
+    page_table[VIDEO_REGION_START_K].address = VIDEO_REGION_START_K +  (terminal_display != terminal_tick) * (terminal_tick + 1) +in_modex*(TEMP_ADDR_VEDIO_PAGE-VIDEO)/_4KB_; /* set for kernel */
+    page_table_vedio_mem[VIDEO_REGION_START_U].address =  VIDEO_REGION_START_K + (terminal_display != terminal_tick) * (terminal_tick + 1) +in_modex*(TEMP_ADDR_VEDIO_PAGE-VIDEO)/_4KB_; /* set for user */
 
     TLB_flush();
 }
@@ -247,20 +249,20 @@ void paging_set_for_vedio_mem(int32_t virtual_addr_for_vedio, int32_t phys_addr_
  *   SIDE EFFECTS:  unmap "the start of virtual address for the vedio mem" to "0xB8000" (physical vedio memory)
  */
 void paging_restore_for_vedio_mem(int32_t virtual_addr_for_vedio){
-    int i;
-    int dict_idx = virtual_addr_for_vedio/_4MB_;
-    // int table_idx = (virtual_addr_for_vedio << (10)) >> 22 ; // left shift 10 bits first and then right shift 22 bits to extract the second 10 bits in the virtual address
-    task_use_vidmem--;
+    // int i;
+    // int dict_idx = virtual_addr_for_vedio/_4MB_;
+    // // int table_idx = (virtual_addr_for_vedio << (10)) >> 22 ; // left shift 10 bits first and then right shift 22 bits to extract the second 10 bits in the virtual address
+    // task_use_vidmem--;
 
-    if(task_use_vidmem == 0){
-        /* setting page dic entry*/
-        page_dict[dict_idx].P = 0;         /* make it not present */        
-        /* setting page table entry*/
-        for (i = 0; i < PT_SIZE; i++){
-            page_table_vedio_mem[i].P = 0;       /* make all not present */ 
-        }
-        TLB_flush();
-    }
+    // if(task_use_vidmem == 0){
+    //     /* setting page dic entry*/
+    //     page_dict[dict_idx].P = 0;         /* make it not present */        
+    //     /* setting page table entry*/
+    //     for (i = 0; i < PT_SIZE; i++){
+    //         page_table_vedio_mem[i].P = 0;       /* make all not present */ 
+    //     }
+    //     TLB_flush();
+    // }
     
 }
 

@@ -15,7 +15,7 @@
 #define TERMINAL_2_ADDR (VIDEO + 2 * _4KB_)
 #define TERMINAL_3_ADDR (VIDEO + 3 * _4KB_)
 
-#define ENABLE_SCHE 1
+#define ENABLE_SCHE 0
 typedef struct terminal_t{
     int32_t tm_pid; /* trick the running program */
     char kb_buf[LINE_BUF_SIZE];

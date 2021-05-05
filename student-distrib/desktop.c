@@ -52,8 +52,8 @@ static int maze_y_dim;          /* vertical dimension of maze   */
 int32_t desktop_open(const uint8_t* filename) {
     int32_t i;
     switch_to_modeX();
-    //stop schedule
-    disable_irq(PIT_IRQ);        
+    // //stop schedule
+    // disable_irq(PIT_IRQ);        
 
     /* Initialize dynamic values. */
     game_info.map_x = game_info.map_y = SHOW_MIN;
@@ -65,8 +65,8 @@ int32_t desktop_open(const uint8_t* filename) {
     for (i = 0; i < SCROLL_Y_DIM; i++)
         draw_horiz_line (i);
 
-    refresh_bar(NULL,NULL,NULL);
-    show_screen();
+    // refresh_bar(NULL,NULL,NULL);
+    // show_screen();
     return 0;
 }
 

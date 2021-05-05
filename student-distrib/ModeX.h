@@ -85,4 +85,8 @@ extern void restore_fruit_text_with_mask(int pos_x, int pos_y, unsigned char* ma
  * set the palette color for given index 
  */
 extern void set_palette_color(unsigned char color_index, unsigned char* RGB);
+
+extern void switch_another_screen();
+extern void clear_screens_manul();
+extern void change_top_left();
 #endif
