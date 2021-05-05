@@ -26,6 +26,10 @@
 #define EXE_LIMIT 1
 #define VIRTUAL_ADDR_VEDIO_PAGE 0x8800000
 #define TEMP_ADDR_VEDIO_PAGE 0x9000000
+#define VIRTUAL_ADDR_AlWAYS_ACCESS_VEDIO_PAGE 0x9800000
+
+
+
 #define MAX_FREQ 1024 
 
 /* File operation tables */

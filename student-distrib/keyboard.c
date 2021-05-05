@@ -150,24 +150,34 @@ void keyboard_handler() {
         if (ctrl_flag) {
             switch ((scancode_to_ascii[scan_code][LOWER])) {
                 case 'l':
+                    // clear_screens_manul();  
                     clear();
                     break;
                 /* ============== only for local test ============== */
                 case '1':
                     switch_visible_terminal(0);
                     break;
-                case '2':
-                    switch_visible_terminal(1);
-                    break;
-                case '3':
-                    switch_visible_terminal(2);
-                    break;
+                // case '2':
+                //     switch_visible_terminal(1);
+                //     break;
+                // case '3':
+                //     switch_visible_terminal(2);
+                //     break;
                 case '4':
                     desktop_open(NULL);
                     break; 
                 case '5':
                     desktop_close(NULL);
-                    break;                             
+                    break;   
+                case '6':
+                    switch_another_screen();  
+                    break;
+                case '7': 
+                    clear_screens_manul();  
+                    break;
+                case '8':        
+                    change_top_left();       
+                    break;
                 /*==============  only for local test ============== */
                 default:
                     break;

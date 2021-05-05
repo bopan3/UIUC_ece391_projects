@@ -16,6 +16,7 @@
 #include "scheduler.h"
 #include "ModeX.h"
 #include "mouse.h"
+#include "sys_calls.h"
 #include "desktop.h"
 #define RUN_TESTS
 
@@ -150,10 +151,10 @@ void entry(unsigned long magic, unsigned long addr) {
         tss.esp0 = 0x800000;
         ltr(KERNEL_TSS);
     }
-
+    
     /* Init the PIC */
     i8259_init();
-
+    cli();
     /* Initialize devices, memory, filesystem, enable device interrupts on the
      * PIC, any other initialization stuff... */
     keyboard_init();
@@ -166,6 +167,8 @@ void entry(unsigned long magic, unsigned long addr) {
     fop_t_init();
     scheduler_init();
     paging_init();
+    paging_set_always_access_VEDEO(VIRTUAL_ADDR_AlWAYS_ACCESS_VEDIO_PAGE,VIDEO);
+    // printf("All Init Correctly");
 
     init_game_info();
     
@@ -173,9 +176,8 @@ void entry(unsigned long magic, unsigned long addr) {
     /* Do not enable the following until after you have set up your
      * IDT correctly otherwise QEMU will triple fault and simple close
      * without showing you any output */
-    printf("Enabling Interrupts\n");
+    // printf("Enabling Interrupts\n");
     clear();
-    //launch_tests();//pb temp
     execute((uint8_t*) "shell");
 
 #ifdef RUN_TESTS

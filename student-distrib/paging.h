@@ -126,5 +126,5 @@ void paging_init(void);
 extern void paging_set_user_mapping(int32_t pid);
 extern void paging_set_for_vedio_mem(int32_t virtual_addr_for_vedio, int32_t phys_addr_for_vedio);
 extern void paging_restore_for_vedio_mem(int32_t virtual_addr_for_vedio);
-
+extern void paging_set_always_access_VEDEO(int32_t virtual_addr_for_vedio, int32_t phys_addr_for_vedio);
 #endif

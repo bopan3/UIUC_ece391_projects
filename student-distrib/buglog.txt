@@ -150,3 +150,66 @@ Date: April 24 2021
 Files: rtc.c
 Bug: when we modify rtc.c to make rtc support schedule, we are stucked in the first frame of the fish
 Reason: we need to make sure at the end we still enable the rtc chip at the end of the loop
+
+
+Contributer: Jiang Fengqing
+Date: April 24  2021
+Files: scheduler.c
+Bug: When it tend to schedule the tasks, it will raise page fault
+Reason: Forget to turn the back-up video page (from 0xB9000-0x0xBB000). Turn on these entry solve the problem.
+
+Contributer: Xiong Neng
+Date: April 24 2021
+Files: terminal.c
+Bug: While inputing throught keyboard, some times the characters appear on other terminals but not the displayed one.
+Solution: This is happening when the displayed terminal is different to the current active one. Solution is to implement a new method of displaying by first change on page table the video memory to the physical memory 0xB8000, then temporarily change terminal_tick to terminal_display, finally display the desired character through putc(). After the procedure, we also need to change paging table and terminal_tick back.
+
+Contributer: Xiong Neng
+Date: April 25 2021
+Files: terminal.c
+Bug: After inputing a command and pressed enter, the output of the command being ran may appear on another terminal other than the one which we input the command to.
+Solution: This is happening because when we hit the enter key, terminal_tick may be different to terminal_display. Then the command will be ran on terminal_tick. To fix this, we check whether terminal_tick is equal to terminal_display the same time we check enter_flag.
+
+Contributer: Jiang Fengqing
+Date: April 26  2021
+Files: scheduler.c
+Bug: When it tend to switch the terminal by function key, the screen is mass.
+Reason: Using incorrect method to change the video memory, the virtual address mapping has something wrong. Reorganize the stuff here solve the problem.
+
+Contributer: Jiang Fengqing
+Date: April 26  2021
+Files: scheduler.c
+Bug: When halt, it will give unexpected information indicating that the root shell is tending to be exited.
+Reason: Using incorrect condition for the case with no scheduler. Update the conditon for the scheduler case solve the problem.
+
+Contributer: Nachuan Wang
+Date: April 26 2021
+Files: sys_calls.c
+Bug: While halting a program, the function go through "return" in function excute two times.
+Reason: We make context switch a individual function, so calling it will leave a return address in kernel stack, however the function does not return properly, instead it simply switched to user level, leaving the return address un-poped. Consequently, after we jumped from halt to the end of "excute" function, we first popped that return address and jump to the location after context switch function is called, then we went through "return" again. To fix this proble, we simply replace  context switch function with context switch micro.
+
+Contributer: Nachuan Wang
+Date: April 27 2021
+Files: sys_calls.c/scheduler.c
+Bug: Halting any user program causes page fault
+Reason: We incorrectly use the same field in pcb to store ebp/esp value under "switch to user level" and "switch to different terminal" situations, it is not true because those are two different contexts so their ebp/esp are different. To fix it we use different fields to store ebp/esp in two situations.
+
+Contributer: Xiong Neng
+Date: April 28 2021
+Files: terminal.c, scheduler.c
+Bug: While running counter on one terminal and inputing throught keyboard on another terminal, some times the characters are not displayed. Spaces take their places.
+Solution: This is happening because after we change the page table mapping, we do not flush the tle. This cause the changing of the page mapping invalid sometimes. To fix this we just call TLB_flush() everytime after we change page mappings.
+
+Contributer: Xiong Neng
+Date: April 30 2021
+Files: terminal.c
+Bug: In the shell console, when keep pressing enter, sometimes it skips some rows.
+Solution: Before handling '\r', '\n', check if enter flag is already ON.
+
+
+Contributer: Jiang Fengqing
+Date: May 2  2021
+Files: timer.c && timer.h
+Bug: When intending to test change the piece period, the time did not really changes. And testing on the windows machine, would have a bit lag than on the Max amchine.
+Solution: Wrong formula to calculate the frequency divider. And refer to the code from the devos website, change a different way to set the divider. Then it works fine.
+
