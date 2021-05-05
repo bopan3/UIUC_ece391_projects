@@ -1,13 +1,19 @@
 #include "video_player.h"
 #include "../file_sys.h"
 #include "../lib.h"
-
+/* global section */
+uint32_t frame_index; 
+dentry_t vid_dent;
+uint32_t vid_width, vid_height, frame_num, frame_rate, palette_num;
+uint8_t video_status = PLAY_VID;
 void video_player(const uint8_t* video_name){
     cli();
-    dentry_t vid_dent;
+    
     uint32_t vid_file_len;
     uint8_t  vid_info_buf[vid_buf_size];
-    uint32_t vid_width, vid_height, frame_num, frame_rate, palette_num;
+    
+    uint8_t tmp[320*182];
+
     if (read_dentry_by_name(video_name, &vid_dent) == -1){
         printf("fail to find the video file\n");
         return ;
@@ -27,6 +33,21 @@ void video_player(const uint8_t* video_name){
     printf("Frame number: %d\n", frame_num);
     printf("Frame rate: %d\n", frame_rate);
     printf("Palette Entry: %d\n", palette_num);
+
+    read_data(vid_dent.idx_inode, 20+palette_num, tmp, vid_width * vid_height);
+
+
+    frame_index = 1; /* the next to be displayed  */
+    video_status = PLAY_VID;
     return ;
 }
 
+/* update the video frame by interrupt */
+void video_handler(){
+    uint8_t tmp[320*182];
+    /*  */
+    if (frame_index < frame_num){
+        read_data(vid_dent.idx_inode, 20+palette_num, tmp, vid_width * vid_height);
+        frame_index++;
+    }
+}
