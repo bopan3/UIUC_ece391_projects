@@ -6,6 +6,8 @@
 #include "keyboard.h"
 #include "desktop.h"
 #include "blocks.h"
+#include "scheduler.h"
+#include "terminal.h"
 #include "mouse.h"
 
 
@@ -13,6 +15,11 @@ game_info_t game_info;
 
 extern int center_blk_idx[NUM_ICON][2];
 extern int center_blk_fnum[NUM_ICON];
+
+/* Multi-Terminals */
+extern int32_t terminal_tick;
+extern int32_t terminal_display;
+extern terminal_t tm_array[];
 
 /*
  * The maze array contains a one byte bit vector (maze_bit_t) for each
@@ -50,7 +57,7 @@ void init_game_info() {
 *	effects: none
 */
 int32_t desktop_open(const uint8_t* filename) {
-    int32_t i;
+    int32_t i, j;
     switch_to_modeX();
     //stop schedule
     disable_irq(PIT_IRQ);        
@@ -60,6 +67,14 @@ int32_t desktop_open(const uint8_t* filename) {
     game_info.is_ModX = 1;
     // make the maze (desktop)
     make_desktop(MAZE_MIN_X_DIM, MAZE_MIN_Y_DIM);
+
+    /* Clear line buffers */
+    for (i = 0; i < MAX_TM; ++i) {
+        for (j = 0; j < LINE_BUF_SIZE; ++j) {
+            tm_array[i].kb_buf[j] = '\0';
+        }
+        tm_array[i].num_char = 0;
+    }
 
     /* Set logical view and draw initial screen. */
     set_view_window(game_info.map_x, game_info.map_y);
@@ -79,8 +94,19 @@ int32_t desktop_open(const uint8_t* filename) {
 *	effects: none
 */
 int32_t desktop_close(int32_t fd) {
+    int32_t i, j;
+
     set_text_mode_3(0);
     game_info.is_ModX = 0;
+
+    /* Clear line buffers */
+    for (i = 0; i < MAX_TM; ++i) {
+        for (j = 0; j < LINE_BUF_SIZE; ++j) {
+            tm_array[i].kb_buf[j] = '\0';
+        }
+        tm_array[i].num_char = 0;
+    }
+
     //reopen schedule
     enable_irq(PIT_IRQ);
     return 0;
