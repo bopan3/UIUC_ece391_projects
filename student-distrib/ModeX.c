@@ -889,16 +889,20 @@ void refresh_bar(int level, int num_fruit, int time){
     int p_off;  // the index of the plane
     int pixel_idx; //the index of pixel in a plane
     unsigned char* addr; //address to the start of the plane we want to copy
-    int i;
 
-    // char string_text[]="               TEAM18 OS                "; //just rubbish number to make room for 40 chars    
-    char string_text[41];
-    char* text_1 = 'TEAM18 OS';
-    string_text[40] = '\0';
-    for (i = 0; i < 40; i++) {
-        string_text[i] = ' ';
-    }
-    // *(string_text + (40 - strlen(text_1))) = text_1;
+
+    // // char string_text[]="               TEAM18 OS                "; //just rubbish number to make room for 40 chars    
+    // char string_text[41];
+    // char* text_1 = 'TEAM18 OS';
+    // string_text[40] = '\0';
+    // for (i = 0; i < 40; i++) {
+    //     string_text[i] = ' ';
+    // }
+    // // *(string_text + (40 - strlen(text_1))) = text_1;
+
+    //1. convert "level num_fruit time" infos into a string with 320/8=40 chracters
+    //char string_text[]="0123456789012345678901234567890123456789"; //just rubbish number to make room for 40 chars    
+      char string_text[]="               TEAM18 OS                "; //just rubbish number to make room for 40 chars    
 
     //2. call text_to_graphics to render the string into graphic 
     text_to_graphics(string_text,tex_buffer);
