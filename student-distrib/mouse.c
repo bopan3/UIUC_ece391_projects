@@ -1,5 +1,9 @@
 #include "mouse.h"
 #include "i8259.h"
+#include "ModeX.h"
+#include "blocks.h"
+#include "scheduler.h"
+#include "desktop.h"
 
 /* Global variables */
 int32_t mouse_x_move;
@@ -9,6 +13,38 @@ int32_t mouse_y_coor;       // Set to the middle of GUI
 int32_t mouse_key_left;     // 1 means pressed, 0 means not
 int32_t mouse_key_right;    // 1 means pressed, 0 means not
 int32_t mouse_key_mid;      // 1 means pressed, 0 means not
+
+/* Multi-Terminals */
+extern int32_t terminal_tick;
+extern int32_t terminal_display;
+extern terminal_t tm_array[];
+
+extern uint8_t click_flag;
+extern game_info_t game_info;
+
+/* File icon in GUI */
+uint8_t icon_location[X_BLOCK_NUM][Y_BLOCK_NUM];
+int center_blk_idx[NUM_ICON][2] = {
+    {3, 2},
+    {8, 2},
+    {13, 2},
+    {18, 2},
+    {23, 2}
+};
+int center_blk_fnum[NUM_ICON] = {
+    MP,
+    COUNTER,
+    PINGPONG,
+    VIDEO_1,
+    FISH
+};
+char* instruction[NUM_ICON] = {
+    "mp",
+    "counter",
+    "pingpong",
+    "video",
+    "fish"
+};
 
 /* mouse_init
  *  Description: initialize the mouse device
@@ -27,8 +63,8 @@ void mouse_init() {
     mouse_key_left = 0;
     mouse_key_right = 0;
     mouse_key_mid = 0;
-    mouse_x_coor = SCROLL_X_DIM / 2;
-    mouse_y_coor = SCROLL_Y_DIM / 2;
+    mouse_x_coor = SCROLL_X_DIM / 4;
+    mouse_y_coor = SCROLL_Y_DIM / 4;
 
 
     /* Enbale auxiliary input of the PS2 keyboard controller */
@@ -64,10 +100,48 @@ void mouse_init() {
     write_port(0xF3);
     read_port();
     wait_out();
-    outb(200, KETBOARD_PORT_NUM);
+    outb(60, KETBOARD_PORT_NUM);
 
     /* Set i8259 */
     enable_irq(MOUSE_IRQ_NUM);
+
+    screen_layout_init();
+}
+
+/* screen_layout_init
+ *  Description: initialize the screen layout matrix and other parameters
+ *  Input: none
+ *  Output: none
+ *  Return: none
+ *  Side Effect: none
+ */
+void screen_layout_init() {
+    int x, y, i;
+    int file_num;
+
+    for (x = 0; x < X_BLOCK_NUM; x++) {
+        for (y = 0; y < Y_BLOCK_NUM; y++) {
+            icon_location[x][y] = 0;
+        }
+    }
+
+    /* Set matrix value for each icon */
+    for (i = 0; i < NUM_ICON; i++) {
+        file_num = center_blk_fnum[i];
+        x = center_blk_idx[i][0];
+        y = center_blk_idx[i][1];
+
+        icon_location[x-1][y] = file_num;
+        icon_location[x-1][y-1] = file_num;
+        icon_location[x-1][y+1] = file_num;
+        icon_location[x][y] = file_num;
+        icon_location[x][y-1] = file_num;
+        icon_location[x][y+1] = file_num;
+        icon_location[x+1][y] = file_num;
+        icon_location[x+1][y-1] = file_num;
+        icon_location[x+1][y+1] = file_num;
+    }
+
 
 }
 
@@ -82,9 +156,16 @@ void mouse_init() {
 void mouse_irq_handler() {
     uint8_t temp;
     mouse_package mouse_in;
+    unsigned char restore_block[12*12];
+    unsigned char restore_block_cursor[12*12];
 
     send_eoi(MOUSE_IRQ_NUM);
     // sti();
+    // printf("[Test] is_ModX: %d\n", game_info.is_ModX);
+
+    /* If not in GUI, do nothing */
+    if (!game_info.is_ModX)
+        return;
 
     /* Read data */
     temp = read_port();
@@ -101,8 +182,8 @@ void mouse_irq_handler() {
     if ((!mouse_in.always_1) || mouse_in.x_overflow || mouse_in.y_overflow)
         return;
     
-    mouse_x_move = read_port() / MOUSE_SPEED_FACTOR;
-    mouse_y_move = read_port() / MOUSE_SPEED_FACTOR;
+    mouse_x_move = read_port();
+    mouse_y_move = read_port();
 
     /* Sign extention */
     if (mouse_in.x_sign)
@@ -112,24 +193,111 @@ void mouse_irq_handler() {
     
     
     /* Update other parameters */
-    mouse_x_coor += mouse_x_move;
-    mouse_y_coor += mouse_y_move;
+    mouse_x_coor += mouse_x_move / MOUSE_SPEED_FACTOR;
+    mouse_y_coor -= mouse_y_move / MOUSE_SPEED_FACTOR;
     if (mouse_x_coor < 0)
         mouse_x_coor = 0;
     if (mouse_y_coor < 0)
         mouse_y_coor = 0;
-    if (mouse_x_coor >= SCROLL_X_DIM)
-        mouse_x_coor = SCROLL_X_DIM - 1;
-    if (mouse_y_coor >= SCROLL_Y_DIM)
-        mouse_y_coor = SCROLL_Y_DIM - 1;
+    if (mouse_x_coor >= SCROLL_X_DIM - 10)
+        mouse_x_coor = SCROLL_X_DIM - 11;
+    if (mouse_y_coor >= SCROLL_Y_DIM -10)
+        mouse_y_coor = SCROLL_Y_DIM - 11;
 
     /* Update press state */
     mouse_key_left = mouse_in.left_btn;
     mouse_key_right = mouse_in.right_btn;
     mouse_key_mid = mouse_in.mid_btn;
 
-    // printf("[Test] (left, right, mid): (%d, %d, %d)\n", mouse_key_left, mouse_key_right, mouse_key_mid);
+    // printf("(Test) (blk_x, blk_y) (%d, %d)\n", mouse_x_coor / 12, mouse_y_coor / 12);
+    // return;
 
+    // printf("[Test] (left, right, mid): (%d, %d, %d)\n", mouse_key_left, mouse_key_right, mouse_key_mid);
+    cli();
+    if (mouse_key_left || mouse_key_right || mouse_key_mid) {
+        draw_full_block_with_mask(mouse_x_coor, mouse_y_coor, (unsigned char*)get_block_img(MOUSE_CURSOR), (unsigned char*)get_block_img(MOUSE_CURSOR_MASK_SOLID), restore_block_cursor);
+        show_screen();
+        restore_full_block_with_mask(mouse_x_coor, mouse_y_coor, (unsigned char*)get_block_img(MOUSE_CURSOR), (unsigned char*)get_block_img(MOUSE_CURSOR_MASK_SOLID), restore_block_cursor);
+    } else {
+        draw_fruit_text_with_mask(mouse_x_coor, mouse_y_coor, (unsigned char*)get_block_img(MOUSE_CURSOR_MASK_TRANS), restore_block_cursor);
+        show_screen();
+        restore_fruit_text_with_mask(mouse_x_coor, mouse_y_coor, (unsigned char*)get_block_img(MOUSE_CURSOR_MASK_TRANS), restore_block_cursor);
+    }
+    sti();
+
+    /* Determine location of mouse w.r.t icon */
+    int blk_x = mouse_x_coor / 12;
+    int blk_y = mouse_y_coor / 12;
+    int offset[4][2] = {{0,0}, {0,1}, {1,0}, {1,1}};
+    int i, j;
+    int blk_x_i, blk_y_i;
+    int coor_x, coor_y;
+    int f_num;
+
+
+    for (i = 0; i < 4; i++) {
+        blk_x_i = blk_x + offset[i][0];
+        blk_y_i = blk_y + offset[i][1];
+        if (blk_x_i < X_BLOCK_NUM && blk_y_i < Y_BLOCK_NUM) {
+            f_num = icon_location[blk_x_i][blk_y_i];
+        } else {
+            f_num = 0;
+        }
+
+        /* If locate in a block  */
+        if (f_num != 0) {
+            /* Dispaly edge for that icon */
+            for (j = 0; j < NUM_ICON; j++) {
+                if (center_blk_fnum[j] == f_num)
+                    break;
+            }
+            coor_x = 12 * center_blk_idx[j][0];
+            coor_y = 12 * center_blk_idx[j][1];
+            cli();
+
+            draw_full_block_with_mask(coor_x-12, coor_y-12, (unsigned char*)get_block_img(ICON_EDGE_1), (unsigned char*)get_block_img(ICON_EDGE_MASK_1), restore_block);
+            draw_full_block_with_mask(coor_x, coor_y-12, (unsigned char*)get_block_img(ICON_EDGE_2), (unsigned char*)get_block_img(ICON_EDGE_MASK_2), restore_block);
+            draw_full_block_with_mask(coor_x+12, coor_y-12, (unsigned char*)get_block_img(ICON_EDGE_3), (unsigned char*)get_block_img(ICON_EDGE_MASK_3), restore_block);
+            draw_full_block_with_mask(coor_x-12, coor_y, (unsigned char*)get_block_img(ICON_EDGE_4), (unsigned char*)get_block_img(ICON_EDGE_MASK_4), restore_block);
+            draw_full_block_with_mask(coor_x, coor_y, (unsigned char*)get_block_img(ICON_EDGE_5), (unsigned char*)get_block_img(ICON_EDGE_MASK_5), restore_block);
+            draw_full_block_with_mask(coor_x+12, coor_y, (unsigned char*)get_block_img(ICON_EDGE_6), (unsigned char*)get_block_img(ICON_EDGE_MASK_6), restore_block);
+            draw_full_block_with_mask(coor_x-12, coor_y+12, (unsigned char*)get_block_img(ICON_EDGE_7), (unsigned char*)get_block_img(ICON_EDGE_MASK_7), restore_block);
+            draw_full_block_with_mask(coor_x, coor_y+12, (unsigned char*)get_block_img(ICON_EDGE_8), (unsigned char*)get_block_img(ICON_EDGE_MASK_8), restore_block);
+            draw_full_block_with_mask(coor_x+12, coor_y+12, (unsigned char*)get_block_img(ICON_EDGE_9), (unsigned char*)get_block_img(ICON_EDGE_MASK_9), restore_block);
+            
+            if (mouse_key_left || mouse_key_right || mouse_key_mid) {
+                draw_full_block_with_mask(mouse_x_coor, mouse_y_coor, (unsigned char*)get_block_img(MOUSE_CURSOR), (unsigned char*)get_block_img(MOUSE_CURSOR_MASK_SOLID), restore_block_cursor);
+                show_screen();
+                restore_full_block_with_mask(mouse_x_coor, mouse_y_coor, (unsigned char*)get_block_img(MOUSE_CURSOR), (unsigned char*)get_block_img(MOUSE_CURSOR_MASK_SOLID), restore_block_cursor);
+            } else {
+                draw_fruit_text_with_mask(mouse_x_coor, mouse_y_coor, (unsigned char*)get_block_img(MOUSE_CURSOR_MASK_TRANS), restore_block_cursor);
+                show_screen();
+                restore_fruit_text_with_mask(mouse_x_coor, mouse_y_coor, (unsigned char*)get_block_img(MOUSE_CURSOR_MASK_TRANS), restore_block_cursor);
+            }
+
+            restore_full_block_with_mask(coor_x-12, coor_y-12, (unsigned char*)get_block_img(ICON_EDGE_1), (unsigned char*)get_block_img(ICON_EDGE_MASK_1), restore_block);
+            restore_full_block_with_mask(coor_x, coor_y-12, (unsigned char*)get_block_img(ICON_EDGE_2), (unsigned char*)get_block_img(ICON_EDGE_MASK_2), restore_block);
+            restore_full_block_with_mask(coor_x+12, coor_y-12, (unsigned char*)get_block_img(ICON_EDGE_3), (unsigned char*)get_block_img(ICON_EDGE_MASK_3), restore_block);
+            restore_full_block_with_mask(coor_x-12, coor_y, (unsigned char*)get_block_img(ICON_EDGE_4), (unsigned char*)get_block_img(ICON_EDGE_MASK_4), restore_block);
+            restore_full_block_with_mask(coor_x, coor_y, (unsigned char*)get_block_img(ICON_EDGE_5), (unsigned char*)get_block_img(ICON_EDGE_MASK_5), restore_block);
+            restore_full_block_with_mask(coor_x+12, coor_y, (unsigned char*)get_block_img(ICON_EDGE_6), (unsigned char*)get_block_img(ICON_EDGE_MASK_6), restore_block);
+            restore_full_block_with_mask(coor_x-12, coor_y+12, (unsigned char*)get_block_img(ICON_EDGE_7), (unsigned char*)get_block_img(ICON_EDGE_MASK_7), restore_block);
+            restore_full_block_with_mask(coor_x, coor_y+12, (unsigned char*)get_block_img(ICON_EDGE_8), (unsigned char*)get_block_img(ICON_EDGE_MASK_8), restore_block);
+            restore_full_block_with_mask(coor_x+12, coor_y+12, (unsigned char*)get_block_img(ICON_EDGE_9), (unsigned char*)get_block_img(ICON_EDGE_MASK_9), restore_block);
+
+            strcpy(tm_array[0].kb_buf, instruction[j]);
+            strcpy(tm_array[1].kb_buf, instruction[j]);
+            strcpy(tm_array[2].kb_buf, instruction[j]);
+            sti();
+            break;
+        }
+    }
+
+    if (mouse_key_left) {
+        click_flag = 1;
+    }
+
+    sti();
 }
 
 
@@ -142,7 +310,7 @@ void mouse_irq_handler() {
  */
 void wait_in() {
     int32_t wait_time = VERY_LONG_TIME;
-    while (1) {
+    while (wait_time--) {
         if (!(inb(MOUSE_PORT_NUM) & WAIT_IN_MASK));
             break;
     }
@@ -158,7 +326,7 @@ void wait_in() {
  */
 void wait_out() {
     int32_t wait_time = VERY_LONG_TIME;
-    while (1) {
+    while (wait_time--) {
         if (!(inb(MOUSE_PORT_NUM) & WAIT_OUT_MASK));
             break;
     }

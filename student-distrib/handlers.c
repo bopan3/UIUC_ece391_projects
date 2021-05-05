@@ -10,9 +10,6 @@
 #include "timer.h"
 #include "mouse.h"
 
-extern mouse_x_move;
-extern mouse_y_move;
-
 /* 
  * irq_handler
  *   DESCRIPTION: save registers and pass control to a interrupt handler specified by irq_vect

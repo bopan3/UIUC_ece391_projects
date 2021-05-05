@@ -17,6 +17,7 @@
 #include "ModeX.h"
 #include "mouse.h"
 #include "sys_calls.h"
+#include "desktop.h"
 #define RUN_TESTS
 
 /* Macros. */
@@ -169,6 +170,8 @@ void entry(unsigned long magic, unsigned long addr) {
     paging_set_always_access_VEDEO(VIRTUAL_ADDR_AlWAYS_ACCESS_VEDIO_PAGE,VIDEO);
     // printf("All Init Correctly");
 
+    init_game_info();
+    
     /* Enable interrupts */
     /* Do not enable the following until after you have set up your
      * IDT correctly otherwise QEMU will triple fault and simple close

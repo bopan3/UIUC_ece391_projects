@@ -73,43 +73,88 @@ typedef enum {
  * order in blocks.s.
  */
 enum {
-    BLOCK_,               /* 16 blocks for walls with up, right, down,    */
-    BLOCK_U,              /*   and left connections to adjacent walls     */
-    BLOCK_R,
-    BLOCK_UR,
-    BLOCK_D,
-    BLOCK_UD,
-    BLOCK_RD,
-    BLOCK_URD,
-    BLOCK_L,
-    BLOCK_UL,
-    BLOCK_RL,
-    BLOCK_URL,
-    BLOCK_DL,
-    BLOCK_UDL,
-    BLOCK_RDL,
-    BLOCK_URDL,
-    BLOCK_EMPTY,          /* empty (non-wall) maze space                  */
-    BLOCK_SHADOW,         /* obscured maze space                          */
-    BLOCK_PLAYER_UP,      /* four pictures of the player, in dir_t order  */
-    BLOCK_PLAYER_RIGHT,
-    BLOCK_PLAYER_DOWN,
-    BLOCK_PLAYER_LEFT,
-    BLOCK_PLAYER_MASK_UP, /* four masks for player images, in dir_t order */
-    BLOCK_PLAYER_MASK_RIGHT,
-    BLOCK_PLAYER_MASK_DOWN,
-    BLOCK_PLAYER_MASK_LEFT,
-    BLOCK_FRUIT_1,        /* fruit pictures                               */
-    BLOCK_FRUIT_2,
-    BLOCK_FRUIT_3,
-    BLOCK_FRUIT_4,
-    BLOCK_FRUIT_5,
-    BLOCK_FRUIT_6,
-    BLOCK_FRUIT_7,  LAST_FRUIT = BLOCK_FRUIT_7,
-    BLOCK_FRUIT_SHADOW,   /* obscured fruit                               */
-    BLOCK_EXIT,           /* the exit from the maze                       */
     /* User defined blocks */
     MOUSE_CURSOR,
+    MOUSE_CURSOR_MASK_SOLID,
+    MOUSE_CURSOR_MASK_TRANS,
+    BACKGROUND,
+    ICON_EDGE_1,
+    ICON_EDGE_2,
+    ICON_EDGE_3,
+    ICON_EDGE_4,
+    ICON_EDGE_5,    // Same as backgroud block
+    ICON_EDGE_6,
+    ICON_EDGE_7,
+    ICON_EDGE_8,
+    ICON_EDGE_9,
+    ICON_EDGE_MASK_1,
+    ICON_EDGE_MASK_2,
+    ICON_EDGE_MASK_3,
+    ICON_EDGE_MASK_4,
+    ICON_EDGE_MASK_5,
+    ICON_EDGE_MASK_6,
+    ICON_EDGE_MASK_7,
+    ICON_EDGE_MASK_8,
+    ICON_EDGE_MASK_9,
+    ICON_TEST_1,
+    ICON_TEST_2,
+    ICON_TEST_3,
+    ICON_TEST_4,
+    ICON_TEST_5,    // Same as backgroud block
+    ICON_TEST_6,
+    ICON_TEST_7,
+    ICON_TEST_8,
+    ICON_TEST_9,
+    /* MP */
+    ICON_MP_1,
+    ICON_MP_2,
+    ICON_MP_3,
+    ICON_MP_4,
+    ICON_MP_5,
+    ICON_MP_6,
+    ICON_MP_7,
+    ICON_MP_8,
+    ICON_MP_9,
+    /* Counter */
+    ICON_COUNTER_1,
+    ICON_COUNTER_2,
+    ICON_COUNTER_3,
+    ICON_COUNTER_4,
+    ICON_COUNTER_5,
+    ICON_COUNTER_6,
+    ICON_COUNTER_7,
+    ICON_COUNTER_8,
+    ICON_COUNTER_9,
+    /* Pingpong */
+    ICON_PINGPONG_1,
+    ICON_PINGPONG_2,
+    ICON_PINGPONG_3,
+    ICON_PINGPONG_4,
+    ICON_PINGPONG_5,
+    ICON_PINGPONG_6,
+    ICON_PINGPONG_7,
+    ICON_PINGPONG_8,
+    ICON_PINGPONG_9,
+    /* Video */
+    ICON_VIDEO_1,
+    ICON_VIDEO_2,
+    ICON_VIDEO_3,
+    ICON_VIDEO_4,
+    ICON_VIDEO_5,
+    ICON_VIDEO_6,
+    ICON_VIDEO_7,
+    ICON_VIDEO_8,
+    ICON_VIDEO_9,
+    /* Fish */
+    ICON_FISH_1,
+    ICON_FISH_2,
+    ICON_FISH_3,
+    ICON_FISH_4,
+    ICON_FISH_5,
+    ICON_FISH_6,
+    ICON_FISH_7,
+    ICON_FISH_8,
+    ICON_FISH_9,
     /* Must at the end */
     NUM_BLOCKS
 };

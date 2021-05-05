@@ -17,6 +17,12 @@
 #define MAZE_MIN_Y_DIM ((SCROLL_Y_DIM + (BLOCK_Y_DIM - 1) + 2 * SHOW_MIN) / (2 * BLOCK_Y_DIM))
 #define MAZE_MAX_Y_DIM 30
 
+/* 
+ * maze array index calculation macro; maze dimensions are valid only
+ * after a call to make_maze
+ */
+#define MAZE_INDEX(a,b) ((a) + ((b) + 1) * maze_x_dim * 2)
+
 // #ifndef __GLOBAL__
 // #define __GLOBAL__
 // #endif
@@ -33,6 +39,13 @@ typedef enum {
     MAZE_EXIT           = 16,   /* exit from maze                           */
     MAZE_REACH          = 128   /* seen already (not shrouded in mist)      */
 } maze_bit_t;
+
+// variables borrowed from mazegame.c
+typedef struct {
+    /* dynamic values within a level -- you may want to add more... */
+    unsigned int map_x, map_y;   /* current upper left display pixel */
+    int is_ModX;
+} game_info_t;
 
 /* create a desktop and place UI for it */
 extern int make_desktop(int x_dim, int y_dim);
@@ -51,6 +64,6 @@ extern int32_t desktop_read(int32_t fd, void* buf, int32_t nbytes);
 
 extern int32_t desktop_write(int32_t fd, const void* buf, int32_t nbytes);
 
-extern void refresh_screen();
+void init_game_info();
 
 #endif /* MAZE_H */

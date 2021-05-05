@@ -6,14 +6,20 @@
 #include "keyboard.h"
 #include "desktop.h"
 #include "blocks.h"
+#include "scheduler.h"
+#include "terminal.h"
+#include "mouse.h"
 
-// variables borrowed from mazegame.c
-typedef struct {
-    /* dynamic values within a level -- you may want to add more... */
-    unsigned int map_x, map_y;   /* current upper left display pixel */
-} game_info_t;
 
-static game_info_t game_info;
+game_info_t game_info;
+
+extern int center_blk_idx[NUM_ICON][2];
+extern int center_blk_fnum[NUM_ICON];
+
+/* Multi-Terminals */
+extern int32_t terminal_tick;
+extern int32_t terminal_display;
+extern terminal_t tm_array[];
 
 /*
  * The maze array contains a one byte bit vector (maze_bit_t) for each
@@ -32,15 +38,16 @@ static game_info_t game_info;
  * 2 X_DIM (2 Y_DIM + 3), and the space allocated is one larger than this
  * maximum index value.
  */
-static unsigned char maze[2 * MAZE_MAX_X_DIM * (2 * MAZE_MAX_Y_DIM + 3) + 1];
-static int maze_x_dim;          /* horizontal dimension of maze */
-static int maze_y_dim;          /* vertical dimension of maze   */
-/* 
- * maze array index calculation macro; maze dimensions are valid only
- * after a call to make_maze
- */
-#define MAZE_INDEX(a,b) ((a) + ((b) + 1) * maze_x_dim * 2)
+unsigned char maze[2 * MAZE_MAX_X_DIM * (2 * MAZE_MAX_Y_DIM + 3) + 1];
+int maze_x_dim;          /* horizontal dimension of maze */
+int maze_y_dim;          /* vertical dimension of maze   */
 
+
+void init_game_info() {
+    game_info.is_ModX = 0;
+    game_info.map_x = SHOW_MIN;
+    game_info.map_y = SHOW_MIN;
+}
 
 /*
 *	desktop_open
@@ -50,15 +57,24 @@ static int maze_y_dim;          /* vertical dimension of maze   */
 *	effects: none
 */
 int32_t desktop_open(const uint8_t* filename) {
-    int32_t i;
+    int32_t i, j;
     switch_to_modeX();
     // //stop schedule
     // disable_irq(PIT_IRQ);        
 
     /* Initialize dynamic values. */
     game_info.map_x = game_info.map_y = SHOW_MIN;
+    game_info.is_ModX = 1;
     // make the maze (desktop)
     make_desktop(MAZE_MIN_X_DIM, MAZE_MIN_Y_DIM);
+
+    /* Clear line buffers */
+    for (i = 0; i < MAX_TM; ++i) {
+        for (j = 0; j < LINE_BUF_SIZE; ++j) {
+            tm_array[i].kb_buf[j] = '\0';
+        }
+        tm_array[i].num_char = 0;
+    }
 
     /* Set logical view and draw initial screen. */
     set_view_window(game_info.map_x, game_info.map_y);
@@ -79,8 +95,10 @@ int32_t desktop_open(const uint8_t* filename) {
 */
 int32_t desktop_close(int32_t fd) {
     set_text_mode_3(0);
+    game_info.is_ModX = 0;
+
     //reopen schedule
-    enable_irq(PIT_IRQ);
+//    enable_irq(PIT_IRQ);
     return 0;
 }
 
@@ -170,7 +188,7 @@ int32_t desktop_close(int32_t fd) {
  */
 int make_desktop(int x_dim, int y_dim) {
  
-    //int x, y;
+    int x, y, i;
 
     /* Check the requested size, and save in local state if it is valid. */
     if (x_dim < MAZE_MIN_X_DIM || x_dim > MAZE_MAX_X_DIM ||
@@ -179,36 +197,26 @@ int make_desktop(int x_dim, int y_dim) {
     maze_x_dim = x_dim;
     maze_y_dim = y_dim;
 
-    /* Fill the maze with walls. */
-    memset(maze, BLOCK_FRUIT_1, sizeof (maze));
-    maze[MAZE_INDEX(10, 10)] = MOUSE_CURSOR;
+    /* Fill the maze with icons. */
+    memset(maze, BACKGROUND, sizeof (maze));
+    /* Set matrix value for each icon */
+    for (i = 0; i < NUM_ICON; i++) {
+        // file_num = center_blk_fnum[i];
+        x = center_blk_idx[i][0];
+        y = center_blk_idx[i][1];
 
-    //  /* Remove all walls! */
-    // for (x = 1; x < 2 * maze_x_dim; x++) {
-    //     for (y = 1; y < 2 * maze_y_dim; y++) {
-    //         maze[MAZE_INDEX(x, y)] = MAZE_NONE;
-    //     }
-    // }
+        maze[MAZE_INDEX(x-1, y-1)] = ICON_TEST_1 + 9 * (i + 1);
+        maze[MAZE_INDEX(x, y-1)] = ICON_TEST_2 + 9 * (i + 1);
+        maze[MAZE_INDEX(x+1, y-1)] = ICON_TEST_3 + 9 * (i + 1);
+        maze[MAZE_INDEX(x-1, y)] = ICON_TEST_4 + 9 * (i + 1);
+        maze[MAZE_INDEX(x, y)] = ICON_TEST_5 + 9 * (i + 1);
+        maze[MAZE_INDEX(x+1, y)] = ICON_TEST_6 + 9 * (i + 1);
+        maze[MAZE_INDEX(x-1, y+1)] = ICON_TEST_7 + 9 * (i + 1);
+        maze[MAZE_INDEX(x, y+1)] = ICON_TEST_8 + 9 * (i + 1);
+        maze[MAZE_INDEX(x+1, y+1)] = ICON_TEST_9 + 9 * (i + 1);
+    }
 
     return 0;
-}
-
-/* 
- * refresh_screen
- *   DESCRIPTION: refresh screen periodically
- *   INPUTS: none
- *   OUTPUTS: none
- *   RETURN VALUE: none
- *   SIDE EFFECTS: update the screen content of GUI
- */
-void refresh_screen() {
-
-    /* Display mouse cursor */
-
-    show_screen();
-
-    /* Erase mouse cursor */
-
 }
 
 
