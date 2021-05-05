@@ -150,7 +150,7 @@ void idt_init() {
     SET_IDT_ENTRY(idt[43], irq_Eth0);
     SET_IDT_ENTRY(idt[44], irq_PS2_Mouse);
     SET_IDT_ENTRY(idt[46], irq_Ide0);
-    SET_IDT_ENTRY(idt[0x29], irq_sb16);
+    SET_IDT_ENTRY(idt[0x25], irq_sb16);
     
     /* Set system call vector (0x80) */
     SET_IDT_ENTRY(idt[0x80], asm_sys_linkage);
