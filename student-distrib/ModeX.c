@@ -52,7 +52,7 @@ static unsigned short target_img;   /* offset of displayed screen image */
 /* pointer to start (0x900000) of temp video memory for text screen when in modeX */
 static unsigned char* mem_temp_v;    
 
-extern int32_t in_modex=0;
+int32_t in_modex=0;
 extern volatile int32_t terminal_tick;      /* for the active running terminal, default the first terminal */
 extern volatile int32_t terminal_display;   /* for the displayed terminal, only change when function-key pressed */
 // static unsigned char palette_RGB_vedio[256][3]; //= {

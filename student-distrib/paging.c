@@ -368,4 +368,7 @@ void paging_set_always_access_VEDEO(int32_t virtual_addr_for_vedio, int32_t phys
         page_table_vedio_mem[i].address = phys_addr_for_vedio>>12 ;     /* Physical Address MSB 20bits (so we need to right shift by 12) */
     }
     TLB_flush();
+    
+    }
+    return ;
 }

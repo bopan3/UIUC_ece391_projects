@@ -24,7 +24,7 @@
 #define NUM_NONTRANS_COLOR      64      //number of non-tranparent colors in the palette
 
 typedef struct pellete_struct {
-    unsigned char RGB[[256][3];
+    unsigned char RGB[256][3];
 } pellete_struct_t;
 
 
