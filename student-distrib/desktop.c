@@ -9,7 +9,7 @@
 #include "scheduler.h"
 #include "terminal.h"
 #include "mouse.h"
-
+#include "./dev/sound.h"
 
 game_info_t game_info;
 
@@ -58,6 +58,10 @@ void init_game_info() {
 */
 int32_t desktop_open(const uint8_t* filename) {
     int32_t i, j;
+    sti();
+    WARNING_PCS();
+    cli();
+
     switch_to_modeX();
     // //stop schedule
     // disable_irq(PIT_IRQ);        

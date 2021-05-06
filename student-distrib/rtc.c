@@ -1,6 +1,8 @@
 #include "rtc.h"
 #include "i8259.h"
 #include "lib.h"
+#include "./dev/rand.h"
+
 #define IRQ_NUM_RTC 0x08
 #define RTC_IDX_PORT 0x70
 #define RTC_DATA_PORT 0x71
@@ -65,6 +67,7 @@ void rtc_handler(){
             }
         }  
     }
+    update_seed();
     //a read on RTC_REG_C to allow next irq
     rtc_byte_read(RTC_REG_C);
     send_eoi(IRQ_NUM_RTC);

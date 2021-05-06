@@ -7,7 +7,7 @@
 #include "desktop.h"
 #include "blocks.h"
 #include "sys_calls.h"
-
+#include "./dev/sound.h"
 
 
 #define SCROLL_SIZE             (SCROLL_X_WIDTH * SCROLL_Y_DIM)
@@ -216,7 +216,9 @@ extern int32_t switch_to_modeX(){
     uint8_t* VM_addr = (uint8_t*)(VIDEO);  
     uint8_t* VM_ACCESS_addr = (uint8_t*)(VIRTUAL_ADDR_AlWAYS_ACCESS_VEDIO_PAGE);  
     mem_temp_v= (unsigned char*) TEMP_STOR_FOR_MODEX; //i.e. 0x900000
-
+    // sti();
+    // WARNING_PCS();
+    // cli();
     // /* set video memory map */
     // page_table[VIDEO_REGION_START_K].address = VIDEO_REGION_START_K +  (terminal_display != terminal_tick) * (terminal_tick + 1) +in_modex*(TEMP_ADDR_VEDIO_PAGE-VIDEO)/_4KB_; /* set for kernel */
     // page_table_vedio_mem[VIDEO_REGION_START_U].address =  VIDEO_REGION_START_K + (terminal_display != terminal_tick) * (terminal_tick + 1) +in_modex*(TEMP_ADDR_VEDIO_PAGE-VIDEO)/_4KB_; /* set for user */
@@ -900,6 +902,7 @@ extern uint8_t  hh;
 extern uint8_t  mm;
 extern uint8_t  ss;
 extern uint8_t  ww;
+extern uint32_t rand_seed;
 extern void update_time();
 /*
  * refresh_bar
@@ -984,6 +987,9 @@ void refresh_bar(int level, int num_fruit, int time){
     }else{
         itoa(ss, string_text+32, 10);
     }
+
+    
+    // itoa(rand_seed%100, string_text[36], 10);
 
     // itoa()
     // itoa(mon)
