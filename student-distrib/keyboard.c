@@ -8,6 +8,7 @@
 #include "ModeX.h"
 #include "desktop.h"
 #include "blocks.h"
+#include "text.h"
 
 #define SCANCODE_SET_SIZE 58
 #define EMP 0x0
@@ -51,7 +52,9 @@ static uint8_t alt_flag = OFF;
 extern int32_t terminal_tick;
 extern int32_t terminal_display;
 extern terminal_t tm_array[];
-int32_t debug_counter=0;
+extern int32_t debug_counter=0;
+unsigned char debug_buffer[320*18];                  //buffer for text graphic. size = width of bar * hight_of_bar
+
 /*
 * The table used to map the scancode to ascii
 * The table is adapt from https://wiki.osdev.org/Keyboard
@@ -182,11 +185,13 @@ void keyboard_handler() {
                     change_top_left();
                     break;
                 case '9':
-                    // refresh_mp4(get_block_img(MOUSE_CURSOR));
+                    text_to_graphics("                 An Apple!              ", debug_buffer);
+                    //refresh_mp4(debug_buffer);
                     video_player((uint8_t*)RICKROLL_VID );
-                    break ;
                     //refresh_mp4(debug_counter+_4KB_);
                     //debug_counter=debug_counter+_4KB_;
+                    break ;
+
                 /*==============  only for local test ============== */
                 case 'r':
                     player((uint8_t*)RICKROLL_WAV);
