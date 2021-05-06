@@ -168,7 +168,7 @@ void paging_init(void){
         page_table_temp_vmem[i].PAT = 0;                          /* not used */
         page_table_temp_vmem[i].G = 1;                            /* kernel */
         page_table_temp_vmem[i].Avail = 0;                        /* not used */
-        page_table_temp_vmem[i].address = i;                      /* Physical Address MSB 20bits */
+        page_table_temp_vmem[i].address = i + (_4MB_ * 36 / _4KB_);                      /* Physical Address MSB 20bits */
     }
     /* Enable paging mode in hardware */
     enable_paging_hw(page_dict);

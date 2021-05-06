@@ -892,6 +892,15 @@ static void copy_image(unsigned char* img, unsigned short scr_addr) {
     );
 }
 
+
+extern uint16_t yyyy;
+extern uint8_t  mon;
+extern uint8_t  dd;
+extern uint8_t  hh;
+extern uint8_t  mm;
+extern uint8_t  ss;
+extern uint8_t  ww;
+extern void update_time();
 /*
  * refresh_bar
  *   DESCRIPTION: 1. convert "level num_fruit time" infos into a string with 320/8=40 chracters
@@ -915,7 +924,7 @@ void refresh_bar(int level, int num_fruit, int time){
     int p_off;  // the index of the plane
     int pixel_idx; //the index of pixel in a plane
     unsigned char* addr; //address to the start of the plane we want to copy
-
+    int i;
 
     // // char string_text[]="               TEAM18 OS                "; //just rubbish number to make room for 40 chars    
     // char string_text[41];
@@ -928,8 +937,62 @@ void refresh_bar(int level, int num_fruit, int time){
 
     //1. convert "level num_fruit time" infos into a string with 320/8=40 chracters
     //char string_text[]="0123456789012345678901234567890123456789"; //just rubbish number to make room for 40 chars    
-      char string_text[]="               TEAM18 OS                "; //just rubbish number to make room for 40 chars    
+    //   char string_text[]="               TEAM18 OS                "; //just rubbish number to make room for 40 chars    
+    // char string_text[]  =   " 2021-05-06    TEAM18 OS                ";
+    char string_text[40] = "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0";
+    update_time();
+    itoa(yyyy+2000, string_text+1, 10);
+    string_text[5] = '-';
+    if (mon < 10){
+        itoa(0, string_text+6, 10);
+        itoa(mon, string_text+7, 10);
+    }else{
+        itoa(mon, string_text+6, 10);
+    }
+    string_text[8] = '-';
+    if (dd < 10){
+        itoa(0, string_text+9, 10);
+        itoa(dd, string_text+10, 10);
+    }else{
+        itoa(dd, string_text+9, 10);
+    }
 
+    string_text[15] = 'T';
+    string_text[16] = 'E';
+    string_text[17] = 'A';
+    string_text[18] = 'M';
+    string_text[19] = '1';
+    string_text[20] = '8';
+    // string_text[] = "";
+    if (hh < 10){
+        itoa(0, string_text+26, 10);
+        itoa(hh, string_text+27, 10);
+    }else{
+        itoa(hh, string_text+26, 10);
+    }
+    string_text[28] = ':';
+    if (mm < 10){
+        itoa(0, string_text+29, 10);
+        itoa(mm, string_text+30, 10);
+    }else{
+        itoa(mm, string_text+29, 10);
+    }
+    string_text[31] = ':';
+    if (ss < 10){
+        itoa(0, string_text+32, 10);
+        itoa(ss, string_text+33, 10);
+    }else{
+        itoa(ss, string_text+32, 10);
+    }
+
+    // itoa()
+    // itoa(mon)
+    // itoa()
+    for (i = 0; i < 39; i++){
+        if (string_text[i] == '\0'){
+            string_text[i] = ' ';
+        }
+    }
     //2. call text_to_graphics to render the string into graphic 
     text_to_graphics(string_text,tex_buffer);
 

@@ -39,7 +39,7 @@ int center_blk_fnum[NUM_ICON] = {
     FISH
 };
 char* instruction[NUM_ICON] = {
-    "mp",
+    "ls",
     "counter",
     "pingpong",
     "video",

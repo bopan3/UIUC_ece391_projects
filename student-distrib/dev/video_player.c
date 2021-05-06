@@ -17,7 +17,7 @@ void video_player(const uint8_t* video_name){
     
     uint32_t vid_file_len;
     uint8_t  vid_info_buf[vid_buf_size];
-    uint8_t  palette_buf[256*3];
+    // uint8_t  palette_buf[256*3];
     
     uint8_t tmp[320*182];
 

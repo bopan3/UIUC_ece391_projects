@@ -10,7 +10,8 @@
 #include "timer.h"
 #include "mouse.h"
 #include "./dev/sound.h"
-
+#include "ModeX.h"
+extern int32_t in_modex;
 /*
  * irq_handler
  *   DESCRIPTION: save registers and pass control to a interrupt handler specified by irq_vect
@@ -46,6 +47,10 @@ void irq_handler(int irq_vect) {
         case IRQ_Real_Time_Clock:
             //printf("INTERRUPT #0x%x: Real Time Clock\n", irq_vect);
             #if TEST_RTC==1
+            
+            if (in_modex){
+                refresh_bar(NULL, NULL, NULL);
+            }
             rtc_handler();
             #endif
             break;
