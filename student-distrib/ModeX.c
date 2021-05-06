@@ -754,7 +754,7 @@ void clear_screens() {
     SET_WRITE_MASK(0x0F00);
 
     /* Set 64kB to zero (times four planes = 256kB). */
-    memset(mem_image, 5, MODE_X_MEM_SIZE/2);//// try the only write 32KB  
+    memset(mem_image, 0, MODE_X_MEM_SIZE/2);//// try the only write 32KB  
        
 }
 
