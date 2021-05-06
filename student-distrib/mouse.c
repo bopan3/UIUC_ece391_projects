@@ -21,6 +21,7 @@ extern terminal_t tm_array[];
 
 extern uint8_t click_flag;
 extern game_info_t game_info;
+extern void player(const uint8_t* music_name);
 
 /* File icon in GUI */
 uint8_t icon_location[X_BLOCK_NUM][Y_BLOCK_NUM];
@@ -39,7 +40,7 @@ int center_blk_fnum[NUM_ICON] = {
     FISH
 };
 char* instruction[NUM_ICON] = {
-    "mp",
+    "ls",
     "counter",
     "pingpong",
     "video",
@@ -292,6 +293,13 @@ void mouse_irq_handler() {
             break;
         }
     }
+
+    if (0 == j && mouse_key_left)
+    {
+        player((uint8_t*)"rickroll4k.wav");
+        mouse_key_left = 0;
+    }
+    
 
     if (mouse_key_left) {
         click_flag = 1;

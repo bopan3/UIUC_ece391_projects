@@ -158,6 +158,9 @@ void entry(unsigned long magic, unsigned long addr) {
 
     /* Init the PIC */
     i8259_init();
+    pit_init();
+    sti();
+    little_star();
     cli();
     /* Initialize devices, memory, filesystem, enable device interrupts on the
      * PIC, any other initialization stuff... */
@@ -165,7 +168,7 @@ void entry(unsigned long magic, unsigned long addr) {
     mouse_init();
     rtc_init();
     filesys_init();
-    // pit_init();
+   
 
     /* Init the file operations table pointer */
     fop_t_init();
@@ -181,6 +184,7 @@ void entry(unsigned long magic, unsigned long addr) {
      * IDT correctly otherwise QEMU will triple fault and simple close
      * without showing you any output */
     // printf("Enabling Interrupts\n");
+    
     clear();
     // update_time();
     // beep(500, 50);
